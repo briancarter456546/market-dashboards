@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Dashboards — Brian Carter</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a2e;
+    min-height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+    background: #12121e;
+    padding: 36px 40px 32px;
+    border-bottom: 1px solid #2a2a3e;
+}
+.header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+}
+.header h1 {
+    font-size: 1.75em;
+    font-weight: 700;
+    color: #f0f0f8;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+.header-meta {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.header-meta .date {
+    font-size: 0.85em;
+    color: #666688;
+}
+.header-meta .count {
+    font-size: 0.82em;
+    background: #1e1e3a;
+    color: #8888cc;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid #2a2a4a;
+}
+.header-meta .gh-link {
+    font-size: 0.82em;
+    color: #5588ff;
+    text-decoration: none;
+    margin-left: auto;
+}
+.header-meta .gh-link:hover { text-decoration: underline; }
+
+/* ── Content ── */
+.content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 24px 60px;
+}
+.section-label {
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #999;
+    margin-bottom: 14px;
+}
+
+/* ── Card grid ── */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 18px;
+    margin-bottom: 48px;
+}
+.dash-card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-top: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 20px 22px 18px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: box-shadow 0.15s, transform 0.12s;
+    cursor: pointer;
+}
+.dash-card:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+    transform: translateY(-3px);
+}
+.dash-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.dash-icon {
+    font-size: 1.5em;
+    line-height: 1;
+}
+.dash-tag {
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    padding: 3px 9px;
+    border-radius: 20px;
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.dash-card-title {
+    font-size: 1.05em;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.2;
+}
+.dash-card-desc {
+    font-size: 0.83em;
+    color: #555;
+    line-height: 1.6;
+    flex: 1;
+}
+.dash-card-cta {
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--accent);
+    margin-top: 4px;
+}
+
+/* ── Coming soon placeholder cards ── */
+.coming-soon {
+    background: #fafafa;
+    border: 1px dashed #d0d0d8;
+    border-top: 3px solid #d0d0d8;
+    border-radius: 10px;
+    padding: 20px 22px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0.65;
+}
+.coming-soon .dash-tag {
+    background: #f0f0f5;
+    color: #999;
+    border-color: #ddd;
+}
+.coming-soon .dash-card-title { color: #888; }
+.coming-soon .dash-card-desc  { color: #aaa; }
+.coming-soon .cs-badge {
+    font-size: 0.75em;
+    font-weight: 600;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* ── Footer ── */
+.footer {
+    border-top: 1px solid #e2e4e8;
+    padding-top: 20px;
+    font-size: 0.8em;
+    color: #bbb;
+    text-align: center;
+}
+</style>
+</head><body>
+
+<div class="header">
+  <div class="header-inner">
+    <h1>Market Dashboards</h1>
+    <div class="header-meta">
+      <span class="date">Updated 2026-02-27</span>
+      <span class="count">11 live dashboards</span>
+      <a href="https://briancarter456546.github.io/market-dashboards" class="gh-link">https://briancarter456546.github.io/market-dashboards &rarr;</a>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="section-label">Live Dashboards</div>
+  <div class="grid">
+    <a href="./spread-monitor/index.html" class="dash-card" style="--accent:#4a9eff;"><div class="dash-card-top"><span class="dash-icon">📡</span><span class="dash-tag">Macro</span></div><div class="dash-card-title">Intermarket Spread Monitor</div><div class="dash-card-desc">18 cross-asset spreads across rates, credit, equity, and commodities. Regime scoring (risk-on/off), force breakdown by category, and a market playbook.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
+    <a href="./sector-rotation/index.html" class="dash-card" style="--accent:#8b5cf6;"><div class="dash-card-top"><span class="dash-icon">🔄</span><span class="dash-tag">Sectors</span></div><div class="dash-card-title">Sector Rotation Deep Dive</div><div class="dash-card-desc">Momentum z-scores + forward predictions for 500+ ETFs across 25Y / 5Y / 1Y windows. Historical agreement scores and pattern-matched outcomes.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
+    <a href="./momentum-ranker/index.html" class="dash-card" style="--accent:#10b981;"><div class="dash-card-top"><span class="dash-icon">📈</span><span class="dash-tag">Momentum</span></div><div class="dash-card-title">Momentum Ranker</div><div class="dash-card-desc">700+ tickers ranked by composite momentum score. Returns across 6 periods, SMA gate, ratio consistency, and bad-SPY-day resilience. Live filter and sort.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
+    <a href="./similar-days/index.html" class="dash-card" style="--accent:#0ea5e9;"><div class="dash-card-top"><span class="dash-icon">🔍</span><span class="dash-tag">Pattern</span></div><div class="dash-card-title">Similar Days Analyzer</div><div class="dash-card-desc">Pattern-matched historical days with similar momentum profiles to today. Before vs after analysis for sectors, indexes, style factors, and risk regime across 25Y / 5Y / 1Y windows.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
+    <a href="./historical-mirror/index.html" class="dash-card" style="--accent:#06b6d4;"><div class="dash-card-top"><span class="dash-icon">🪞</span><span class="dash-tag">Pattern</span></div><div class="dash-card-title">Historical Mirror</div><div class="dash-card-desc">25-year x 25-period similarity heatmap comparing today's market fingerprint against every historical bi-weekly period. Momentum correlation, spread state matching, top analog periods, and forward outcome distributions.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
+    <a href="./stock-secrot/index.html" class="dash-card" style="--accent:#f59e0b;"><div class="dash-card-top"><span class="dash-icon">🏭</span><span class="dash-tag">Stocks</span></div><div class="dash-card-title">Stock Sector Rotation</div><div class="dash-card-desc">Individual stocks scored across 9 momentum and sector rotation patterns. High scorers (7/9+) with returns, RSI, ADX, and relative strength.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
+    <a href="./hyglqd-credit/index.html" class="dash-card" style="--accent:#ec4899;"><div class="dash-card-top"><span class="dash-icon">💳</span><span class="dash-tag">Credit</span></div><div class="dash-card-title">HYG/LQD Credit Spread</div><div class="dash-card-desc">Credit spread regime via HYG/LQD ratio. Historical percentile, expected SPY forward returns at current spread level, and win rates.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
+    <a href="./crash-detection/index.html" class="dash-card" style="--accent:#ef4444;"><div class="dash-card-top"><span class="dash-icon">💥</span><span class="dash-tag">Risk</span></div><div class="dash-card-title">Crash Detection (RMT + Ising)</div><div class="dash-card-desc">Random Matrix Theory eigenvalue analysis and Ising magnetization. Composite crash probability score with component breakdown.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
+    <a href="./advanced-momentum/index.html" class="dash-card" style="--accent:#6366f1;"><div class="dash-card-top"><span class="dash-icon">🚀</span><span class="dash-tag">Momentum</span></div><div class="dash-card-title">Advanced Momentum Analyzer</div><div class="dash-card-desc">OBV divergence, Sortino ratios, slope acceleration, and trajectory detection for 700+ assets. Signals from STRONG_BUY to SELL with confidence scores.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
+    <a href="./conservative-momentum/index.html" class="dash-card" style="--accent:#0d9488;"><div class="dash-card-top"><span class="dash-icon">🛡️</span><span class="dash-tag">Momentum</span></div><div class="dash-card-title">Conservative Momentum Qualifier</div><div class="dash-card-desc">Pattern-based momentum qualification: trend persistence, dip structure, sustainability scoring. Safe plays filtered for 40-300% 12M returns.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
+    <a href="./macro/index.html" class="dash-card" style="--accent:#7c3aed;"><div class="dash-card-top"><span class="dash-icon">🌍</span><span class="dash-tag">Macro</span></div><div class="dash-card-title">Macro Dashboard</div><div class="dash-card-desc">VIX, treasury yield curve, credit spreads, sector performance, commodities, currencies, and breadth. Overall regime classification with 5-day trends and alerts.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
+  </div>
+
+  <div class="footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-02-27 &mdash; For personal research only.</div>
+</div>
+</body></html>

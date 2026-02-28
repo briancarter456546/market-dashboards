@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turn of Month Signals - 2026-02-21</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a2e;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* --- Top stat bar (dark anchor) --- */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    background: #1e1e2e;
+    border-bottom: 3px solid #2d2d4a;
+}
+
+.stat-bar .stat {
+    padding: 20px 26px;
+    border-right: 1px solid #2d2d4a;
+}
+.stat-bar .stat:last-child { border-right: none; }
+
+.stat .stat-label {
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #8888aa;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+}
+
+.stat .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.1em;
+    font-weight: 600;
+    color: #f0f0f0;
+    line-height: 1.1;
+}
+
+.stat .stat-value.pos     { color: #22c55e; }
+.stat .stat-value.neg     { color: #ef4444; }
+.stat .stat-value.warn    { color: #f59e0b; }
+.stat .stat-value.neutral { color: #f0f0f0; }
+
+/* --- Page header --- */
+.page-header {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.page-header .meta {
+    font-size: 0.88em;
+    color: #888;
+}
+
+.page-header .meta a { color: #4f46e5; text-decoration: none; }
+
+/* --- Nav bar --- */
+.page-nav {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 0 30px;
+    display: flex;
+}
+
+.page-nav a {
+    display: inline-block;
+    padding: 13px 20px;
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+.page-nav a:hover  { color: #1a1a2e; }
+.page-nav a.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+/* --- Content area --- */
+.content { padding: 26px 30px; }
+
+/* --- Regime banner --- */
+.regime-banner {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-left: 6px solid #22c55e;
+    border-radius: 8px;
+    padding: 18px 26px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.regime-label {
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.regime-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    color: #888;
+    border-left: 1px solid #e2e4e8;
+    padding-left: 28px;
+    line-height: 1.8;
+}
+
+/* --- Stat/force cards --- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    padding: 18px 22px;
+    border-top: 5px solid #ccc;
+}
+
+.card .label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.9em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.card .sub {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #888;
+}
+
+/* --- Table section wrapper --- */
+.table-section {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.table-section-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid #e2e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.table-section-header h2 {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* --- Tables --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95em;
+}
+
+thead th {
+    background: #f8f9fb;
+    color: #555;
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e2e4e8;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+thead th:hover { background: #f0f2f5; color: #1a1a2e; }
+thead th.sorted-asc  { color: #16a34a; }
+thead th.sorted-desc { color: #dc2626; }
+
+tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbfd; }
+
+/* Numbers and tickers use mono font */
+.num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92em;
+}
+
+.ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #1a1a2e;
+}
+
+/* Color classes */
+.pos   { color: #16a34a; font-weight: 600; }
+.neg   { color: #dc2626; font-weight: 600; }
+.warn  { color: #d97706; font-weight: 600; }
+.muted { color: #aaa; }
+.accent { color: #4f46e5; }
+
+/* Score badges - pill shaped */
+.badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-align: center;
+    min-width: 52px;
+}
+
+.badge-2  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-1  { background: #f0fdf4; color: #16a34a; border: 1px solid #d1fae5; }
+.badge-n1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge-n2 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+/* Qualifier pills */
+.qualifier {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.q-confirmed { background: #dcfce7; color: #15803d; }
+.q-fading    { background: #fff7ed; color: #c2410c; }
+.q-diverging { background: #eff6ff; color: #1d4ed8; }
+.q-holding   { background: #f1f5f9; color: #64748b; }
+
+/* Trend pills */
+.trend-above {
+    background: #dcfce7; color: #15803d;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+.trend-below {
+    background: #fee2e2; color: #b91c1c;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+
+/* --- Playbook text blocks --- */
+.pb-header {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e4e8;
+}
+.pb-header:first-child { margin-top: 0; }
+
+.pb-body {
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.7;
+    margin: 4px 0;
+}
+
+.pb-item {
+    font-size: 0.9em;
+    color: #4f46e5;
+    margin: 5px 0 5px 16px;
+    border-left: 3px solid #c7d2fe;
+    padding-left: 12px;
+    line-height: 1.65;
+}
+
+/* --- Footer --- */
+.dash-footer {
+    padding: 22px 30px;
+    font-size: 0.82em;
+    color: #aaa;
+    border-top: 1px solid #e2e4e8;
+    text-align: center;
+    background: #fff;
+    margin-top: 8px;
+}
+
+
+.tom-note {
+    font-size: 0.85em;
+    color: #555;
+    padding: 0 0 18px 0;
+}
+.tom-warn-banner {
+    background: #fef3c7;
+    border-left: 4px solid #d97706;
+    padding: 10px 14px;
+    font-size: 0.88em;
+    color: #92400e;
+    margin-bottom: 14px;
+    border-radius: 0 6px 6px 0;
+}
+.tom-vol-banner {
+    background: #ede9fe;
+    border-left: 4px solid #7c3aed;
+    padding: 10px 14px;
+    font-size: 0.88em;
+    color: #4c1d95;
+    margin-bottom: 14px;
+    border-radius: 0 6px 6px 0;
+}
+.tom-short-banner {
+    background: #fee2e2;
+    border-left: 4px solid #dc2626;
+    padding: 10px 14px;
+    font-size: 0.88em;
+    color: #7f1d1d;
+    margin-bottom: 14px;
+    border-radius: 0 6px 6px 0;
+}
+.tom-table-wrap { overflow-x: auto; margin: 0; }
+.tom-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92em;
+}
+.tom-table col.col-ticker { width: 90px; }
+.tom-table col.col-num    { width: 130px; }
+.tom-table col.col-wr     { width: 100px; }
+.tom-table thead tr.col-row th {
+    padding: 7px 10px;
+    font-size: 0.78em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #374151;
+    background: #f8f9fb;
+    border-bottom: 2px solid #e5e7eb;
+    cursor: pointer;
+    white-space: nowrap;
+    text-align: right;
+    user-select: none;
+}
+.tom-table thead tr.col-row th.col-ticker-h { text-align: left; }
+.tom-table tbody tr:hover { background: #f0f4ff; }
+.tom-table tbody td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.90em;
+    text-align: right;
+    white-space: nowrap;
+}
+.tom-table tbody td.col-ticker {
+    text-align: left;
+    font-weight: 700;
+    color: #1e293b;
+}
+.tom-table tbody td.cell-miss { color: #bbb; text-align: center; }
+.tom-table .sorted-asc::after  { content: ' ▲'; color: #4f46e5; }
+.tom-table .sorted-desc::after { content: ' ▼'; color: #4f46e5; }
+
+</style>
+</head><body>
+<div class="stat-bar"><div class="stat"><div class="stat-label">Consistent TOM</div><div class="stat-value neutral">24</div></div><div class="stat"><div class="stat-label">Newly Working</div><div class="stat-value pos">26</div></div><div class="stat"><div class="stat-label">Stopped Working</div><div class="stat-value neg">284</div></div><div class="stat"><div class="stat-label">Last Run</div><div class="stat-value neutral">2026-02-21</div></div></div>
+<div class="page-header">
+  <h1>Turn of Month Signals</h1>
+  <div class="meta">
+    Turn-of-Month Signal Dashboard &nbsp;&mdash;&nbsp; Long TOM &bull; Vol Timing &bull; Newly Working &bull; Short/Avoid TOM &nbsp;|&nbsp;
+    <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
+  </div>
+</div>
+<div class="page-nav">
+  <a href="#spreads" class="active">Dashboard</a>
+  <a href="archive/dashboard_20260221.html">Archive: 2026-02-21</a>
+  <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
+</div>
+<div class="content">
+<div class="tom-note">TOM window = last 5 trading days of month through first 3 of next. Outperformance = Long-TOM CAGR minus Buy-and-Hold CAGR. Rerun <code>tom_full_scan_v3.py</code> monthly to refresh signals.</div>
+<div class="table-section"><div class="table-section-header"><h2>Consistent TOM Longs &nbsp;<span style="font-weight:400;font-size:0.85em;color:#888;">13 assets &mdash; positive Full + 5Y + 1Y, &ge;5Y history, B&H &gt; 0%</span></h2><span style="font-size:0.85em;color:#888;">Click column headers to sort</span></div><div style="padding:20px 24px;"><div class="tom-table-wrap"><div id="tbl-longs"></div></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Vol &amp; Hedge Timing &nbsp;<span style="font-weight:400;font-size:0.85em;color:#888;">11 products</span></h2><span style="font-size:0.85em;color:#888;">Reduce hedge costs during TOM window</span></div><div style="padding:20px 24px;"><div class="tom-vol-banner"><strong>Volatility / Hedge Timing &mdash; not tradeable longs.</strong> These products decay permanently. Their TOM outperformance means they lose <em>less</em> during month-end windows. Use as a timing signal for hedge entry, not as a directional long trade.</div><div class="tom-table-wrap"><div id="tbl-vol"></div></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Newly Working Watch &nbsp;<span style="font-weight:400;font-size:0.85em;color:#888;">26 assets &mdash; 1Y outperform &ge;10%, negative full history</span></h2><span style="font-size:0.85em;color:#888;">Emerging regime shift &mdash; monitor, do not trade blindly</span></div><div style="padding:20px 24px;"><div class="tom-warn-banner"><strong>Lower conviction &mdash; emerging signals only.</strong> These had negative TOM edge historically but are positive in the last 12 months. Could be regime shift or noise. Watch before trading; confirm with 5Y data turning positive.</div><div class="tom-table-wrap"><div id="tbl-newly"></div></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Short / Avoid TOM &nbsp;<span style="font-weight:400;font-size:0.85em;color:#888;">369 assets &mdash; positive B&H CAGR, negative 1Y TOM return</span></h2><span style="font-size:0.85em;color:#888;">Exit before TOM window; re-enter after</span></div><div style="padding:20px 24px;"><div class="tom-short-banner"><strong>Good assets, bad at month-end.</strong> These have positive long-term B&H returns but reliably drop during TOM windows. Strategy: exit longs before TOM window and re-enter after, or short during TOM if conviction is high.</div><div class="tom-table-wrap"><div id="tbl-short"></div></div></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-02-21 &mdash; For personal research only.</div>
+<script>
+
+function getGradientColor(score) {
+    var clamped = Math.max(0, Math.min(1, score));
+    var r, g, b;
+    if (clamped < 0.25) {
+        var t = clamped * 4;
+        r = Math.round(211 + (255 - 211) * t);
+        g = Math.round(47 + (152 - 47) * t);
+        b = Math.round(47 + (0 - 47) * t);
+    } else if (clamped < 0.5) {
+        var t = (clamped - 0.25) * 4;
+        r = 255;
+        g = Math.round(152 + (235 - 152) * t);
+        b = Math.round(0 + (59 - 0) * t);
+    } else if (clamped < 0.75) {
+        var t = (clamped - 0.5) * 4;
+        r = Math.round(255 + (139 - 255) * t);
+        g = Math.round(235 + (195 - 235) * t);
+        b = Math.round(59 + (74 - 59) * t);
+    } else {
+        var t = (clamped - 0.75) * 4;
+        r = Math.round(139 + (0 - 139) * t);
+        g = Math.round(195 + (200 - 195) * t);
+        b = Math.round(74 + (83 - 74) * t);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+<script>
+
+(function() {
+    const DATA = {"longs": [{"Ticker": "ALK", "Full_LongTOM_Outperform": 1.0678271637, "5Y_LongTOM_Outperform": 0.958681409, "1Y_LongTOM_Outperform": 29.2603664073, "1Y_TOM_WinRate": 53.0}, {"Ticker": "SAIC", "Full_LongTOM_Outperform": 1.3696047208, "5Y_LongTOM_Outperform": 8.9061177894, "1Y_LongTOM_Outperform": 22.7362353938, "1Y_TOM_WinRate": 51.0}, {"Ticker": "TAL", "Full_LongTOM_Outperform": 3.777532926, "5Y_LongTOM_Outperform": 38.2868246761, "1Y_LongTOM_Outperform": 20.4223913257, "1Y_TOM_WinRate": 49.0}, {"Ticker": "JD", "Full_LongTOM_Outperform": 9.753220402, "5Y_LongTOM_Outperform": 38.0310643294, "1Y_LongTOM_Outperform": 16.041593685, "1Y_TOM_WinRate": 44.0}, {"Ticker": "WTW", "Full_LongTOM_Outperform": 2.6869386433, "5Y_LongTOM_Outperform": 2.6079810768, "1Y_LongTOM_Outperform": 8.6972022232, "1Y_TOM_WinRate": 52.0}, {"Ticker": "UUP", "Full_LongTOM_Outperform": 0.6177933992, "5Y_LongTOM_Outperform": 0.98545156, "1Y_LongTOM_Outperform": 7.3831036809, "1Y_TOM_WinRate": 48.0}, {"Ticker": "FM", "Full_LongTOM_Outperform": 5.6805434923, "5Y_LongTOM_Outperform": 10.1565031418, "1Y_LongTOM_Outperform": 5.8126980808, "1Y_TOM_WinRate": 56.7010309278}, {"Ticker": "CP", "Full_LongTOM_Outperform": 3.9718209939, "5Y_LongTOM_Outperform": 3.6474669725, "1Y_LongTOM_Outperform": 5.390842084, "1Y_TOM_WinRate": 53.0}, {"Ticker": "LI", "Full_LongTOM_Outperform": 19.128559786, "5Y_LongTOM_Outperform": 27.3971968013, "1Y_LongTOM_Outperform": 2.582773232, "1Y_TOM_WinRate": 43.0}, {"Ticker": "VZ", "Full_LongTOM_Outperform": 4.4035252596, "5Y_LongTOM_Outperform": 7.7428386321, "1Y_LongTOM_Outperform": 2.3010860243, "1Y_TOM_WinRate": 57.0}, {"Ticker": "KWEB", "Full_LongTOM_Outperform": 6.564170096, "5Y_LongTOM_Outperform": 28.0676268552, "1Y_LongTOM_Outperform": 1.6131557121, "1Y_TOM_WinRate": 51.0}, {"Ticker": "BBY", "Full_LongTOM_Outperform": 3.7438731206, "5Y_LongTOM_Outperform": 5.8027208788, "1Y_LongTOM_Outperform": 0.2345022764, "1Y_TOM_WinRate": 47.0}, {"Ticker": "FIS", "Full_LongTOM_Outperform": 3.1700063286, "5Y_LongTOM_Outperform": 7.0948078685, "1Y_LongTOM_Outperform": 0.1970594928, "1Y_TOM_WinRate": 51.0}], "vol": [{"Ticker": "UVXY", "Full_LongTOM_Outperform": 40.1861594134, "5Y_LongTOM_Outperform": 55.0059861107, "1Y_LongTOM_Outperform": 129.8881926796, "1Y_TOM_WinRate": 52.0}, {"Ticker": "VIXY", "Full_LongTOM_Outperform": 30.8638689668, "5Y_LongTOM_Outperform": 45.471997904, "1Y_LongTOM_Outperform": 87.0548608043, "1Y_TOM_WinRate": 51.0}, {"Ticker": "VXX", "Full_LongTOM_Outperform": 31.6455659441, "5Y_LongTOM_Outperform": 43.1772102616, "1Y_LongTOM_Outperform": 84.9134442238, "1Y_TOM_WinRate": 49.0}, {"Ticker": "INBS", "Full_LongTOM_Outperform": 38.2864833758, "5Y_LongTOM_Outperform": 40.1902546515, "1Y_LongTOM_Outperform": 73.9717121358, "1Y_TOM_WinRate": 37.0}, {"Ticker": "UNG", "Full_LongTOM_Outperform": 12.424497038, "5Y_LongTOM_Outperform": 6.0779504737, "1Y_LongTOM_Outperform": 69.3511953023, "1Y_TOM_WinRate": 55.0}, {"Ticker": "NBY", "Full_LongTOM_Outperform": 24.2488351933, "5Y_LongTOM_Outperform": 30.7262983842, "1Y_LongTOM_Outperform": 35.3545098987, "1Y_TOM_WinRate": 44.0}, {"Ticker": "VXZ", "Full_LongTOM_Outperform": 9.2591915967, "5Y_LongTOM_Outperform": 17.7342582367, "1Y_LongTOM_Outperform": 28.8854049112, "1Y_TOM_WinRate": 60.0}, {"Ticker": "VIXM", "Full_LongTOM_Outperform": 9.1171403307, "5Y_LongTOM_Outperform": 17.5990046271, "1Y_LongTOM_Outperform": 28.7847206153, "1Y_TOM_WinRate": 58.0}, {"Ticker": "TAIL", "Full_LongTOM_Outperform": 6.3287548276, "5Y_LongTOM_Outperform": 12.0407951404, "1Y_LongTOM_Outperform": 16.1831333058, "1Y_TOM_WinRate": 47.0}, {"Ticker": "DOG", "Full_LongTOM_Outperform": 5.3059150639, "5Y_LongTOM_Outperform": 8.9330038571, "1Y_LongTOM_Outperform": 14.4619613977, "1Y_TOM_WinRate": 45.0}, {"Ticker": "HDGE", "Full_LongTOM_Outperform": 7.6934487242, "5Y_LongTOM_Outperform": 7.5618380182, "1Y_LongTOM_Outperform": 13.1932920884, "1Y_TOM_WinRate": 58.0}], "newly": [{"Ticker": "MOH", "Full_LongTOM_Outperform": -1.191201107, "5Y_LongTOM_Outperform": -2.2935294073, "1Y_LongTOM_Outperform": 41.9228675232, "Regime_1Y_vs_Full": 43.1140686301}, {"Ticker": "ACM", "Full_LongTOM_Outperform": -3.7194459891, "5Y_LongTOM_Outperform": -6.5064057475, "1Y_LongTOM_Outperform": 30.9869757766, "Regime_1Y_vs_Full": 34.7064217657}, {"Ticker": "CHTR", "Full_LongTOM_Outperform": -0.1517660398, "5Y_LongTOM_Outperform": 12.6676643938, "1Y_LongTOM_Outperform": 28.4435261627, "Regime_1Y_vs_Full": 28.5952922026}, {"Ticker": "QSR", "Full_LongTOM_Outperform": -4.3453360161, "5Y_LongTOM_Outperform": 7.2618051392, "1Y_LongTOM_Outperform": 24.4805553909, "Regime_1Y_vs_Full": 28.825891407}, {"Ticker": "ABM", "Full_LongTOM_Outperform": -0.6480116194, "5Y_LongTOM_Outperform": 3.8543371503, "1Y_LongTOM_Outperform": 23.8794534443, "Regime_1Y_vs_Full": 24.5274650637}, {"Ticker": "ANF", "Full_LongTOM_Outperform": -4.0415676863, "5Y_LongTOM_Outperform": -29.528542603, "1Y_LongTOM_Outperform": 23.7762211672, "Regime_1Y_vs_Full": 27.8177888535}, {"Ticker": "MSTR", "Full_LongTOM_Outperform": -4.9435087138, "5Y_LongTOM_Outperform": 0.2194398219, "1Y_LongTOM_Outperform": 22.7384180442, "Regime_1Y_vs_Full": 27.681926758}, {"Ticker": "DECK", "Full_LongTOM_Outperform": -2.8279973619, "5Y_LongTOM_Outperform": -12.3841333229, "1Y_LongTOM_Outperform": 18.4558798368, "Regime_1Y_vs_Full": 21.2838771987}, {"Ticker": "APD", "Full_LongTOM_Outperform": -2.8766000975, "5Y_LongTOM_Outperform": -4.6400369258, "1Y_LongTOM_Outperform": 17.9492382295, "Regime_1Y_vs_Full": 20.825838327}, {"Ticker": "ABT", "Full_LongTOM_Outperform": -4.7968754874, "5Y_LongTOM_Outperform": 3.1202877805, "1Y_LongTOM_Outperform": 17.715533762, "Regime_1Y_vs_Full": 22.5124092494}, {"Ticker": "AON", "Full_LongTOM_Outperform": -1.392585618, "5Y_LongTOM_Outperform": -6.2595571685, "1Y_LongTOM_Outperform": 16.9918061671, "Regime_1Y_vs_Full": 18.3843917852}, {"Ticker": "WDFC", "Full_LongTOM_Outperform": -3.4482327317, "5Y_LongTOM_Outperform": 1.3548749008, "1Y_LongTOM_Outperform": 16.9063588394, "Regime_1Y_vs_Full": 20.3545915711}, {"Ticker": "SE", "Full_LongTOM_Outperform": -7.6088793135, "5Y_LongTOM_Outperform": 18.8317693547, "1Y_LongTOM_Outperform": 16.1054353761, "Regime_1Y_vs_Full": 23.7143146896}, {"Ticker": "TEAM", "Full_LongTOM_Outperform": -9.9351269759, "5Y_LongTOM_Outperform": 5.3109243881, "1Y_LongTOM_Outperform": 15.9384563132, "Regime_1Y_vs_Full": 25.8735832891}, {"Ticker": "RDW", "Full_LongTOM_Outperform": -0.3151740579, "5Y_LongTOM_Outperform": 0.6271614205, "1Y_LongTOM_Outperform": 14.6228816066, "Regime_1Y_vs_Full": 14.9380556645}, {"Ticker": "FICO", "Full_LongTOM_Outperform": -8.8485210904, "5Y_LongTOM_Outperform": -19.2596647607, "1Y_LongTOM_Outperform": 14.5922105681, "Regime_1Y_vs_Full": 23.4407316585}, {"Ticker": "FI", "Full_LongTOM_Outperform": -3.1727315036, "5Y_LongTOM_Outperform": 1.5230319803, "1Y_LongTOM_Outperform": 13.775421604, "Regime_1Y_vs_Full": 16.9481531075}, {"Ticker": "CHD", "Full_LongTOM_Outperform": -0.6827708269, "5Y_LongTOM_Outperform": -4.3971596976, "1Y_LongTOM_Outperform": 13.3949425634, "Regime_1Y_vs_Full": 14.0777133903}, {"Ticker": "FISV", "Full_LongTOM_Outperform": -6.5921614391, "5Y_LongTOM_Outperform": -0.9071519378, "1Y_LongTOM_Outperform": 13.3926522238, "Regime_1Y_vs_Full": 19.9848136629}, {"Ticker": "BMY", "Full_LongTOM_Outperform": -1.9662523245, "5Y_LongTOM_Outperform": -3.2787937508, "1Y_LongTOM_Outperform": 13.1736823882, "Regime_1Y_vs_Full": 15.1399347128}, {"Ticker": "SHW", "Full_LongTOM_Outperform": -1.6280768149, "5Y_LongTOM_Outperform": 2.2973616685, "1Y_LongTOM_Outperform": 12.0263579595, "Regime_1Y_vs_Full": 13.6544347745}, {"Ticker": "SAP", "Full_LongTOM_Outperform": -4.4866060525, "5Y_LongTOM_Outperform": -9.3792046965, "1Y_LongTOM_Outperform": 11.8435490187, "Regime_1Y_vs_Full": 16.3301550712}, {"Ticker": "PGR", "Full_LongTOM_Outperform": -11.0835886984, "5Y_LongTOM_Outperform": -7.4754639752, "1Y_LongTOM_Outperform": 11.7794756618, "Regime_1Y_vs_Full": 22.8630643603}, {"Ticker": "NKE", "Full_LongTOM_Outperform": -6.6173549801, "5Y_LongTOM_Outperform": 6.5868089401, "1Y_LongTOM_Outperform": 11.7254748762, "Regime_1Y_vs_Full": 18.3428298563}, {"Ticker": "ODFL", "Full_LongTOM_Outperform": -5.5274795735, "5Y_LongTOM_Outperform": -1.6224716319, "1Y_LongTOM_Outperform": 11.1312014106, "Regime_1Y_vs_Full": 16.6586809842}, {"Ticker": "CLX", "Full_LongTOM_Outperform": -2.9263512055, "5Y_LongTOM_Outperform": 1.8683107889, "1Y_LongTOM_Outperform": 10.2790295634, "Regime_1Y_vs_Full": 13.2053807689}], "short": [{"Ticker": "TMQ", "1Y_BH_CAGR": 165.1769483002, "1Y_ShortTOM_CAGR": 109.4073398544, "1Y_Avg_TOM_Return": -0.8770937703, "1Y_TOM_WinRate": 42.0}, {"Ticker": "PHAT", "1Y_BH_CAGR": 98.3151394186, "1Y_ShortTOM_CAGR": 99.1609406669, "1Y_Avg_TOM_Return": -0.8144475694, "1Y_TOM_WinRate": 41.0}, {"Ticker": "EWTX", "1Y_BH_CAGR": 8.3674150296, "1Y_ShortTOM_CAGR": 79.6384978754, "1Y_Avg_TOM_Return": -0.7090887538, "1Y_TOM_WinRate": 47.0}, {"Ticker": "TSLA", "1Y_BH_CAGR": 14.0800658511, "1Y_ShortTOM_CAGR": 78.1964524092, "1Y_Avg_TOM_Return": -0.6452175416, "1Y_TOM_WinRate": 42.0}, {"Ticker": "PSIX", "1Y_BH_CAGR": 136.8918183634, "1Y_ShortTOM_CAGR": 72.2354377635, "1Y_Avg_TOM_Return": -0.6979541797, "1Y_TOM_WinRate": 41.0}, {"Ticker": "ICHR", "1Y_BH_CAGR": 42.4090284158, "1Y_ShortTOM_CAGR": 69.8825781017, "1Y_Avg_TOM_Return": -0.7337618608, "1Y_TOM_WinRate": 50.0}, {"Ticker": "NTLA", "1Y_BH_CAGR": 3.4144285909, "1Y_ShortTOM_CAGR": 57.1671767766, "1Y_Avg_TOM_Return": -0.6018912247, "1Y_TOM_WinRate": 46.0}, {"Ticker": "ARKK", "1Y_BH_CAGR": 8.6349819018, "1Y_ShortTOM_CAGR": 53.5691261883, "1Y_Avg_TOM_Return": -0.462487368, "1Y_TOM_WinRate": 48.0}, {"Ticker": "RIVN", "1Y_BH_CAGR": 8.4051266507, "1Y_ShortTOM_CAGR": 51.2144304945, "1Y_Avg_TOM_Return": -0.4923166859, "1Y_TOM_WinRate": 40.0}, {"Ticker": "ARKW", "1Y_BH_CAGR": 1.5105995121, "1Y_ShortTOM_CAGR": 50.5771074564, "1Y_Avg_TOM_Return": -0.4370407776, "1Y_TOM_WinRate": 47.0}, {"Ticker": "OMER", "1Y_BH_CAGR": 30.5102711105, "1Y_ShortTOM_CAGR": 49.3956206514, "1Y_Avg_TOM_Return": -0.5038410403, "1Y_TOM_WinRate": 45.0}, {"Ticker": "PLTR", "1Y_BH_CAGR": 20.9652491768, "1Y_ShortTOM_CAGR": 48.4561141541, "1Y_Avg_TOM_Return": -0.4765963222, "1Y_TOM_WinRate": 53.0}, {"Ticker": "AMD", "1Y_BH_CAGR": 74.6590343058, "1Y_ShortTOM_CAGR": 44.0914401214, "1Y_Avg_TOM_Return": -0.4517479655, "1Y_TOM_WinRate": 47.0}, {"Ticker": "NIO", "1Y_BH_CAGR": 15.7291107719, "1Y_ShortTOM_CAGR": 43.8179479889, "1Y_Avg_TOM_Return": -0.4340478245, "1Y_TOM_WinRate": 43.0}, {"Ticker": "FLXS", "1Y_BH_CAGR": 7.5761943433, "1Y_ShortTOM_CAGR": 43.4086618519, "1Y_Avg_TOM_Return": -0.3909511372, "1Y_TOM_WinRate": 42.0}, {"Ticker": "CRSP", "1Y_BH_CAGR": 0.5095914785, "1Y_ShortTOM_CAGR": 40.0736088359, "1Y_Avg_TOM_Return": -0.399717285, "1Y_TOM_WinRate": 43.0}, {"Ticker": "ALB", "1Y_BH_CAGR": 101.189826882, "1Y_ShortTOM_CAGR": 39.7750982333, "1Y_Avg_TOM_Return": -0.4039432753, "1Y_TOM_WinRate": 46.0}, {"Ticker": "PLSE", "1Y_BH_CAGR": 4.0487071189, "1Y_ShortTOM_CAGR": 39.3791901629, "1Y_Avg_TOM_Return": -0.4007568305, "1Y_TOM_WinRate": 45.0}, {"Ticker": "MOS", "1Y_BH_CAGR": 9.3874770513, "1Y_ShortTOM_CAGR": 39.3703247099, "1Y_Avg_TOM_Return": -0.3598341775, "1Y_TOM_WinRate": 43.0}, {"Ticker": "AAOI", "1Y_BH_CAGR": 89.9296971787, "1Y_ShortTOM_CAGR": 37.6583042811, "1Y_Avg_TOM_Return": -0.6165201935, "1Y_TOM_WinRate": 39.0}, {"Ticker": "ARGT", "1Y_BH_CAGR": 10.6936051323, "1Y_ShortTOM_CAGR": 36.0641531663, "1Y_Avg_TOM_Return": -0.3264679795, "1Y_TOM_WinRate": 39.0}, {"Ticker": "AVDL", "1Y_BH_CAGR": 143.0208362661, "1Y_ShortTOM_CAGR": 35.2877596459, "1Y_Avg_TOM_Return": -0.3214789512, "1Y_TOM_WinRate": 39.0}, {"Ticker": "SYAAF", "1Y_BH_CAGR": 2.9116694249, "1Y_ShortTOM_CAGR": 34.5085683137, "1Y_Avg_TOM_Return": -0.4978372829, "1Y_TOM_WinRate": 41.0}, {"Ticker": "SN", "1Y_BH_CAGR": 16.7578111424, "1Y_ShortTOM_CAGR": 34.2152737564, "1Y_Avg_TOM_Return": -0.3507762583, "1Y_TOM_WinRate": 47.0}, {"Ticker": "IE", "1Y_BH_CAGR": 133.3646497371, "1Y_ShortTOM_CAGR": 32.1039031896, "1Y_Avg_TOM_Return": -0.4079921875, "1Y_TOM_WinRate": 50.0}, {"Ticker": "ZYME", "1Y_BH_CAGR": 53.4160550171, "1Y_ShortTOM_CAGR": 31.5271865219, "1Y_Avg_TOM_Return": -0.3116126916, "1Y_TOM_WinRate": 49.0}, {"Ticker": "BDX", "1Y_BH_CAGR": 31.5426343997, "1Y_ShortTOM_CAGR": 31.4159108017, "1Y_Avg_TOM_Return": -0.2975005814, "1Y_TOM_WinRate": 45.0}, {"Ticker": "CG", "1Y_BH_CAGR": 0.1715134197, "1Y_ShortTOM_CAGR": 30.2895004399, "1Y_Avg_TOM_Return": -0.305240327, "1Y_TOM_WinRate": 46.0}, {"Ticker": "ACAD", "1Y_BH_CAGR": 21.4447205074, "1Y_ShortTOM_CAGR": 29.5723626039, "1Y_Avg_TOM_Return": -0.2805094978, "1Y_TOM_WinRate": 41.0}, {"Ticker": "CTNM", "1Y_BH_CAGR": 112.2550617493, "1Y_ShortTOM_CAGR": 29.3249301293, "1Y_Avg_TOM_Return": -0.3935702128, "1Y_TOM_WinRate": 42.0}, {"Ticker": "ON", "1Y_BH_CAGR": 23.7572472609, "1Y_ShortTOM_CAGR": 29.1159976103, "1Y_Avg_TOM_Return": -0.3253748168, "1Y_TOM_WinRate": 44.0}, {"Ticker": "LITP", "1Y_BH_CAGR": 96.1734057175, "1Y_ShortTOM_CAGR": 28.673778057, "1Y_Avg_TOM_Return": -0.3126744458, "1Y_TOM_WinRate": 46.0}, {"Ticker": "BLOK", "1Y_BH_CAGR": 9.9574955725, "1Y_ShortTOM_CAGR": 28.6177826496, "1Y_Avg_TOM_Return": -0.2869529119, "1Y_TOM_WinRate": 45.0}, {"Ticker": "SQM", "1Y_BH_CAGR": 84.9567624585, "1Y_ShortTOM_CAGR": 27.7626676632, "1Y_Avg_TOM_Return": -0.2829301482, "1Y_TOM_WinRate": 44.0}, {"Ticker": "ST", "1Y_BH_CAGR": 24.8189387487, "1Y_ShortTOM_CAGR": 27.5967568025, "1Y_Avg_TOM_Return": -0.2822960944, "1Y_TOM_WinRate": 47.0}, {"Ticker": "TMRC", "1Y_BH_CAGR": 110.3570426337, "1Y_ShortTOM_CAGR": 27.4162624695, "1Y_Avg_TOM_Return": -0.4959759238, "1Y_TOM_WinRate": 42.0}, {"Ticker": "DVN", "1Y_BH_CAGR": 17.5402835997, "1Y_ShortTOM_CAGR": 26.5096733143, "1Y_Avg_TOM_Return": -0.2659317834, "1Y_TOM_WinRate": 52.0}, {"Ticker": "XOP", "1Y_BH_CAGR": 8.4596514215, "1Y_ShortTOM_CAGR": 26.3809853119, "1Y_Avg_TOM_Return": -0.2562230294, "1Y_TOM_WinRate": 52.0}, {"Ticker": "DAPP", "1Y_BH_CAGR": 3.6173850515, "1Y_ShortTOM_CAGR": 26.280563384, "1Y_Avg_TOM_Return": -0.324729611, "1Y_TOM_WinRate": 45.0}, {"Ticker": "BA", "1Y_BH_CAGR": 25.4640132041, "1Y_ShortTOM_CAGR": 26.2319676914, "1Y_Avg_TOM_Return": -0.2665836806, "1Y_TOM_WinRate": 48.0}, {"Ticker": "HMC", "1Y_BH_CAGR": 11.246139791, "1Y_ShortTOM_CAGR": 25.9263974048, "1Y_Avg_TOM_Return": -0.2462844996, "1Y_TOM_WinRate": 43.0}, {"Ticker": "FDIG", "1Y_BH_CAGR": 4.3663654427, "1Y_ShortTOM_CAGR": 25.8928545323, "1Y_Avg_TOM_Return": -0.2863462607, "1Y_TOM_WinRate": 44.0}, {"Ticker": "BN", "1Y_BH_CAGR": 13.814292999, "1Y_ShortTOM_CAGR": 25.6818760036, "1Y_Avg_TOM_Return": -0.2484544288, "1Y_TOM_WinRate": 51.0}, {"Ticker": "SVXY", "1Y_BH_CAGR": 1.3005901551, "1Y_ShortTOM_CAGR": 25.3613604396, "1Y_Avg_TOM_Return": -0.2501584611, "1Y_TOM_WinRate": 50.0}, {"Ticker": "FANG", "1Y_BH_CAGR": 9.8495065368, "1Y_ShortTOM_CAGR": 25.1634355874, "1Y_Avg_TOM_Return": -0.2583595291, "1Y_TOM_WinRate": 51.0}, {"Ticker": "UGI", "1Y_BH_CAGR": 17.3829067324, "1Y_ShortTOM_CAGR": 24.9055922775, "1Y_Avg_TOM_Return": -0.2318627879, "1Y_TOM_WinRate": 52.0}, {"Ticker": "HAL", "1Y_BH_CAGR": 31.2697696549, "1Y_ShortTOM_CAGR": 24.8073749776, "1Y_Avg_TOM_Return": -0.2560173466, "1Y_TOM_WinRate": 51.0}, {"Ticker": "BUZZ", "1Y_BH_CAGR": 9.5041117786, "1Y_ShortTOM_CAGR": 24.3344136116, "1Y_Avg_TOM_Return": -0.2421254689, "1Y_TOM_WinRate": 51.0}, {"Ticker": "EDEN", "1Y_BH_CAGR": 4.5773505333, "1Y_ShortTOM_CAGR": 24.0273210872, "1Y_Avg_TOM_Return": -0.2266651058, "1Y_TOM_WinRate": 45.0}, {"Ticker": "COP", "1Y_BH_CAGR": 11.0253223594, "1Y_ShortTOM_CAGR": 23.8670156752, "1Y_Avg_TOM_Return": -0.2388260072, "1Y_TOM_WinRate": 52.0}, {"Ticker": "SYF", "1Y_BH_CAGR": 10.8936539236, "1Y_ShortTOM_CAGR": 23.7794929822, "1Y_Avg_TOM_Return": -0.2393582094, "1Y_TOM_WinRate": 50.0}, {"Ticker": "SMFG", "1Y_BH_CAGR": 47.9430852647, "1Y_ShortTOM_CAGR": 23.4185437483, "1Y_Avg_TOM_Return": -0.2283790792, "1Y_TOM_WinRate": 46.0}, {"Ticker": "MRNA", "1Y_BH_CAGR": 39.5025363881, "1Y_ShortTOM_CAGR": 23.3514925293, "1Y_Avg_TOM_Return": -0.3095026916, "1Y_TOM_WinRate": 48.0}, {"Ticker": "PNR", "1Y_BH_CAGR": 6.3266022908, "1Y_ShortTOM_CAGR": 22.8458473707, "1Y_Avg_TOM_Return": -0.2233613107, "1Y_TOM_WinRate": 47.0}, {"Ticker": "CPER", "1Y_BH_CAGR": 25.2883356271, "1Y_ShortTOM_CAGR": 22.8447626245, "1Y_Avg_TOM_Return": -0.2465246478, "1Y_TOM_WinRate": 51.0}, {"Ticker": "KGS", "1Y_BH_CAGR": 8.593177049, "1Y_ShortTOM_CAGR": 22.7397937895, "1Y_Avg_TOM_Return": -0.2507375341, "1Y_TOM_WinRate": 51.0}, {"Ticker": "REGN", "1Y_BH_CAGR": 13.3530720108, "1Y_ShortTOM_CAGR": 22.0182726155, "1Y_Avg_TOM_Return": -0.2448155406, "1Y_TOM_WinRate": 41.0}, {"Ticker": "KR", "1Y_BH_CAGR": 1.7085896301, "1Y_ShortTOM_CAGR": 21.8749943456, "1Y_Avg_TOM_Return": -0.2116086095, "1Y_TOM_WinRate": 41.0}, {"Ticker": "PRE", "1Y_BH_CAGR": 223.7828304803, "1Y_ShortTOM_CAGR": 21.8199173561, "1Y_Avg_TOM_Return": -0.3371715605, "1Y_TOM_WinRate": 46.0}, {"Ticker": "LBRT", "1Y_BH_CAGR": 50.2388140675, "1Y_ShortTOM_CAGR": 21.575269251, "1Y_Avg_TOM_Return": -0.2829580216, "1Y_TOM_WinRate": 49.0}, {"Ticker": "LC", "1Y_BH_CAGR": 14.5867123436, "1Y_ShortTOM_CAGR": 21.2118538079, "1Y_Avg_TOM_Return": -0.277320714, "1Y_TOM_WinRate": 47.0}, {"Ticker": "MUFG", "1Y_BH_CAGR": 46.7635916065, "1Y_ShortTOM_CAGR": 20.8589488946, "1Y_Avg_TOM_Return": -0.2063245137, "1Y_TOM_WinRate": 50.0}, {"Ticker": "PBR", "1Y_BH_CAGR": 6.039320047, "1Y_ShortTOM_CAGR": 20.7658741896, "1Y_Avg_TOM_Return": -0.2023447262, "1Y_TOM_WinRate": 48.0}, {"Ticker": "METV", "1Y_BH_CAGR": 8.1385172139, "1Y_ShortTOM_CAGR": 20.6448906468, "1Y_Avg_TOM_Return": -0.201956036, "1Y_TOM_WinRate": 50.0}, {"Ticker": "DOV", "1Y_BH_CAGR": 13.8816665118, "1Y_ShortTOM_CAGR": 19.9107127435, "1Y_Avg_TOM_Return": -0.196088091, "1Y_TOM_WinRate": 45.0}, {"Ticker": "BITQ", "1Y_BH_CAGR": 6.2754238819, "1Y_ShortTOM_CAGR": 19.7101627723, "1Y_Avg_TOM_Return": -0.2528144575, "1Y_TOM_WinRate": 45.0}, {"Ticker": "DHR", "1Y_BH_CAGR": 2.6313493669, "1Y_ShortTOM_CAGR": 19.2496329869, "1Y_Avg_TOM_Return": -0.1947418684, "1Y_TOM_WinRate": 43.0}, {"Ticker": "EXEL", "1Y_BH_CAGR": 24.3416084327, "1Y_ShortTOM_CAGR": 19.1396892196, "1Y_Avg_TOM_Return": -0.2087076638, "1Y_TOM_WinRate": 46.0}, {"Ticker": "UCTT", "1Y_BH_CAGR": 52.596881795, "1Y_ShortTOM_CAGR": 19.0902473515, "1Y_Avg_TOM_Return": -0.2922182535, "1Y_TOM_WinRate": 46.0}, {"Ticker": "NVDA", "1Y_BH_CAGR": 36.0841429195, "1Y_ShortTOM_CAGR": 18.8331872776, "1Y_Avg_TOM_Return": -0.2072724843, "1Y_TOM_WinRate": 50.0}, {"Ticker": "NRG", "1Y_BH_CAGR": 59.013198921, "1Y_ShortTOM_CAGR": 18.7379264895, "1Y_Avg_TOM_Return": -0.2251855953, "1Y_TOM_WinRate": 50.0}, {"Ticker": "WOOD", "1Y_BH_CAGR": 0.8418644279, "1Y_ShortTOM_CAGR": 18.6718235322, "1Y_Avg_TOM_Return": -0.1787923365, "1Y_TOM_WinRate": 48.0}, {"Ticker": "OXY", "1Y_BH_CAGR": 0.2747519553, "1Y_ShortTOM_CAGR": 18.337890597, "1Y_Avg_TOM_Return": -0.1975394635, "1Y_TOM_WinRate": 50.0}, {"Ticker": "RIOT", "1Y_BH_CAGR": 35.1056762769, "1Y_ShortTOM_CAGR": 18.2842560756, "1Y_Avg_TOM_Return": -0.3209696452, "1Y_TOM_WinRate": 40.0}, {"Ticker": "QTEC", "1Y_BH_CAGR": 8.0328982345, "1Y_ShortTOM_CAGR": 17.7330582023, "1Y_Avg_TOM_Return": -0.1780503181, "1Y_TOM_WinRate": 54.0}, {"Ticker": "ZM", "1Y_BH_CAGR": 6.4622358858, "1Y_ShortTOM_CAGR": 17.2740220482, "1Y_Avg_TOM_Return": -0.1828960062, "1Y_TOM_WinRate": 45.0}, {"Ticker": "MFG", "1Y_BH_CAGR": 58.7384434507, "1Y_ShortTOM_CAGR": 17.232706503, "1Y_Avg_TOM_Return": -0.1865696531, "1Y_TOM_WinRate": 47.0}, {"Ticker": "WM", "1Y_BH_CAGR": 1.0903705338, "1Y_ShortTOM_CAGR": 16.9045547256, "1Y_Avg_TOM_Return": -0.1642296681, "1Y_TOM_WinRate": 50.0}, {"Ticker": "VCR", "1Y_BH_CAGR": 2.0094370746, "1Y_ShortTOM_CAGR": 16.4899321103, "1Y_Avg_TOM_Return": -0.1630214355, "1Y_TOM_WinRate": 48.0}, {"Ticker": "PPG", "1Y_BH_CAGR": 8.2600121783, "1Y_ShortTOM_CAGR": 16.4556566942, "1Y_Avg_TOM_Return": -0.1692502889, "1Y_TOM_WinRate": 45.0}, {"Ticker": "STCE", "1Y_BH_CAGR": 15.4376911245, "1Y_ShortTOM_CAGR": 16.4434064149, "1Y_Avg_TOM_Return": -0.2366993985, "1Y_TOM_WinRate": 44.0}, {"Ticker": "GAP", "1Y_BH_CAGR": 24.6602663882, "1Y_ShortTOM_CAGR": 16.2067895759, "1Y_Avg_TOM_Return": -0.2177401116, "1Y_TOM_WinRate": 43.0}, {"Ticker": "AVY", "1Y_BH_CAGR": 6.8143068287, "1Y_ShortTOM_CAGR": 16.0635705892, "1Y_Avg_TOM_Return": -0.1558129183, "1Y_TOM_WinRate": 44.0}, {"Ticker": "MMM", "1Y_BH_CAGR": 10.8333685572, "1Y_ShortTOM_CAGR": 15.9912642495, "1Y_Avg_TOM_Return": -0.1650559276, "1Y_TOM_WinRate": 51.0}, {"Ticker": "XOM", "1Y_BH_CAGR": 33.5622650643, "1Y_ShortTOM_CAGR": 15.914213634, "1Y_Avg_TOM_Return": -0.1612128652, "1Y_TOM_WinRate": 49.0}, {"Ticker": "PLYM", "1Y_BH_CAGR": 32.2756234162, "1Y_ShortTOM_CAGR": 15.860500307, "1Y_Avg_TOM_Return": -0.1571405722, "1Y_TOM_WinRate": 49.0}, {"Ticker": "BKCH", "1Y_BH_CAGR": 16.5911966679, "1Y_ShortTOM_CAGR": 15.830596992, "1Y_Avg_TOM_Return": -0.2599782154, "1Y_TOM_WinRate": 48.0}, {"Ticker": "MIRM", "1Y_BH_CAGR": 101.6110151291, "1Y_ShortTOM_CAGR": 15.819408317, "1Y_Avg_TOM_Return": -0.1700582849, "1Y_TOM_WinRate": 50.0}, {"Ticker": "UBS", "1Y_BH_CAGR": 25.5892796204, "1Y_ShortTOM_CAGR": 15.6966489195, "1Y_Avg_TOM_Return": -0.1627222317, "1Y_TOM_WinRate": 52.0}, {"Ticker": "VDE", "1Y_BH_CAGR": 20.0103215761, "1Y_ShortTOM_CAGR": 15.5575970389, "1Y_Avg_TOM_Return": -0.1584612471, "1Y_TOM_WinRate": 54.0}, {"Ticker": "BAC", "1Y_BH_CAGR": 14.9424923582, "1Y_ShortTOM_CAGR": 15.4314608261, "1Y_Avg_TOM_Return": -0.160875131, "1Y_TOM_WinRate": 53.0}, {"Ticker": "ANSS", "1Y_BH_CAGR": 13.3069006581, "1Y_ShortTOM_CAGR": 15.3652859227, "1Y_Avg_TOM_Return": -0.1584002113, "1Y_TOM_WinRate": 50.0}, {"Ticker": "ILDR", "1Y_BH_CAGR": 12.3701307427, "1Y_ShortTOM_CAGR": 15.3384126847, "1Y_Avg_TOM_Return": -0.1560272183, "1Y_TOM_WinRate": 55.0}, {"Ticker": "FLEX", "1Y_BH_CAGR": 55.6692916353, "1Y_ShortTOM_CAGR": 15.2775799614, "1Y_Avg_TOM_Return": -0.1862538325, "1Y_TOM_WinRate": 54.0}, {"Ticker": "XLE", "1Y_BH_CAGR": 19.1731855728, "1Y_ShortTOM_CAGR": 15.2385621417, "1Y_Avg_TOM_Return": -0.1560935913, "1Y_TOM_WinRate": 52.0}, {"Ticker": "USO", "1Y_BH_CAGR": 4.4834463693, "1Y_ShortTOM_CAGR": 15.236445298, "1Y_Avg_TOM_Return": -0.1622566948, "1Y_TOM_WinRate": 46.0}, {"Ticker": "TTE", "1Y_BH_CAGR": 27.3618572363, "1Y_ShortTOM_CAGR": 15.1488626581, "1Y_Avg_TOM_Return": -0.1523543904, "1Y_TOM_WinRate": 48.0}, {"Ticker": "IAI", "1Y_BH_CAGR": 7.8162863414, "1Y_ShortTOM_CAGR": 15.0290858389, "1Y_Avg_TOM_Return": -0.1518338237, "1Y_TOM_WinRate": 50.0}, {"Ticker": "REMX", "1Y_BH_CAGR": 116.9771808682, "1Y_ShortTOM_CAGR": 14.9814755437, "1Y_Avg_TOM_Return": -0.1752971328, "1Y_TOM_WinRate": 41.0}, {"Ticker": "ONTO", "1Y_BH_CAGR": 23.549358412, "1Y_ShortTOM_CAGR": 14.975349959, "1Y_Avg_TOM_Return": -0.1931208783, "1Y_TOM_WinRate": 47.0}, {"Ticker": "CLMT", "1Y_BH_CAGR": 84.7252836225, "1Y_ShortTOM_CAGR": 14.815768227, "1Y_Avg_TOM_Return": -0.1875168167, "1Y_TOM_WinRate": 47.0}, {"Ticker": "XLY", "1Y_BH_CAGR": 3.6093037094, "1Y_ShortTOM_CAGR": 14.7607384513, "1Y_Avg_TOM_Return": -0.1473593656, "1Y_TOM_WinRate": 49.0}, {"Ticker": "PM", "1Y_BH_CAGR": 22.4736018154, "1Y_ShortTOM_CAGR": 14.4952804507, "1Y_Avg_TOM_Return": -0.147481802, "1Y_TOM_WinRate": 50.0}, {"Ticker": "TTI", "1Y_BH_CAGR": 150.9462726272, "1Y_ShortTOM_CAGR": 14.4160849169, "1Y_Avg_TOM_Return": -0.2097036121, "1Y_TOM_WinRate": 50.0}, {"Ticker": "DLR", "1Y_BH_CAGR": 3.7995953758, "1Y_ShortTOM_CAGR": 14.243785311, "1Y_Avg_TOM_Return": -0.145133173, "1Y_TOM_WinRate": 51.0}, {"Ticker": "DTE", "1Y_BH_CAGR": 11.413364956, "1Y_ShortTOM_CAGR": 14.1839016275, "1Y_Avg_TOM_Return": -0.1388418503, "1Y_TOM_WinRate": 51.0}, {"Ticker": "NMR", "1Y_BH_CAGR": 37.3990843136, "1Y_ShortTOM_CAGR": 14.1746629421, "1Y_Avg_TOM_Return": -0.1551841396, "1Y_TOM_WinRate": 50.0}, {"Ticker": "CELH", "1Y_BH_CAGR": 83.6524787826, "1Y_ShortTOM_CAGR": 13.8160830296, "1Y_Avg_TOM_Return": -0.1983423396, "1Y_TOM_WinRate": 47.0}, {"Ticker": "PKG", "1Y_BH_CAGR": 11.9911591349, "1Y_ShortTOM_CAGR": 13.6789908558, "1Y_Avg_TOM_Return": -0.1435475858, "1Y_TOM_WinRate": 46.0}, {"Ticker": "MTUM", "1Y_BH_CAGR": 11.1096693769, "1Y_ShortTOM_CAGR": 13.6633610808, "1Y_Avg_TOM_Return": -0.1376777083, "1Y_TOM_WinRate": 52.0}, {"Ticker": "EPD", "1Y_BH_CAGR": 8.3120113791, "1Y_ShortTOM_CAGR": 13.627382266, "1Y_Avg_TOM_Return": -0.1367063712, "1Y_TOM_WinRate": 47.0}, {"Ticker": "ETN", "1Y_BH_CAGR": 20.3122247656, "1Y_ShortTOM_CAGR": 13.4142290765, "1Y_Avg_TOM_Return": -0.147184955, "1Y_TOM_WinRate": 48.0}, {"Ticker": "TM", "1Y_BH_CAGR": 32.7131020897, "1Y_ShortTOM_CAGR": 13.3779394568, "1Y_Avg_TOM_Return": -0.1425975717, "1Y_TOM_WinRate": 42.0}, {"Ticker": "BNO", "1Y_BH_CAGR": 8.6224205948, "1Y_ShortTOM_CAGR": 13.1571358074, "1Y_Avg_TOM_Return": -0.1417040291, "1Y_TOM_WinRate": 46.0}, {"Ticker": "RCL", "1Y_BH_CAGR": 19.1726718683, "1Y_ShortTOM_CAGR": 13.1199504363, "1Y_Avg_TOM_Return": -0.1851854425, "1Y_TOM_WinRate": 48.0}, {"Ticker": "CVX", "1Y_BH_CAGR": 16.7330889722, "1Y_ShortTOM_CAGR": 13.0814532486, "1Y_Avg_TOM_Return": -0.1377160939, "1Y_TOM_WinRate": 49.0}, {"Ticker": "CRH", "1Y_BH_CAGR": 17.3832817272, "1Y_ShortTOM_CAGR": 12.9143943001, "1Y_Avg_TOM_Return": -0.142189886, "1Y_TOM_WinRate": 44.0}, {"Ticker": "HUBB", "1Y_BH_CAGR": 33.8179021738, "1Y_ShortTOM_CAGR": 12.8859622689, "1Y_Avg_TOM_Return": -0.1377483459, "1Y_TOM_WinRate": 48.0}, {"Ticker": "PINK", "1Y_BH_CAGR": 19.2718121771, "1Y_ShortTOM_CAGR": 12.8800721405, "1Y_Avg_TOM_Return": -0.1288219749, "1Y_TOM_WinRate": 51.0}, {"Ticker": "TRFK", "1Y_BH_CAGR": 17.6924780384, "1Y_ShortTOM_CAGR": 12.8753107609, "1Y_Avg_TOM_Return": -0.1374739999, "1Y_TOM_WinRate": 53.0}, {"Ticker": "DXPE", "1Y_BH_CAGR": 42.9267834675, "1Y_ShortTOM_CAGR": 12.711733189, "1Y_Avg_TOM_Return": -0.1645351411, "1Y_TOM_WinRate": 51.0}, {"Ticker": "ROK", "1Y_BH_CAGR": 33.311125632, "1Y_ShortTOM_CAGR": 12.6608720953, "1Y_Avg_TOM_Return": -0.1347830029, "1Y_TOM_WinRate": 51.0}, {"Ticker": "VGT", "1Y_BH_CAGR": 14.7110830783, "1Y_ShortTOM_CAGR": 12.3103648955, "1Y_Avg_TOM_Return": -0.1281670624, "1Y_TOM_WinRate": 58.0}, {"Ticker": "BP", "1Y_BH_CAGR": 10.3287890996, "1Y_ShortTOM_CAGR": 12.2823805666, "1Y_Avg_TOM_Return": -0.1350627788, "1Y_TOM_WinRate": 47.0}, {"Ticker": "GL", "1Y_BH_CAGR": 16.7193332501, "1Y_ShortTOM_CAGR": 12.2701398784, "1Y_Avg_TOM_Return": -0.1305113653, "1Y_TOM_WinRate": 50.0}, {"Ticker": "SMHX", "1Y_BH_CAGR": 32.9122371642, "1Y_ShortTOM_CAGR": 12.2589935797, "1Y_Avg_TOM_Return": -0.1421982048, "1Y_TOM_WinRate": 55.0}, {"Ticker": "QCLN", "1Y_BH_CAGR": 46.4092850526, "1Y_ShortTOM_CAGR": 12.2095757564, "1Y_Avg_TOM_Return": -0.1372295787, "1Y_TOM_WinRate": 48.0}, {"Ticker": "MGK", "1Y_BH_CAGR": 9.0755242114, "1Y_ShortTOM_CAGR": 12.1749166155, "1Y_Avg_TOM_Return": -0.1239945079, "1Y_TOM_WinRate": 57.0}, {"Ticker": "ARRNF", "1Y_BH_CAGR": 29.8997997888, "1Y_ShortTOM_CAGR": 12.0014487249, "1Y_Avg_TOM_Return": -0.2099624842, "1Y_TOM_WinRate": 42.0}, {"Ticker": "VRTX", "1Y_BH_CAGR": 1.1093780712, "1Y_ShortTOM_CAGR": 11.9821954192, "1Y_Avg_TOM_Return": -0.1478981317, "1Y_TOM_WinRate": 48.0}, {"Ticker": "VBK", "1Y_BH_CAGR": 9.6732201261, "1Y_ShortTOM_CAGR": 11.9719929731, "1Y_Avg_TOM_Return": -0.1225592532, "1Y_TOM_WinRate": 49.0}, {"Ticker": "IYW", "1Y_BH_CAGR": 15.7652293882, "1Y_ShortTOM_CAGR": 11.9636615223, "1Y_Avg_TOM_Return": -0.1248927927, "1Y_TOM_WinRate": 59.0}, {"Ticker": "CNEQ", "1Y_BH_CAGR": 20.6321953251, "1Y_ShortTOM_CAGR": 11.9199617999, "1Y_Avg_TOM_Return": -0.1286077515, "1Y_TOM_WinRate": 55.0}, {"Ticker": "FTEC", "1Y_BH_CAGR": 15.0180676027, "1Y_ShortTOM_CAGR": 11.9027322032, "1Y_Avg_TOM_Return": -0.1244967676, "1Y_TOM_WinRate": 58.0}, {"Ticker": "VUG", "1Y_BH_CAGR": 8.7384910561, "1Y_ShortTOM_CAGR": 11.7815289696, "1Y_Avg_TOM_Return": -0.120091322, "1Y_TOM_WinRate": 57.0}, {"Ticker": "XLK", "1Y_BH_CAGR": 16.3718086747, "1Y_ShortTOM_CAGR": 11.769746044, "1Y_Avg_TOM_Return": -0.1228648614, "1Y_TOM_WinRate": 59.0}, {"Ticker": "SCHW", "1Y_BH_CAGR": 14.1305538635, "1Y_ShortTOM_CAGR": 11.7696747219, "1Y_Avg_TOM_Return": -0.1233948137, "1Y_TOM_WinRate": 51.0}, {"Ticker": "GS", "1Y_BH_CAGR": 37.4406751065, "1Y_ShortTOM_CAGR": 11.6250971535, "1Y_Avg_TOM_Return": -0.1294137107, "1Y_TOM_WinRate": 51.0}, {"Ticker": "WFC", "1Y_BH_CAGR": 9.9386792684, "1Y_ShortTOM_CAGR": 11.5658600665, "1Y_Avg_TOM_Return": -0.1255488632, "1Y_TOM_WinRate": 50.0}, {"Ticker": "MPLX", "1Y_BH_CAGR": 8.8840650195, "1Y_ShortTOM_CAGR": 11.5421999407, "1Y_Avg_TOM_Return": -0.1181175674, "1Y_TOM_WinRate": 51.0}, {"Ticker": "SF", "1Y_BH_CAGR": 7.8517335903, "1Y_ShortTOM_CAGR": 11.4453930018, "1Y_Avg_TOM_Return": -0.1283253063, "1Y_TOM_WinRate": 54.0}, {"Ticker": "QRVO", "1Y_BH_CAGR": 4.0464299063, "1Y_ShortTOM_CAGR": 11.3497555578, "1Y_Avg_TOM_Return": -0.1543484132, "1Y_TOM_WinRate": 51.0}, {"Ticker": "AXP", "1Y_BH_CAGR": 11.1657720093, "1Y_ShortTOM_CAGR": 11.2883549775, "1Y_Avg_TOM_Return": -0.1211840653, "1Y_TOM_WinRate": 54.0}, {"Ticker": "RSPT", "1Y_BH_CAGR": 16.7700867456, "1Y_ShortTOM_CAGR": 11.2390535668, "1Y_Avg_TOM_Return": -0.1187550137, "1Y_TOM_WinRate": 57.0}, {"Ticker": "C", "1Y_BH_CAGR": 37.461431462, "1Y_ShortTOM_CAGR": 11.1860997057, "1Y_Avg_TOM_Return": -0.1275955737, "1Y_TOM_WinRate": 51.0}, {"Ticker": "ALAI", "1Y_BH_CAGR": 21.5292616767, "1Y_ShortTOM_CAGR": 11.0922450261, "1Y_Avg_TOM_Return": -0.1229346868, "1Y_TOM_WinRate": 56.0}, {"Ticker": "VFH", "1Y_BH_CAGR": 0.8615089405, "1Y_ShortTOM_CAGR": 10.9898417524, "1Y_Avg_TOM_Return": -0.1122790792, "1Y_TOM_WinRate": 49.0}, {"Ticker": "IWF", "1Y_BH_CAGR": 8.9600107156, "1Y_ShortTOM_CAGR": 10.9693615196, "1Y_Avg_TOM_Return": -0.1125204685, "1Y_TOM_WinRate": 57.0}, {"Ticker": "SARO", "1Y_BH_CAGR": 17.5222119198, "1Y_ShortTOM_CAGR": 10.9023729845, "1Y_Avg_TOM_Return": -0.1247211114, "1Y_TOM_WinRate": 55.0}, {"Ticker": "CTVA", "1Y_BH_CAGR": 20.4348740183, "1Y_ShortTOM_CAGR": 10.8910833774, "1Y_Avg_TOM_Return": -0.1199527083, "1Y_TOM_WinRate": 57.0}, {"Ticker": "VONG", "1Y_BH_CAGR": 9.0188580644, "1Y_ShortTOM_CAGR": 10.8279369023, "1Y_Avg_TOM_Return": -0.111111531, "1Y_TOM_WinRate": 57.0}, {"Ticker": "SKYW", "1Y_BH_CAGR": 1.4275741116, "1Y_ShortTOM_CAGR": 10.7519754485, "1Y_Avg_TOM_Return": -0.1303115647, "1Y_TOM_WinRate": 48.0}, {"Ticker": "WTAI", "1Y_BH_CAGR": 25.0711681194, "1Y_ShortTOM_CAGR": 10.7040983891, "1Y_Avg_TOM_Return": -0.1199095383, "1Y_TOM_WinRate": 59.0}, {"Ticker": "BKR", "1Y_BH_CAGR": 32.9113570205, "1Y_ShortTOM_CAGR": 10.6921475155, "1Y_Avg_TOM_Return": -0.1263559336, "1Y_TOM_WinRate": 54.0}, {"Ticker": "XLRE", "1Y_BH_CAGR": 2.8631840153, "1Y_ShortTOM_CAGR": 10.676042572, "1Y_Avg_TOM_Return": -0.106763827, "1Y_TOM_WinRate": 55.0}, {"Ticker": "TDS", "1Y_BH_CAGR": 11.860995005, "1Y_ShortTOM_CAGR": 10.5885496848, "1Y_Avg_TOM_Return": -0.1244835969, "1Y_TOM_WinRate": 52.0}, {"Ticker": "SPMO", "1Y_BH_CAGR": 16.2987584263, "1Y_ShortTOM_CAGR": 10.5757610735, "1Y_Avg_TOM_Return": -0.1098560083, "1Y_TOM_WinRate": 56.0}, {"Ticker": "SPHB", "1Y_BH_CAGR": 30.6904673566, "1Y_ShortTOM_CAGR": 10.4992688517, "1Y_Avg_TOM_Return": -0.1149734761, "1Y_TOM_WinRate": 57.0}, {"Ticker": "GRNY", "1Y_BH_CAGR": 18.6631866549, "1Y_ShortTOM_CAGR": 10.4392838699, "1Y_Avg_TOM_Return": -0.1102999755, "1Y_TOM_WinRate": 55.0}, {"Ticker": "XLF", "1Y_BH_CAGR": 0.2971954819, "1Y_ShortTOM_CAGR": 10.1628704699, "1Y_Avg_TOM_Return": -0.1045173548, "1Y_TOM_WinRate": 48.0}, {"Ticker": "APTV", "1Y_BH_CAGR": 19.4039317846, "1Y_ShortTOM_CAGR": 10.12694185, "1Y_Avg_TOM_Return": -0.1190967282, "1Y_TOM_WinRate": 48.0}, {"Ticker": "^NDX", "1Y_BH_CAGR": 12.7076850473, "1Y_ShortTOM_CAGR": 10.099496978, "1Y_Avg_TOM_Return": -0.1047615472, "1Y_TOM_WinRate": 56.0}, {"Ticker": "AIQ", "1Y_BH_CAGR": 17.4336840809, "1Y_ShortTOM_CAGR": 10.0684884894, "1Y_Avg_TOM_Return": -0.1080377242, "1Y_TOM_WinRate": 54.0}, {"Ticker": "EL", "1Y_BH_CAGR": 59.5958754852, "1Y_ShortTOM_CAGR": 10.0649726012, "1Y_Avg_TOM_Return": -0.1506347523, "1Y_TOM_WinRate": 51.0}, {"Ticker": "QQQ", "1Y_BH_CAGR": 12.8132830393, "1Y_ShortTOM_CAGR": 9.9405469347, "1Y_Avg_TOM_Return": -0.1032929131, "1Y_TOM_WinRate": 55.0}, {"Ticker": "ALLY", "1Y_BH_CAGR": 7.0638252182, "1Y_ShortTOM_CAGR": 9.7865168402, "1Y_Avg_TOM_Return": -0.1102229548, "1Y_TOM_WinRate": 48.0}, {"Ticker": "SLB", "1Y_BH_CAGR": 20.4990201752, "1Y_ShortTOM_CAGR": 9.7700692916, "1Y_Avg_TOM_Return": -0.1230977844, "1Y_TOM_WinRate": 43.0}, {"Ticker": "PRAX", "1Y_BH_CAGR": 319.5840771074, "1Y_ShortTOM_CAGR": 9.6981420868, "1Y_Avg_TOM_Return": -0.2504422574, "1Y_TOM_WinRate": 53.0}, {"Ticker": "WYNN", "1Y_BH_CAGR": 24.579762128, "1Y_ShortTOM_CAGR": 9.6367818461, "1Y_Avg_TOM_Return": -0.1248995959, "1Y_TOM_WinRate": 47.0}, {"Ticker": "IWC", "1Y_BH_CAGR": 28.3893209853, "1Y_ShortTOM_CAGR": 9.6018025495, "1Y_Avg_TOM_Return": -0.1037474257, "1Y_TOM_WinRate": 50.0}, {"Ticker": "^IXIC", "1Y_BH_CAGR": 14.0447851143, "1Y_ShortTOM_CAGR": 9.5742062857, "1Y_Avg_TOM_Return": -0.1004027871, "1Y_TOM_WinRate": 56.0}, {"Ticker": "BLK", "1Y_BH_CAGR": 10.4156635742, "1Y_ShortTOM_CAGR": 9.5110717785, "1Y_Avg_TOM_Return": -0.1048189173, "1Y_TOM_WinRate": 48.0}, {"Ticker": "CCL", "1Y_BH_CAGR": 23.0531167892, "1Y_ShortTOM_CAGR": 9.4144539532, "1Y_Avg_TOM_Return": -0.1360621389, "1Y_TOM_WinRate": 51.0}, {"Ticker": "SOYB", "1Y_BH_CAGR": 6.6577480022, "1Y_ShortTOM_CAGR": 9.2756507309, "1Y_Avg_TOM_Return": -0.0925429515, "1Y_TOM_WinRate": 43.0}, {"Ticker": "ARTY", "1Y_BH_CAGR": 24.8542940014, "1Y_ShortTOM_CAGR": 9.1788573131, "1Y_Avg_TOM_Return": -0.107626754, "1Y_TOM_WinRate": 55.0}, {"Ticker": "VB", "1Y_BH_CAGR": 12.2256261085, "1Y_ShortTOM_CAGR": 9.1632693701, "1Y_Avg_TOM_Return": -0.0952253043, "1Y_TOM_WinRate": 48.0}, {"Ticker": "UPS", "1Y_BH_CAGR": 1.5924029147, "1Y_ShortTOM_CAGR": 9.1596259527, "1Y_Avg_TOM_Return": -0.1124598801, "1Y_TOM_WinRate": 50.0}, {"Ticker": "IUSG", "1Y_BH_CAGR": 13.5237387189, "1Y_ShortTOM_CAGR": 8.9971189679, "1Y_Avg_TOM_Return": -0.0944047354, "1Y_TOM_WinRate": 58.0}, {"Ticker": "TDIV", "1Y_BH_CAGR": 17.9785634306, "1Y_ShortTOM_CAGR": 8.9902523982, "1Y_Avg_TOM_Return": -0.0952122779, "1Y_TOM_WinRate": 54.0}, {"Ticker": "INDA", "1Y_BH_CAGR": 7.0576499069, "1Y_ShortTOM_CAGR": 8.9362124818, "1Y_Avg_TOM_Return": -0.0892785931, "1Y_TOM_WinRate": 47.0}, {"Ticker": "NGLOY", "1Y_BH_CAGR": 45.6421953986, "1Y_ShortTOM_CAGR": 8.9122511299, "1Y_Avg_TOM_Return": -0.1459500087, "1Y_TOM_WinRate": 55.0}, {"Ticker": "EUSA", "1Y_BH_CAGR": 7.6470234235, "1Y_ShortTOM_CAGR": 8.9114056033, "1Y_Avg_TOM_Return": -0.090269372, "1Y_TOM_WinRate": 48.0}, {"Ticker": "VTI", "1Y_BH_CAGR": 12.1822230454, "1Y_ShortTOM_CAGR": 8.8841183819, "1Y_Avg_TOM_Return": -0.0908666126, "1Y_TOM_WinRate": 53.0}, {"Ticker": "CTRA", "1Y_BH_CAGR": 8.3538065455, "1Y_ShortTOM_CAGR": 8.8461423366, "1Y_Avg_TOM_Return": -0.1103458079, "1Y_TOM_WinRate": 54.0}, {"Ticker": "RGA", "1Y_BH_CAGR": 12.215848972, "1Y_ShortTOM_CAGR": 8.829687386, "1Y_Avg_TOM_Return": -0.1019043144, "1Y_TOM_WinRate": 53.0}, {"Ticker": "PLAB", "1Y_BH_CAGR": 65.5644369258, "1Y_ShortTOM_CAGR": 8.7871026368, "1Y_Avg_TOM_Return": -0.1389263675, "1Y_TOM_WinRate": 48.0}, {"Ticker": "IGM", "1Y_BH_CAGR": 15.8663518125, "1Y_ShortTOM_CAGR": 8.7643830457, "1Y_Avg_TOM_Return": -0.0961576578, "1Y_TOM_WinRate": 57.0}, {"Ticker": "SPLG", "1Y_BH_CAGR": 12.4084443684, "1Y_ShortTOM_CAGR": 8.6822878538, "1Y_Avg_TOM_Return": -0.0888384758, "1Y_TOM_WinRate": 56.0}, {"Ticker": "ICF", "1Y_BH_CAGR": 5.6242048336, "1Y_ShortTOM_CAGR": 8.6661446472, "1Y_Avg_TOM_Return": -0.0885115119, "1Y_TOM_WinRate": 57.0}, {"Ticker": "WEC", "1Y_BH_CAGR": 10.439055985, "1Y_ShortTOM_CAGR": 8.4940267098, "1Y_Avg_TOM_Return": -0.0868921394, "1Y_TOM_WinRate": 49.0}, {"Ticker": "VNQ", "1Y_BH_CAGR": 2.8691070891, "1Y_ShortTOM_CAGR": 8.4426139815, "1Y_Avg_TOM_Return": -0.0861323039, "1Y_TOM_WinRate": 56.0}, {"Ticker": "UAL", "1Y_BH_CAGR": 5.6528356966, "1Y_ShortTOM_CAGR": 8.3596264709, "1Y_Avg_TOM_Return": -0.1283735322, "1Y_TOM_WinRate": 54.0}, {"Ticker": "VOO", "1Y_BH_CAGR": 12.3992204274, "1Y_ShortTOM_CAGR": 8.3059268089, "1Y_Avg_TOM_Return": -0.0852626515, "1Y_TOM_WinRate": 56.0}, {"Ticker": "XLB", "1Y_BH_CAGR": 17.7066388641, "1Y_ShortTOM_CAGR": 8.2571083798, "1Y_Avg_TOM_Return": -0.0877875518, "1Y_TOM_WinRate": 49.0}, {"Ticker": "IYR", "1Y_BH_CAGR": 4.184722673, "1Y_ShortTOM_CAGR": 8.1990301563, "1Y_Avg_TOM_Return": -0.0837824866, "1Y_TOM_WinRate": 56.0}, {"Ticker": "STT", "1Y_BH_CAGR": 28.2855708138, "1Y_ShortTOM_CAGR": 8.1881431175, "1Y_Avg_TOM_Return": -0.0927988521, "1Y_TOM_WinRate": 61.0}, {"Ticker": "MS", "1Y_BH_CAGR": 24.1352210379, "1Y_ShortTOM_CAGR": 8.1846858665, "1Y_Avg_TOM_Return": -0.0969434289, "1Y_TOM_WinRate": 56.0}, {"Ticker": "KOMP", "1Y_BH_CAGR": 16.4568343637, "1Y_ShortTOM_CAGR": 8.1239448995, "1Y_Avg_TOM_Return": -0.0899869317, "1Y_TOM_WinRate": 52.0}, {"Ticker": "SEIM", "1Y_BH_CAGR": 17.6415209568, "1Y_ShortTOM_CAGR": 8.0934812485, "1Y_Avg_TOM_Return": -0.0867653975, "1Y_TOM_WinRate": 52.0}, {"Ticker": "NTR", "1Y_BH_CAGR": 35.3180012083, "1Y_ShortTOM_CAGR": 8.0540330768, "1Y_Avg_TOM_Return": -0.0944538664, "1Y_TOM_WinRate": 50.0}, {"Ticker": "CGXU", "1Y_BH_CAGR": 23.9678089498, "1Y_ShortTOM_CAGR": 8.021364085, "1Y_Avg_TOM_Return": -0.0854434172, "1Y_TOM_WinRate": 56.0}, {"Ticker": "HDB", "1Y_BH_CAGR": 8.8773057986, "1Y_ShortTOM_CAGR": 8.0110684663, "1Y_Avg_TOM_Return": -0.0854186699, "1Y_TOM_WinRate": 52.0}, {"Ticker": "EQNR", "1Y_BH_CAGR": 24.813038714, "1Y_ShortTOM_CAGR": 7.9833965928, "1Y_Avg_TOM_Return": -0.0959950388, "1Y_TOM_WinRate": 43.0}, {"Ticker": "QTOP", "1Y_BH_CAGR": 15.1354662228, "1Y_ShortTOM_CAGR": 7.9535430394, "1Y_Avg_TOM_Return": -0.085848932, "1Y_TOM_WinRate": 55.0}, {"Ticker": "IXN", "1Y_BH_CAGR": 21.7141623798, "1Y_ShortTOM_CAGR": 7.9292574995, "1Y_Avg_TOM_Return": -0.0875703067, "1Y_TOM_WinRate": 59.0}, {"Ticker": "^GSPC", "1Y_BH_CAGR": 12.3783231822, "1Y_ShortTOM_CAGR": 7.9149525277, "1Y_Avg_TOM_Return": -0.0817701263, "1Y_TOM_WinRate": 56.0}, {"Ticker": "VPU", "1Y_BH_CAGR": 15.5478748575, "1Y_ShortTOM_CAGR": 7.8762163988, "1Y_Avg_TOM_Return": -0.0810205143, "1Y_TOM_WinRate": 52.0}, {"Ticker": "BOTZ", "1Y_BH_CAGR": 13.438277845, "1Y_ShortTOM_CAGR": 7.7781004129, "1Y_Avg_TOM_Return": -0.0875896632, "1Y_TOM_WinRate": 50.0}, {"Ticker": "SHEL", "1Y_BH_CAGR": 18.0829601027, "1Y_ShortTOM_CAGR": 7.7383915154, "1Y_Avg_TOM_Return": -0.0866542082, "1Y_TOM_WinRate": 46.0}, {"Ticker": "IWB", "1Y_BH_CAGR": 11.8649571543, "1Y_ShortTOM_CAGR": 7.7235754179, "1Y_Avg_TOM_Return": -0.0800425707, "1Y_TOM_WinRate": 53.0}, {"Ticker": "CDNS", "1Y_BH_CAGR": 7.3910243586, "1Y_ShortTOM_CAGR": 7.7191076682, "1Y_Avg_TOM_Return": -0.1122388542, "1Y_TOM_WinRate": 50.0}, {"Ticker": "IR", "1Y_BH_CAGR": 12.0171028334, "1Y_ShortTOM_CAGR": 7.7171440279, "1Y_Avg_TOM_Return": -0.0999700612, "1Y_TOM_WinRate": 44.0}, {"Ticker": "XLU", "1Y_BH_CAGR": 15.4060349732, "1Y_ShortTOM_CAGR": 7.6793153977, "1Y_Avg_TOM_Return": -0.0795296684, "1Y_TOM_WinRate": 51.0}, {"Ticker": "GRMN", "1Y_BH_CAGR": 1.9978262504, "1Y_ShortTOM_CAGR": 7.6656219497, "1Y_Avg_TOM_Return": -0.1109995093, "1Y_TOM_WinRate": 61.0}, {"Ticker": "FFBC", "1Y_BH_CAGR": 8.3960853935, "1Y_ShortTOM_CAGR": 7.6128320853, "1Y_Avg_TOM_Return": -0.0886493726, "1Y_TOM_WinRate": 43.0}, {"Ticker": "SPY", "1Y_BH_CAGR": 12.3709041224, "1Y_ShortTOM_CAGR": 7.5855750631, "1Y_Avg_TOM_Return": -0.0787106993, "1Y_TOM_WinRate": 55.0}, {"Ticker": "GNR", "1Y_BH_CAGR": 35.7758659855, "1Y_ShortTOM_CAGR": 7.5763009957, "1Y_Avg_TOM_Return": -0.0817774283, "1Y_TOM_WinRate": 51.0}, {"Ticker": "^RUT", "1Y_BH_CAGR": 16.5948843985, "1Y_ShortTOM_CAGR": 7.5327704055, "1Y_Avg_TOM_Return": -0.0812139591, "1Y_TOM_WinRate": 50.0}, {"Ticker": "SCHH", "1Y_BH_CAGR": 5.6635388944, "1Y_ShortTOM_CAGR": 7.532683722, "1Y_Avg_TOM_Return": -0.0777683268, "1Y_TOM_WinRate": 54.0}, {"Ticker": "NORW", "1Y_BH_CAGR": 40.7000763239, "1Y_ShortTOM_CAGR": 7.4766219893, "1Y_Avg_TOM_Return": -0.0808299985, "1Y_TOM_WinRate": 50.0}, {"Ticker": "SAMT", "1Y_BH_CAGR": 22.5069178496, "1Y_ShortTOM_CAGR": 7.4113471489, "1Y_Avg_TOM_Return": -0.0789837656, "1Y_TOM_WinRate": 52.0}, {"Ticker": "IVV", "1Y_BH_CAGR": 12.3658717041, "1Y_ShortTOM_CAGR": 7.4052555643, "1Y_Avg_TOM_Return": -0.0770226872, "1Y_TOM_WinRate": 56.0}, {"Ticker": "FYC", "1Y_BH_CAGR": 28.3657717111, "1Y_ShortTOM_CAGR": 7.3821193979, "1Y_Avg_TOM_Return": -0.0814721289, "1Y_TOM_WinRate": 49.0}, {"Ticker": "FESM", "1Y_BH_CAGR": 20.3762575187, "1Y_ShortTOM_CAGR": 7.3183437649, "1Y_Avg_TOM_Return": -0.0794595743, "1Y_TOM_WinRate": 52.0}, {"Ticker": "MTB", "1Y_BH_CAGR": 16.3424250196, "1Y_ShortTOM_CAGR": 7.2100617663, "1Y_Avg_TOM_Return": -0.08224741, "1Y_TOM_WinRate": 47.0}, {"Ticker": "PDBC", "1Y_BH_CAGR": 4.9568135459, "1Y_ShortTOM_CAGR": 7.186708639, "1Y_Avg_TOM_Return": -0.0759862638, "1Y_TOM_WinRate": 50.0}, {"Ticker": "DBC", "1Y_BH_CAGR": 7.0856276529, "1Y_ShortTOM_CAGR": 7.09872212, "1Y_Avg_TOM_Return": -0.0751804713, "1Y_TOM_WinRate": 50.0}, {"Ticker": "XLC", "1Y_BH_CAGR": 11.2907862529, "1Y_ShortTOM_CAGR": 7.0682898345, "1Y_Avg_TOM_Return": -0.0745582291, "1Y_TOM_WinRate": 48.0}, {"Ticker": "DAL", "1Y_BH_CAGR": 7.1083552863, "1Y_ShortTOM_CAGR": 7.0403697295, "1Y_Avg_TOM_Return": -0.1001275324, "1Y_TOM_WinRate": 50.0}, {"Ticker": "EMR", "1Y_BH_CAGR": 19.9538582941, "1Y_ShortTOM_CAGR": 6.9802389776, "1Y_Avg_TOM_Return": -0.0867878552, "1Y_TOM_WinRate": 59.0}, {"Ticker": "UNF", "1Y_BH_CAGR": 10.2389614324, "1Y_ShortTOM_CAGR": 6.9751403826, "1Y_Avg_TOM_Return": -0.0844056107, "1Y_TOM_WinRate": 55.0}, {"Ticker": "VBR", "1Y_BH_CAGR": 13.9844068905, "1Y_ShortTOM_CAGR": 6.9061401947, "1Y_Avg_TOM_Return": -0.0737748137, "1Y_TOM_WinRate": 47.0}, {"Ticker": "XBI", "1Y_BH_CAGR": 34.7081121914, "1Y_ShortTOM_CAGR": 6.8889400058, "1Y_Avg_TOM_Return": -0.0825973181, "1Y_TOM_WinRate": 56.0}, {"Ticker": "IWM", "1Y_BH_CAGR": 16.7195007503, "1Y_ShortTOM_CAGR": 6.8882006681, "1Y_Avg_TOM_Return": -0.0750230858, "1Y_TOM_WinRate": 53.0}, {"Ticker": "USMV", "1Y_BH_CAGR": 2.4657083089, "1Y_ShortTOM_CAGR": 6.8080696665, "1Y_Avg_TOM_Return": -0.0690582112, "1Y_TOM_WinRate": 48.0}, {"Ticker": "GSG", "1Y_BH_CAGR": 10.6307567176, "1Y_ShortTOM_CAGR": 6.8001268667, "1Y_Avg_TOM_Return": -0.0726550289, "1Y_TOM_WinRate": 47.0}, {"Ticker": "BG", "1Y_BH_CAGR": 74.7461435458, "1Y_ShortTOM_CAGR": 6.7592052662, "1Y_Avg_TOM_Return": -0.0818347884, "1Y_TOM_WinRate": 42.0}, {"Ticker": "VAW", "1Y_BH_CAGR": 20.6346389211, "1Y_ShortTOM_CAGR": 6.5714304541, "1Y_Avg_TOM_Return": -0.0723800844, "1Y_TOM_WinRate": 51.0}, {"Ticker": "JNK", "1Y_BH_CAGR": 0.9520508036, "1Y_ShortTOM_CAGR": 6.4824986554, "1Y_Avg_TOM_Return": -0.0633492653, "1Y_TOM_WinRate": 52.0}, {"Ticker": "YOU", "1Y_BH_CAGR": 54.2500914057, "1Y_ShortTOM_CAGR": 6.3319432048, "1Y_Avg_TOM_Return": -0.086346436, "1Y_TOM_WinRate": 47.0}, {"Ticker": "NGPHF", "1Y_BH_CAGR": 85.7776671438, "1Y_ShortTOM_CAGR": 6.3220266537, "1Y_Avg_TOM_Return": -0.2835405139, "1Y_TOM_WinRate": 47.0}, {"Ticker": "SPLV", "1Y_BH_CAGR": 4.0804258362, "1Y_ShortTOM_CAGR": 6.2198528629, "1Y_Avg_TOM_Return": -0.0639325932, "1Y_TOM_WinRate": 49.0}, {"Ticker": "SDIV", "1Y_BH_CAGR": 22.1478727283, "1Y_ShortTOM_CAGR": 6.1332776384, "1Y_Avg_TOM_Return": -0.0640343134, "1Y_TOM_WinRate": 55.0}, {"Ticker": "QQQJ", "1Y_BH_CAGR": 16.7246001855, "1Y_ShortTOM_CAGR": 6.1180042954, "1Y_Avg_TOM_Return": -0.0676863668, "1Y_TOM_WinRate": 54.0}, {"Ticker": "VOOV", "1Y_BH_CAGR": 11.1347616507, "1Y_ShortTOM_CAGR": 6.1049400602, "1Y_Avg_TOM_Return": -0.0634222052, "1Y_TOM_WinRate": 52.0}, {"Ticker": "CNBS", "1Y_BH_CAGR": 12.9358808604, "1Y_ShortTOM_CAGR": 6.0915931463, "1Y_Avg_TOM_Return": -0.1752760327, "1Y_TOM_WinRate": 47.0}, {"Ticker": "PAGS", "1Y_BH_CAGR": 36.9555854768, "1Y_ShortTOM_CAGR": 6.0360271878, "1Y_Avg_TOM_Return": -0.0927500405, "1Y_TOM_WinRate": 47.0}, {"Ticker": "IJR", "1Y_BH_CAGR": 11.9964157956, "1Y_ShortTOM_CAGR": 6.0265120163, "1Y_Avg_TOM_Return": -0.0665308868, "1Y_TOM_WinRate": 47.0}, {"Ticker": "VMOT", "1Y_BH_CAGR": 1.7841948989, "1Y_ShortTOM_CAGR": 5.8089600045, "1Y_Avg_TOM_Return": -0.0639346509, "1Y_TOM_WinRate": 51.5463917526}, {"Ticker": "EXC", "1Y_BH_CAGR": 11.9608263912, "1Y_ShortTOM_CAGR": 5.7806290698, "1Y_Avg_TOM_Return": -0.063092403, "1Y_TOM_WinRate": 51.0}, {"Ticker": "GM", "1Y_BH_CAGR": 71.0042083495, "1Y_ShortTOM_CAGR": 5.7341177655, "1Y_Avg_TOM_Return": -0.0823074039, "1Y_TOM_WinRate": 53.0}, {"Ticker": "IYM", "1Y_BH_CAGR": 30.5434323573, "1Y_ShortTOM_CAGR": 5.6981362839, "1Y_Avg_TOM_Return": -0.0646905887, "1Y_TOM_WinRate": 50.0}, {"Ticker": "SPGM", "1Y_BH_CAGR": 20.4259292248, "1Y_ShortTOM_CAGR": 5.6458167599, "1Y_Avg_TOM_Return": -0.0596581294, "1Y_TOM_WinRate": 54.0}, {"Ticker": "AIG", "1Y_BH_CAGR": 6.4604596854, "1Y_ShortTOM_CAGR": 5.6314714742, "1Y_Avg_TOM_Return": -0.070977522, "1Y_TOM_WinRate": 49.0}, {"Ticker": "MSOS", "1Y_BH_CAGR": 17.2910907284, "1Y_ShortTOM_CAGR": 5.5965330329, "1Y_Avg_TOM_Return": -0.227803025, "1Y_TOM_WinRate": 43.0}, {"Ticker": "APH", "1Y_BH_CAGR": 117.1184770247, "1Y_ShortTOM_CAGR": 5.5568725038, "1Y_Avg_TOM_Return": -0.0888243614, "1Y_TOM_WinRate": 58.0}, {"Ticker": "MDY", "1Y_BH_CAGR": 12.1893034302, "1Y_ShortTOM_CAGR": 5.5298612707, "1Y_Avg_TOM_Return": -0.0608383925, "1Y_TOM_WinRate": 48.0}, {"Ticker": "VTV", "1Y_BH_CAGR": 15.2726386225, "1Y_ShortTOM_CAGR": 5.4880918863, "1Y_Avg_TOM_Return": -0.0578017381, "1Y_TOM_WinRate": 49.0}, {"Ticker": "RIO", "1Y_BH_CAGR": 54.4276975487, "1Y_ShortTOM_CAGR": 5.4613987255, "1Y_Avg_TOM_Return": -0.0690698538, "1Y_TOM_WinRate": 52.0}, {"Ticker": "HYG", "1Y_BH_CAGR": 1.5371102907, "1Y_ShortTOM_CAGR": 5.4606385151, "1Y_Avg_TOM_Return": -0.0536266845, "1Y_TOM_WinRate": 51.0}, {"Ticker": "IJH", "1Y_BH_CAGR": 12.232126074, "1Y_ShortTOM_CAGR": 5.4192077025, "1Y_Avg_TOM_Return": -0.0598595893, "1Y_TOM_WinRate": 48.0}, {"Ticker": "NUKZ", "1Y_BH_CAGR": 49.430436423, "1Y_ShortTOM_CAGR": 5.3876392332, "1Y_Avg_TOM_Return": -0.07237491, "1Y_TOM_WinRate": 52.0}, {"Ticker": "JPM", "1Y_BH_CAGR": 11.1611390123, "1Y_ShortTOM_CAGR": 5.3335471837, "1Y_Avg_TOM_Return": -0.0643331485, "1Y_TOM_WinRate": 52.0}, {"Ticker": "XPH", "1Y_BH_CAGR": 26.7228101267, "1Y_ShortTOM_CAGR": 5.2365759165, "1Y_Avg_TOM_Return": -0.0612845449, "1Y_TOM_WinRate": 50.0}, {"Ticker": "CUK", "1Y_BH_CAGR": 35.7123048105, "1Y_ShortTOM_CAGR": 5.1230177977, "1Y_Avg_TOM_Return": -0.0925503102, "1Y_TOM_WinRate": 50.0}, {"Ticker": "IQDG", "1Y_BH_CAGR": 18.4188766262, "1Y_ShortTOM_CAGR": 5.0811181292, "1Y_Avg_TOM_Return": -0.0553722657, "1Y_TOM_WinRate": 55.0}, {"Ticker": "TXG", "1Y_BH_CAGR": 58.1372006907, "1Y_ShortTOM_CAGR": 5.0521443189, "1Y_Avg_TOM_Return": -0.1282221498, "1Y_TOM_WinRate": 40.0}, {"Ticker": "QTUM", "1Y_BH_CAGR": 37.3933159789, "1Y_ShortTOM_CAGR": 4.9556959701, "1Y_Avg_TOM_Return": -0.0628669906, "1Y_TOM_WinRate": 52.0}, {"Ticker": "NET", "1Y_BH_CAGR": 12.759127504, "1Y_ShortTOM_CAGR": 4.9329894843, "1Y_Avg_TOM_Return": -0.1069544339, "1Y_TOM_WinRate": 53.0}, {"Ticker": "LYFT", "1Y_BH_CAGR": 3.7367347726, "1Y_ShortTOM_CAGR": 4.9032311019, "1Y_Avg_TOM_Return": -0.0881203225, "1Y_TOM_WinRate": 51.0}, {"Ticker": "KLAC", "1Y_BH_CAGR": 91.5301588448, "1Y_ShortTOM_CAGR": 4.8895441473, "1Y_Avg_TOM_Return": -0.0910434208, "1Y_TOM_WinRate": 56.0}, {"Ticker": "TXT", "1Y_BH_CAGR": 38.1434968552, "1Y_ShortTOM_CAGR": 4.8787851495, "1Y_Avg_TOM_Return": -0.0645847094, "1Y_TOM_WinRate": 58.0}, {"Ticker": "QUAL", "1Y_BH_CAGR": 9.6626882389, "1Y_ShortTOM_CAGR": 4.8765561327, "1Y_Avg_TOM_Return": -0.0526756172, "1Y_TOM_WinRate": 57.0}, {"Ticker": "SYRE", "1Y_BH_CAGR": 87.832479777, "1Y_ShortTOM_CAGR": 4.8624155947, "1Y_Avg_TOM_Return": -0.1476115128, "1Y_TOM_WinRate": 53.0}, {"Ticker": "OPCH", "1Y_BH_CAGR": 10.3629351014, "1Y_ShortTOM_CAGR": 4.7912932488, "1Y_Avg_TOM_Return": -0.0651072249, "1Y_TOM_WinRate": 50.0}, {"Ticker": "QLTY", "1Y_BH_CAGR": 13.9890260837, "1Y_ShortTOM_CAGR": 4.7444253563, "1Y_Avg_TOM_Return": -0.0514957308, "1Y_TOM_WinRate": 52.0}, {"Ticker": "NOBL", "1Y_BH_CAGR": 10.9951080592, "1Y_ShortTOM_CAGR": 4.6555908372, "1Y_Avg_TOM_Return": -0.0497915649, "1Y_TOM_WinRate": 52.0}, {"Ticker": "SO", "1Y_BH_CAGR": 9.0374468879, "1Y_ShortTOM_CAGR": 4.61422609, "1Y_Avg_TOM_Return": -0.0512385625, "1Y_TOM_WinRate": 49.0}, {"Ticker": "EWD", "1Y_BH_CAGR": 23.7270031345, "1Y_ShortTOM_CAGR": 4.5816393966, "1Y_Avg_TOM_Return": -0.0545884052, "1Y_TOM_WinRate": 52.0}, {"Ticker": "CGGO", "1Y_BH_CAGR": 19.8449696416, "1Y_ShortTOM_CAGR": 4.5615072811, "1Y_Avg_TOM_Return": -0.0507349643, "1Y_TOM_WinRate": 54.0}, {"Ticker": "AMX", "1Y_BH_CAGR": 64.818920371, "1Y_ShortTOM_CAGR": 4.5209629099, "1Y_Avg_TOM_Return": -0.0553314225, "1Y_TOM_WinRate": 44.0}, {"Ticker": "SEIV", "1Y_BH_CAGR": 24.4352129651, "1Y_ShortTOM_CAGR": 4.5189583271, "1Y_Avg_TOM_Return": -0.0499448701, "1Y_TOM_WinRate": 54.0}, {"Ticker": "IDVO", "1Y_BH_CAGR": 32.4926481918, "1Y_ShortTOM_CAGR": 4.5078315223, "1Y_Avg_TOM_Return": -0.0505573851, "1Y_TOM_WinRate": 55.0}, {"Ticker": "IXG", "1Y_BH_CAGR": 16.5879695165, "1Y_ShortTOM_CAGR": 4.4931031408, "1Y_Avg_TOM_Return": -0.0504909677, "1Y_TOM_WinRate": 52.0}, {"Ticker": "NU", "1Y_BH_CAGR": 28.8316845875, "1Y_ShortTOM_CAGR": 4.4900664311, "1Y_Avg_TOM_Return": -0.0662312195, "1Y_TOM_WinRate": 54.0}, {"Ticker": "MKSI", "1Y_BH_CAGR": 146.0091433466, "1Y_ShortTOM_CAGR": 4.4877591218, "1Y_Avg_TOM_Return": -0.1100490748, "1Y_TOM_WinRate": 48.0}, {"Ticker": "IWD", "1Y_BH_CAGR": 14.6302528575, "1Y_ShortTOM_CAGR": 4.4311373687, "1Y_Avg_TOM_Return": -0.0480315215, "1Y_TOM_WinRate": 52.0}, {"Ticker": "XRT", "1Y_BH_CAGR": 12.4169304568, "1Y_ShortTOM_CAGR": 4.4289702204, "1Y_Avg_TOM_Return": -0.05528115, "1Y_TOM_WinRate": 47.0}, {"Ticker": "KBWB", "1Y_BH_CAGR": 20.5059345592, "1Y_ShortTOM_CAGR": 4.3851396552, "1Y_Avg_TOM_Return": -0.0563011396, "1Y_TOM_WinRate": 51.0}, {"Ticker": "KMI", "1Y_BH_CAGR": 21.3250881548, "1Y_ShortTOM_CAGR": 4.309505016, "1Y_Avg_TOM_Return": -0.0549012505, "1Y_TOM_WinRate": 55.0}, {"Ticker": "VIG", "1Y_BH_CAGR": 10.8151757482, "1Y_ShortTOM_CAGR": 4.1694720271, "1Y_Avg_TOM_Return": -0.0450010605, "1Y_TOM_WinRate": 49.0}, {"Ticker": "ARKQ", "1Y_BH_CAGR": 54.101989332, "1Y_ShortTOM_CAGR": 4.1460304881, "1Y_Avg_TOM_Return": -0.0670191746, "1Y_TOM_WinRate": 51.0}, {"Ticker": "VT", "1Y_BH_CAGR": 19.3408836595, "1Y_ShortTOM_CAGR": 4.1416593375, "1Y_Avg_TOM_Return": -0.0453378558, "1Y_TOM_WinRate": 56.0}, {"Ticker": "MPC", "1Y_BH_CAGR": 25.5494283877, "1Y_ShortTOM_CAGR": 4.1287127303, "1Y_Avg_TOM_Return": -0.0677843802, "1Y_TOM_WinRate": 57.0}, {"Ticker": "ACWI", "1Y_BH_CAGR": 18.8961621961, "1Y_ShortTOM_CAGR": 4.1173683378, "1Y_Avg_TOM_Return": -0.0451648214, "1Y_TOM_WinRate": 57.0}, {"Ticker": "TSN", "1Y_BH_CAGR": 11.3971180391, "1Y_ShortTOM_CAGR": 4.0791311786, "1Y_Avg_TOM_Return": -0.053704928, "1Y_TOM_WinRate": 53.0}, {"Ticker": "RS", "1Y_BH_CAGR": 9.0078654887, "1Y_ShortTOM_CAGR": 4.0646887261, "1Y_Avg_TOM_Return": -0.0517346172, "1Y_TOM_WinRate": 53.0}, {"Ticker": "LIT", "1Y_BH_CAGR": 73.1948333155, "1Y_ShortTOM_CAGR": 4.0431502819, "1Y_Avg_TOM_Return": -0.0572689718, "1Y_TOM_WinRate": 47.0}, {"Ticker": "LIN", "1Y_BH_CAGR": 7.529224318, "1Y_ShortTOM_CAGR": 4.0369524043, "1Y_Avg_TOM_Return": -0.0463526033, "1Y_TOM_WinRate": 52.0}, {"Ticker": "DFS", "1Y_BH_CAGR": 57.9046483267, "1Y_ShortTOM_CAGR": 4.0118950882, "1Y_Avg_TOM_Return": -0.0929416839, "1Y_TOM_WinRate": 46.0}, {"Ticker": "DEM", "1Y_BH_CAGR": 22.3243808679, "1Y_ShortTOM_CAGR": 3.9448806895, "1Y_Avg_TOM_Return": -0.0423635736, "1Y_TOM_WinRate": 48.0}, {"Ticker": "LNG", "1Y_BH_CAGR": 3.2104952197, "1Y_ShortTOM_CAGR": 3.9291487174, "1Y_Avg_TOM_Return": -0.0546741094, "1Y_TOM_WinRate": 50.0}, {"Ticker": "ES", "1Y_BH_CAGR": 18.0995711362, "1Y_ShortTOM_CAGR": 3.8822337849, "1Y_Avg_TOM_Return": -0.046799342, "1Y_TOM_WinRate": 53.0}, {"Ticker": "VHT", "1Y_BH_CAGR": 7.6235411416, "1Y_ShortTOM_CAGR": 3.8103045108, "1Y_Avg_TOM_Return": -0.0431892703, "1Y_TOM_WinRate": 50.0}, {"Ticker": "FWD", "1Y_BH_CAGR": 35.1904987628, "1Y_ShortTOM_CAGR": 3.7989153588, "1Y_Avg_TOM_Return": -0.0522770552, "1Y_TOM_WinRate": 56.0}, {"Ticker": "INDE", "1Y_BH_CAGR": 9.1583327194, "1Y_ShortTOM_CAGR": 3.7550236146, "1Y_Avg_TOM_Return": -0.0408921048, "1Y_TOM_WinRate": 48.0}, {"Ticker": "KBE", "1Y_BH_CAGR": 11.3102909933, "1Y_ShortTOM_CAGR": 3.7537416085, "1Y_Avg_TOM_Return": -0.0477199213, "1Y_TOM_WinRate": 47.0}, {"Ticker": "VOX", "1Y_BH_CAGR": 14.1951963671, "1Y_ShortTOM_CAGR": 3.7522957093, "1Y_Avg_TOM_Return": -0.0446927659, "1Y_TOM_WinRate": 49.0}, {"Ticker": "DGX", "1Y_BH_CAGR": 17.6317056303, "1Y_ShortTOM_CAGR": 3.7213420091, "1Y_Avg_TOM_Return": -0.0441965647, "1Y_TOM_WinRate": 46.0}, {"Ticker": "FCOM", "1Y_BH_CAGR": 14.0465945003, "1Y_ShortTOM_CAGR": 3.7144094275, "1Y_Avg_TOM_Return": -0.0444781563, "1Y_TOM_WinRate": 48.0}, {"Ticker": "BAI", "1Y_BH_CAGR": 22.9398634308, "1Y_ShortTOM_CAGR": 3.6600645117, "1Y_Avg_TOM_Return": -0.0564750008, "1Y_TOM_WinRate": 58.0}, {"Ticker": "GUNR", "1Y_BH_CAGR": 38.921581129, "1Y_ShortTOM_CAGR": 3.6501508518, "1Y_Avg_TOM_Return": -0.0431719233, "1Y_TOM_WinRate": 54.0}, {"Ticker": "TFC", "1Y_BH_CAGR": 9.6113452099, "1Y_ShortTOM_CAGR": 3.6495091338, "1Y_Avg_TOM_Return": -0.0506640281, "1Y_TOM_WinRate": 50.0}, {"Ticker": "SPR", "1Y_BH_CAGR": 19.8934919376, "1Y_ShortTOM_CAGR": 3.5788508805, "1Y_Avg_TOM_Return": -0.0555497118, "1Y_TOM_WinRate": 46.3917525773}, {"Ticker": "^DJI", "1Y_BH_CAGR": 11.0829313822, "1Y_ShortTOM_CAGR": 3.5724930778, "1Y_Avg_TOM_Return": -0.0397043737, "1Y_TOM_WinRate": 52.0}, {"Ticker": "MCD", "1Y_BH_CAGR": 8.96845121, "1Y_ShortTOM_CAGR": 3.5057688472, "1Y_Avg_TOM_Return": -0.0420480762, "1Y_TOM_WinRate": 51.0}, {"Ticker": "CBAN", "1Y_BH_CAGR": 15.2557964465, "1Y_ShortTOM_CAGR": 3.4663647583, "1Y_Avg_TOM_Return": -0.0472627512, "1Y_TOM_WinRate": 45.0}, {"Ticker": "PVAL", "1Y_BH_CAGR": 22.510076832, "1Y_ShortTOM_CAGR": 3.4451227329, "1Y_Avg_TOM_Return": -0.0393143875, "1Y_TOM_WinRate": 52.0}, {"Ticker": "RWR", "1Y_BH_CAGR": 5.3580945999, "1Y_ShortTOM_CAGR": 3.4322591773, "1Y_Avg_TOM_Return": -0.0394746301, "1Y_TOM_WinRate": 57.0}, {"Ticker": "IYH", "1Y_BH_CAGR": 6.6101304929, "1Y_ShortTOM_CAGR": 3.3951985959, "1Y_Avg_TOM_Return": -0.0396780917, "1Y_TOM_WinRate": 53.0}, {"Ticker": "LH", "1Y_BH_CAGR": 14.3798182538, "1Y_ShortTOM_CAGR": 3.3095222153, "1Y_Avg_TOM_Return": -0.0431756997, "1Y_TOM_WinRate": 50.0}, {"Ticker": "XEL", "1Y_BH_CAGR": 18.1110380511, "1Y_ShortTOM_CAGR": 3.2869949846, "1Y_Avg_TOM_Return": -0.0395907348, "1Y_TOM_WinRate": 54.0}, {"Ticker": "LNC", "1Y_BH_CAGR": 2.3435730724, "1Y_ShortTOM_CAGR": 3.2796077038, "1Y_Avg_TOM_Return": -0.0657351557, "1Y_TOM_WinRate": 51.0}, {"Ticker": "MAR", "1Y_BH_CAGR": 20.7121020753, "1Y_ShortTOM_CAGR": 3.2786454089, "1Y_Avg_TOM_Return": -0.0466488339, "1Y_TOM_WinRate": 50.0}, {"Ticker": "CMS", "1Y_BH_CAGR": 8.4022796515, "1Y_ShortTOM_CAGR": 3.2700948847, "1Y_Avg_TOM_Return": -0.0383690666, "1Y_TOM_WinRate": 53.0}, {"Ticker": "HEDJ", "1Y_BH_CAGR": 14.9293128069, "1Y_ShortTOM_CAGR": 3.2634841996, "1Y_Avg_TOM_Return": -0.0375183856, "1Y_TOM_WinRate": 52.0}, {"Ticker": "FNB", "1Y_BH_CAGR": 18.014023629, "1Y_ShortTOM_CAGR": 3.2579960027, "1Y_Avg_TOM_Return": -0.0474953944, "1Y_TOM_WinRate": 48.0}, {"Ticker": "GTX", "1Y_BH_CAGR": 102.7949869692, "1Y_ShortTOM_CAGR": 3.2415642592, "1Y_Avg_TOM_Return": -0.0584160764, "1Y_TOM_WinRate": 45.0}, {"Ticker": "UMC", "1Y_BH_CAGR": 61.4903709962, "1Y_ShortTOM_CAGR": 3.2366144819, "1Y_Avg_TOM_Return": -0.0720053966, "1Y_TOM_WinRate": 41.0}, {"Ticker": "XLV", "1Y_BH_CAGR": 7.1908869909, "1Y_ShortTOM_CAGR": 3.1026169415, "1Y_Avg_TOM_Return": -0.0367951571, "1Y_TOM_WinRate": 51.0}, {"Ticker": "DIA", "1Y_BH_CAGR": 10.9566946699, "1Y_ShortTOM_CAGR": 3.0996689703, "1Y_Avg_TOM_Return": -0.0350978259, "1Y_TOM_WinRate": 53.0}, {"Ticker": "CBRE", "1Y_BH_CAGR": 2.444622257, "1Y_ShortTOM_CAGR": 3.0569082054, "1Y_Avg_TOM_Return": -0.0490864326, "1Y_TOM_WinRate": 45.0}, {"Ticker": "FLG", "1Y_BH_CAGR": 3.1129373913, "1Y_ShortTOM_CAGR": 2.9870801785, "1Y_Avg_TOM_Return": -0.0484913413, "1Y_TOM_WinRate": 47.0}, {"Ticker": "HOMZ", "1Y_BH_CAGR": 5.0208224079, "1Y_ShortTOM_CAGR": 2.9756119298, "1Y_Avg_TOM_Return": -0.0361557661, "1Y_TOM_WinRate": 47.0}, {"Ticker": "DGRO", "1Y_BH_CAGR": 14.4781509847, "1Y_ShortTOM_CAGR": 2.9509142706, "1Y_Avg_TOM_Return": -0.0329039824, "1Y_TOM_WinRate": 48.0}, {"Ticker": "CHY", "1Y_BH_CAGR": 5.8344964063, "1Y_ShortTOM_CAGR": 2.8971425731, "1Y_Avg_TOM_Return": -0.0332091699, "1Y_TOM_WinRate": 52.0}, {"Ticker": "CHAT", "1Y_BH_CAGR": 52.4962599797, "1Y_ShortTOM_CAGR": 2.8927311731, "1Y_Avg_TOM_Return": -0.0479952728, "1Y_TOM_WinRate": 60.0}, {"Ticker": "IBB", "1Y_BH_CAGR": 25.6106359792, "1Y_ShortTOM_CAGR": 2.8542317608, "1Y_Avg_TOM_Return": -0.0383892162, "1Y_TOM_WinRate": 52.0}, {"Ticker": "AA", "1Y_BH_CAGR": 66.0056184213, "1Y_ShortTOM_CAGR": 2.8541644305, "1Y_Avg_TOM_Return": -0.0838300731, "1Y_TOM_WinRate": 46.0}, {"Ticker": "SCHD", "1Y_BH_CAGR": 12.0207685409, "1Y_ShortTOM_CAGR": 2.8205983426, "1Y_Avg_TOM_Return": -0.0329370251, "1Y_TOM_WinRate": 45.0}, {"Ticker": "EMB", "1Y_BH_CAGR": 7.7189006849, "1Y_ShortTOM_CAGR": 2.812426828, "1Y_Avg_TOM_Return": -0.0283353678, "1Y_TOM_WinRate": 45.0}, {"Ticker": "WT", "1Y_BH_CAGR": 75.2006371605, "1Y_ShortTOM_CAGR": 2.7718783254, "1Y_Avg_TOM_Return": -0.053422162, "1Y_TOM_WinRate": 47.0}, {"Ticker": "OIH", "1Y_BH_CAGR": 38.273024832, "1Y_ShortTOM_CAGR": 2.7712841978, "1Y_Avg_TOM_Return": -0.0564869975, "1Y_TOM_WinRate": 52.0}, {"Ticker": "PID", "1Y_BH_CAGR": 22.72792052, "1Y_ShortTOM_CAGR": 2.757820644, "1Y_Avg_TOM_Return": -0.0299126877, "1Y_TOM_WinRate": 50.0}, {"Ticker": "KRE", "1Y_BH_CAGR": 11.5545959143, "1Y_ShortTOM_CAGR": 2.7526317669, "1Y_Avg_TOM_Return": -0.0399181184, "1Y_TOM_WinRate": 45.0}, {"Ticker": "DFNL", "1Y_BH_CAGR": 18.268713799, "1Y_ShortTOM_CAGR": 2.7370513484, "1Y_Avg_TOM_Return": -0.0343738268, "1Y_TOM_WinRate": 55.0}, {"Ticker": "SNA", "1Y_BH_CAGR": 12.5156535595, "1Y_ShortTOM_CAGR": 2.7323701541, "1Y_Avg_TOM_Return": -0.0343410136, "1Y_TOM_WinRate": 49.0}, {"Ticker": "REZ", "1Y_BH_CAGR": 5.8861474627, "1Y_ShortTOM_CAGR": 2.7046661305, "1Y_Avg_TOM_Return": -0.0328716912, "1Y_TOM_WinRate": 57.0}, {"Ticker": "DTCR", "1Y_BH_CAGR": 35.5412348264, "1Y_ShortTOM_CAGR": 2.6817791091, "1Y_Avg_TOM_Return": -0.0376088373, "1Y_TOM_WinRate": 52.0}, {"Ticker": "ARRY", "1Y_BH_CAGR": 61.7396105477, "1Y_ShortTOM_CAGR": 2.6792621946, "1Y_Avg_TOM_Return": -0.1478437012, "1Y_TOM_WinRate": 45.0}, {"Ticker": "SOXX", "1Y_BH_CAGR": 55.8187786528, "1Y_ShortTOM_CAGR": 2.5514559821, "1Y_Avg_TOM_Return": -0.0510267453, "1Y_TOM_WinRate": 55.0}, {"Ticker": "XLP", "1Y_BH_CAGR": 7.7246769416, "1Y_ShortTOM_CAGR": 2.5348545618, "1Y_Avg_TOM_Return": -0.0291162984, "1Y_TOM_WinRate": 48.0}, {"Ticker": "IPX", "1Y_BH_CAGR": 43.4644017323, "1Y_ShortTOM_CAGR": 2.5308730556, "1Y_Avg_TOM_Return": -0.136545419, "1Y_TOM_WinRate": 48.0}, {"Ticker": "RAAX", "1Y_BH_CAGR": 33.9399748343, "1Y_ShortTOM_CAGR": 2.4672684508, "1Y_Avg_TOM_Return": -0.0313932272, "1Y_TOM_WinRate": 56.0}, {"Ticker": "SOXQ", "1Y_BH_CAGR": 55.4296866619, "1Y_ShortTOM_CAGR": 2.4412957332, "1Y_Avg_TOM_Return": -0.0504245849, "1Y_TOM_WinRate": 58.0}, {"Ticker": "CGDV", "1Y_BH_CAGR": 22.8005466371, "1Y_ShortTOM_CAGR": 2.4204765778, "1Y_Avg_TOM_Return": -0.0287578513, "1Y_TOM_WinRate": 58.0}, {"Ticker": "FOLD", "1Y_BH_CAGR": 50.0427101914, "1Y_ShortTOM_CAGR": 2.2798026605, "1Y_Avg_TOM_Return": -0.0536447116, "1Y_TOM_WinRate": 45.0}, {"Ticker": "EFG", "1Y_BH_CAGR": 17.3800351924, "1Y_ShortTOM_CAGR": 2.2501250163, "1Y_Avg_TOM_Return": -0.0282030399, "1Y_TOM_WinRate": 57.0}, {"Ticker": "IBKR", "1Y_BH_CAGR": 27.1873716535, "1Y_ShortTOM_CAGR": 2.2467156473, "1Y_Avg_TOM_Return": -0.0527514973, "1Y_TOM_WinRate": 53.0}, {"Ticker": "BATT", "1Y_BH_CAGR": 73.8700420557, "1Y_ShortTOM_CAGR": 2.202889966, "1Y_Avg_TOM_Return": -0.0410257562, "1Y_TOM_WinRate": 51.0}, {"Ticker": "FLR", "1Y_BH_CAGR": 33.6718830562, "1Y_ShortTOM_CAGR": 2.1396642778, "1Y_Avg_TOM_Return": -0.0901691868, "1Y_TOM_WinRate": 47.0}, {"Ticker": "SHV", "1Y_BH_CAGR": 0.0091622864, "1Y_ShortTOM_CAGR": 2.1067636545, "1Y_Avg_TOM_Return": -0.020889573, "1Y_TOM_WinRate": 75.0}, {"Ticker": "RF", "1Y_BH_CAGR": 22.100699501, "1Y_ShortTOM_CAGR": 2.0900778312, "1Y_Avg_TOM_Return": -0.0356924008, "1Y_TOM_WinRate": 51.0}, {"Ticker": "EWA", "1Y_BH_CAGR": 18.4646171098, "1Y_ShortTOM_CAGR": 2.0892052195, "1Y_Avg_TOM_Return": -0.028947215, "1Y_TOM_WinRate": 55.0}, {"Ticker": "EEMV", "1Y_BH_CAGR": 16.6166836836, "1Y_ShortTOM_CAGR": 2.0676235182, "1Y_Avg_TOM_Return": -0.02259929, "1Y_TOM_WinRate": 54.0}, {"Ticker": "WWJD", "1Y_BH_CAGR": 28.9706820136, "1Y_ShortTOM_CAGR": 2.0484319995, "1Y_Avg_TOM_Return": -0.0245682744, "1Y_TOM_WinRate": 57.0}, {"Ticker": "CDRE", "1Y_BH_CAGR": 24.5682788966, "1Y_ShortTOM_CAGR": 2.0370192879, "1Y_Avg_TOM_Return": -0.0507482189, "1Y_TOM_WinRate": 51.0}, {"Ticker": "GGG", "1Y_BH_CAGR": 6.7314478656, "1Y_ShortTOM_CAGR": 2.0239131204, "1Y_Avg_TOM_Return": -0.0279371376, "1Y_TOM_WinRate": 48.0}, {"Ticker": "DDWM", "1Y_BH_CAGR": 29.4741927529, "1Y_ShortTOM_CAGR": 2.0020005811, "1Y_Avg_TOM_Return": -0.0242491921, "1Y_TOM_WinRate": 51.0}]};
+
+    // Gradient: red(0) -> orange -> yellow -> green(1)
+    function getGradientColor(n01) {
+        const c = Math.max(0, Math.min(1, n01));
+        let r, g, b;
+        if (c < 0.25) {
+            const t = c * 4;
+            r = Math.round(211 + (255-211)*t); g = Math.round(47 + (152-47)*t); b = 0;
+        } else if (c < 0.5) {
+            const t = (c-0.25)*4;
+            r = 255; g = Math.round(152 + (235-152)*t); b = Math.round(59*t);
+        } else if (c < 0.75) {
+            const t = (c-0.5)*4;
+            r = Math.round(255 + (139-255)*t); g = Math.round(235 + (195-235)*t); b = Math.round(59 + (74-59)*t);
+        } else {
+            const t = (c-0.75)*4;
+            r = Math.round(139*(1-t)); g = Math.round(195 + (200-195)*t); b = Math.round(74 + (83-74)*t);
+        }
+        return `rgb(${r},${g},${b})`;
+    }
+
+    function textColor(bgRgb) {
+        const m = bgRgb.match(/rgb\((\d+),(\d+),(\d+)\)/);
+        if (!m) return '#000';
+        return (0.299*+m[1] + 0.587*+m[2] + 0.114*+m[3]) > 140 ? '#000' : '#fff';
+    }
+
+    const sortState = {};
+
+    function calcRange(vals) {
+        const clean = vals.filter(v => v != null && !isNaN(v));
+        if (!clean.length) return null;
+        const s = [...clean].sort((a, b) => a - b);
+        return {
+            min: s[Math.floor(s.length * 0.05)],
+            max: s[Math.floor(s.length * 0.95)]
+        };
+    }
+
+    function normalize(val, range) {
+        if (val == null || isNaN(val) || !range || range.max === range.min) return 0.5;
+        return Math.max(0, Math.min(1, (val - range.min) / (range.max - range.min)));
+    }
+
+    function colorCell(val, range, fmt, invert) {
+        if (val == null || isNaN(val)) return '<td class="cell-miss">-</td>';
+        const n = invert ? 1 - normalize(val, range) : normalize(val, range);
+        const bg = getGradientColor(n);
+        const fg = textColor(bg);
+        return `<td style="background:${bg};color:${fg};text-align:right;">${fmt(val)}</td>`;
+    }
+
+    function pct(v, d) {
+        d = d || 2;
+        if (v == null || isNaN(v)) return '-';
+        return (v >= 0 ? '+' : '') + v.toFixed(d) + '%';
+    }
+
+    function plainPct(v, d) {
+        d = d || 1;
+        if (v == null || isNaN(v)) return '-';
+        return v.toFixed(d) + '%';
+    }
+
+    function renderTable(tableId, rows, schema, defaultSortKey) {
+        const el = document.getElementById(tableId);
+        if (!el) return;
+        if (!rows || !rows.length) {
+            el.innerHTML = '<p style="color:#888;padding:12px;">No data</p>';
+            return;
+        }
+
+        if (!sortState[tableId]) {
+            sortState[tableId] = { col: defaultSortKey || schema[1].key, dir: 'desc' };
+        }
+        const ss = sortState[tableId];
+
+        // Compute per-column ranges
+        const ranges = {};
+        schema.forEach(col => {
+            if (col.color) {
+                ranges[col.key] = calcRange(rows.map(r => r[col.key]));
+            }
+        });
+
+        // Sort rows
+        const sorted = [...rows].sort((a, b) => {
+            const va = (a[ss.col] != null && !isNaN(a[ss.col])) ? a[ss.col] : -9999;
+            const vb = (b[ss.col] != null && !isNaN(b[ss.col])) ? b[ss.col] : -9999;
+            if (typeof va === 'string') return ss.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+            return ss.dir === 'asc' ? va - vb : vb - va;
+        });
+
+        // Header
+        let html = '<table class="tom-table"><colgroup>';
+        schema.forEach(col => {
+            if (col.key === 'Ticker') html += '<col class="col-ticker">';
+            else if (col.key.includes('WinRate')) html += '<col class="col-wr">';
+            else html += '<col class="col-num">';
+        });
+        html += '</colgroup><thead><tr class="col-row">';
+        schema.forEach(col => {
+            const isLeft = col.key === 'Ticker';
+            let cls = isLeft ? 'col-ticker-h' : '';
+            if (ss.col === col.key) cls += (ss.dir === 'asc' ? ' sorted-asc' : ' sorted-desc');
+            html += `<th class="${cls.trim()}" onclick="window._tomSort('${tableId}','${col.key}')">${col.label}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+
+        sorted.forEach(row => {
+            html += '<tr>';
+            schema.forEach(col => {
+                if (col.key === 'Ticker') {
+                    html += `<td class="col-ticker">${row.Ticker || '-'}</td>`;
+                } else if (col.color) {
+                    html += colorCell(row[col.key], ranges[col.key], col.fmt, col.invert || false);
+                } else {
+                    const v = row[col.key];
+                    html += `<td style="text-align:right;">${(v != null && !isNaN(v)) ? col.fmt(v) : '-'}</td>`;
+                }
+            });
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        el.innerHTML = html;
+    }
+
+    window._tomSort = function(tableId, col) {
+        const ss = sortState[tableId] || { col, dir: 'desc' };
+        if (ss.col === col) {
+            ss.dir = ss.dir === 'desc' ? 'asc' : 'desc';
+        } else {
+            ss.col = col;
+            ss.dir = 'desc';
+        }
+        sortState[tableId] = ss;
+        renderAll();
+    };
+
+    function renderAll() {
+        // Panel 1 — Consistent TOM Longs
+        renderTable('tbl-longs', DATA.longs, [
+            { key: 'Ticker',                    label: 'Ticker',         fmt: v => v,              color: false },
+            { key: 'Full_LongTOM_Outperform',   label: 'Full Outperform',fmt: v => pct(v),         color: true  },
+            { key: '5Y_LongTOM_Outperform',     label: '5Y Outperform',  fmt: v => pct(v),         color: true  },
+            { key: '1Y_LongTOM_Outperform',     label: '1Y Outperform',  fmt: v => pct(v),         color: true  },
+            { key: '1Y_TOM_WinRate',            label: '1Y Win Rate',    fmt: v => plainPct(v, 1), color: true  },
+        ], '1Y_LongTOM_Outperform');
+
+        // Panel 2 — Vol/Hedge Timing
+        renderTable('tbl-vol', DATA.vol, [
+            { key: 'Ticker',                    label: 'Ticker',         fmt: v => v,              color: false },
+            { key: 'Full_LongTOM_Outperform',   label: 'Full Outperform',fmt: v => pct(v),         color: true  },
+            { key: '5Y_LongTOM_Outperform',     label: '5Y Outperform',  fmt: v => pct(v),         color: true  },
+            { key: '1Y_LongTOM_Outperform',     label: '1Y Outperform',  fmt: v => pct(v),         color: true  },
+            { key: '1Y_TOM_WinRate',            label: '1Y Win Rate',    fmt: v => plainPct(v, 1), color: true  },
+        ], '1Y_LongTOM_Outperform');
+
+        // Panel 3 — Newly Working Watch
+        renderTable('tbl-newly', DATA.newly, [
+            { key: 'Ticker',                    label: 'Ticker',          fmt: v => v,      color: false },
+            { key: 'Full_LongTOM_Outperform',   label: 'Full Outperform', fmt: v => pct(v), color: true  },
+            { key: '5Y_LongTOM_Outperform',     label: '5Y Outperform',   fmt: v => pct(v), color: true  },
+            { key: '1Y_LongTOM_Outperform',     label: '1Y Outperform',   fmt: v => pct(v), color: true  },
+            { key: 'Regime_1Y_vs_Full',         label: 'Regime Delta',    fmt: v => pct(v), color: true  },
+        ], '1Y_LongTOM_Outperform');
+
+        // Panel 4 — Short / Avoid TOM
+        renderTable('tbl-short', DATA.short, [
+            { key: 'Ticker',              label: 'Ticker',         fmt: v => v,              color: false },
+            { key: '1Y_BH_CAGR',         label: 'B&H CAGR (1Y)',  fmt: v => pct(v),         color: true        },
+            { key: '1Y_ShortTOM_CAGR',   label: 'Short TOM CAGR', fmt: v => pct(v),         color: true        },
+            { key: '1Y_Avg_TOM_Return',   label: 'Avg TOM Return', fmt: v => pct(v, 4),      color: true, invert: true },
+            { key: '1Y_TOM_WinRate',      label: 'TOM Win Rate',   fmt: v => plainPct(v, 1), color: true, invert: true },
+        ], '1Y_ShortTOM_CAGR');
+    }
+
+    renderAll();
+})();
+
+</script>
+
+</script>
+</body></html>
