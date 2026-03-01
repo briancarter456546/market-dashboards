@@ -12,7 +12,7 @@ Usage:
     python run_daily.py -v        # Short form for --verbose
 
 Schedule with Windows Task Scheduler:
-    Program:   python
+    Program:   C:/Users/lynda/1youtubevideopull/perplexity-user-data/cucumber_digital/venv/Scripts/python.exe
     Arguments: run_daily.py
     Start in:  C:/Users/lynda/1youtubevideopull/market-dashboards
     Trigger:   Daily at 4:30 PM, weekdays only
