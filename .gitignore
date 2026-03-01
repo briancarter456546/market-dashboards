@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.bak
+
+# Generated data files (rebuilt daily by backends)
+*_data.csv
+*_data.json
+tom_*.csv
+
+# Backup copies
+*Copy*.py
+
+# Misc HTML artifacts
+index_preview.html
+cowork-vs-openclaw-quiz.html
+SPY *
