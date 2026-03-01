@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Sector Rotation - 2026-02-27</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a2e;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* --- Top stat bar (dark anchor) --- */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    background: #1e1e2e;
+    border-bottom: 3px solid #2d2d4a;
+}
+
+.stat-bar .stat {
+    padding: 20px 26px;
+    border-right: 1px solid #2d2d4a;
+}
+.stat-bar .stat:last-child { border-right: none; }
+
+.stat .stat-label {
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #8888aa;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+}
+
+.stat .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.1em;
+    font-weight: 600;
+    color: #f0f0f0;
+    line-height: 1.1;
+}
+
+.stat .stat-value.pos     { color: #22c55e; }
+.stat .stat-value.neg     { color: #ef4444; }
+.stat .stat-value.warn    { color: #f59e0b; }
+.stat .stat-value.neutral { color: #f0f0f0; }
+
+/* --- Page header --- */
+.page-header {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.page-header .meta {
+    font-size: 0.88em;
+    color: #888;
+}
+
+.page-header .meta a { color: #4f46e5; text-decoration: none; }
+
+/* --- Nav bar --- */
+.page-nav {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 0 30px;
+    display: flex;
+}
+
+.page-nav a {
+    display: inline-block;
+    padding: 13px 20px;
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+.page-nav a:hover  { color: #1a1a2e; }
+.page-nav a.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+/* --- Content area --- */
+.content { padding: 26px 30px; }
+
+/* --- Regime banner --- */
+.regime-banner {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-left: 6px solid #22c55e;
+    border-radius: 8px;
+    padding: 18px 26px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.regime-label {
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.regime-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    color: #888;
+    border-left: 1px solid #e2e4e8;
+    padding-left: 28px;
+    line-height: 1.8;
+}
+
+/* --- Stat/force cards --- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    padding: 18px 22px;
+    border-top: 5px solid #ccc;
+}
+
+.card .label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.9em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.card .sub {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #888;
+}
+
+/* --- Table section wrapper --- */
+.table-section {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.table-section-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid #e2e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.table-section-header h2 {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* --- Tables --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95em;
+}
+
+thead th {
+    background: #f8f9fb;
+    color: #555;
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e2e4e8;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+thead th:hover { background: #f0f2f5; color: #1a1a2e; }
+thead th.sorted-asc  { color: #16a34a; }
+thead th.sorted-desc { color: #dc2626; }
+
+tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbfd; }
+
+/* Numbers and tickers use mono font */
+.num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92em;
+}
+
+.ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #1a1a2e;
+}
+
+/* Color classes */
+.pos   { color: #16a34a; font-weight: 600; }
+.neg   { color: #dc2626; font-weight: 600; }
+.warn  { color: #d97706; font-weight: 600; }
+.muted { color: #aaa; }
+.accent { color: #4f46e5; }
+
+/* Score badges - pill shaped */
+.badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-align: center;
+    min-width: 52px;
+}
+
+.badge-2  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-1  { background: #f0fdf4; color: #16a34a; border: 1px solid #d1fae5; }
+.badge-n1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge-n2 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+/* Qualifier pills */
+.qualifier {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.q-confirmed { background: #dcfce7; color: #15803d; }
+.q-fading    { background: #fff7ed; color: #c2410c; }
+.q-diverging { background: #eff6ff; color: #1d4ed8; }
+.q-holding   { background: #f1f5f9; color: #64748b; }
+
+/* Trend pills */
+.trend-above {
+    background: #dcfce7; color: #15803d;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+.trend-below {
+    background: #fee2e2; color: #b91c1c;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+
+/* --- Playbook text blocks --- */
+.pb-header {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e4e8;
+}
+.pb-header:first-child { margin-top: 0; }
+
+.pb-body {
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.7;
+    margin: 4px 0;
+}
+
+.pb-item {
+    font-size: 0.9em;
+    color: #4f46e5;
+    margin: 5px 0 5px 16px;
+    border-left: 3px solid #c7d2fe;
+    padding-left: 12px;
+    line-height: 1.65;
+}
+
+/* --- Footer --- */
+.dash-footer {
+    padding: 22px 30px;
+    font-size: 0.82em;
+    color: #aaa;
+    border-top: 1px solid #e2e4e8;
+    text-align: center;
+    background: #fff;
+    margin-top: 8px;
+}
+
+
+.score-high {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    min-width: 52px;
+    text-align: center;
+}
+
+.score-mid {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    min-width: 52px;
+    text-align: center;
+}
+
+.sector-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.82em;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.metals-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 700;
+    background: #fef3c7;
+    color: #92400e;
+    margin-left: 6px;
+    vertical-align: middle;
+    letter-spacing: 0.04em;
+}
+
+thead th.sorted-asc::after  { content: ' \25B2'; font-size: 0.75em; }
+thead th.sorted-desc::after { content: ' \25BC'; font-size: 0.75em; }
+
+</style>
+</head><body>
+<div class="stat-bar"><div class="stat"><div class="stat-label">Generated</div><div class="stat-value neutral">2026-02-27</div></div><div class="stat"><div class="stat-label">Stocks Scanned</div><div class="stat-value neutral">995</div></div><div class="stat"><div class="stat-label">High Scorers</div><div class="stat-value pos">27</div></div><div class="stat"><div class="stat-label">9/9 Perfect</div><div class="stat-value pos">0</div></div><div class="stat"><div class="stat-label">Scan Date</div><div class="stat-value neutral">2026-01-27</div></div></div>
+<div class="page-header">
+  <h1>Stock Sector Rotation</h1>
+  <div class="meta">
+    Score threshold: 7/9 &nbsp;|&nbsp; Source: stock_secrot_scores_2026-01-27.csv &nbsp;|&nbsp;
+    <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
+  </div>
+</div>
+<div class="page-nav">
+  <a href="#spreads" class="active">Dashboard</a>
+  <a href="archive/dashboard_20260227.html">Archive: 2026-02-27</a>
+  <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
+</div>
+<div class="content">
+<div class="table-section"><div class="table-section-header"><h2>High-Scoring Stocks (27 of 995 &mdash; score >= 7/9)</h2><span style="font-size:0.85em;color:#888;">Click any column to sort</span></div><div style="padding:20px 24px;"><table class="sortable-table"><thead><tr><th>Rank</th><th>Symbol</th><th>Company</th><th>Sector</th><th>Score &#9660;</th><th>5D Ret%</th><th>20D Ret%</th><th>60D Ret%</th><th>RSI</th><th>ADX</th><th>RS vs ETF</th><th>Vol Increase%</th></tr></thead><tbody><tr><td data-sort="1" class="num">1</td><td data-sort="SBSW"><span class="ticker">SBSW</span><span class="metals-tag">METALS</span></td><td data-sort="Sibanye Stillwater Limited" style="font-size:0.9em;color:#444;">Sibanye Stillwater Limited</td><td data-sort="Basic Materials"><span class="sector-pill">Basic Materials</span></td><td data-sort="8"><span class="score-high">8/9</span></td><td data-sort="15.420023014959728" class="pos num">+15.4%</td><td data-sort="41.26760563380281" class="pos num">+41.3%</td><td data-sort="83.6996336996337" class="pos num">+83.7%</td><td data-sort="77.6" class="num">77.6</td><td data-sort="40.0" class="num">40.0</td><td data-sort="31.997819888284678" class="pos num">+32.0%</td><td data-sort="29.3565957407981" class="pos num">+29.4%</td></tr>
+<tr><td data-sort="2" class="num">2</td><td data-sort="ESLT"><span class="ticker">ESLT</span></td><td data-sort="Elbit Systems Ltd." style="font-size:0.9em;color:#444;">Elbit Systems Ltd.</td><td data-sort="Industrials"><span class="sector-pill">Industrials</span></td><td data-sort="8"><span class="score-high">8/9</span></td><td data-sort="2.3488003589808404" class="pos num">+2.3%</td><td data-sort="26.292111501392924" class="pos num">+26.3%</td><td data-sort="54.52428335521024" class="pos num">+54.5%</td><td data-sort="74.6" class="num">74.6</td><td data-sort="52.3" class="num">52.3</td><td data-sort="21.07122796725638" class="pos num">+21.1%</td><td data-sort="15.925628322825268" class="pos num">+15.9%</td></tr>
+<tr><td data-sort="3" class="num">3</td><td data-sort="LHX"><span class="ticker">LHX</span></td><td data-sort="L3Harris Technologies, Inc." style="font-size:0.9em;color:#444;">L3Harris Technologies, Inc.</td><td data-sort="Industrials"><span class="sector-pill">Industrials</span></td><td data-sort="8"><span class="score-high">8/9</span></td><td data-sort="3.6600442770478248" class="pos num">+3.7%</td><td data-sort="21.832865880444707" class="pos num">+21.8%</td><td data-sort="21.845217979046996" class="pos num">+21.8%</td><td data-sort="79.3" class="num">79.3</td><td data-sort="56.4" class="num">56.4</td><td data-sort="16.611982346308164" class="pos num">+16.6%</td><td data-sort="25.685756147098115" class="pos num">+25.7%</td></tr>
+<tr><td data-sort="4" class="num">4</td><td data-sort="FTAI"><span class="ticker">FTAI</span></td><td data-sort="FTAI Aviation Ltd." style="font-size:0.9em;color:#444;">FTAI Aviation Ltd.</td><td data-sort="Industrials"><span class="sector-pill">Industrials</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="-1.7421602787456414" class="neg num">-1.7%</td><td data-sort="63.16611699357748" class="pos num">+63.2%</td><td data-sort="50.99593060612551" class="pos num">+51.0%</td><td data-sort="77.3" class="num">77.3</td><td data-sort="56.7" class="num">56.7</td><td data-sort="57.945233459440935" class="pos num">+57.9%</td><td data-sort="52.69762371379012" class="pos num">+52.7%</td></tr>
+<tr><td data-sort="5" class="num">5</td><td data-sort="KTOS"><span class="ticker">KTOS</span></td><td data-sort="Kratos Defense & Security Solutions, Inc." style="font-size:0.9em;color:#444;">Kratos Defense & Security Solutions, Inc.</td><td data-sort="Industrials"><span class="sector-pill">Industrials</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="-2.098018077784225" class="neg num">-2.1%</td><td data-sort="52.39447528075385" class="pos num">+52.4%</td><td data-sort="33.70328425821065" class="pos num">+33.7%</td><td data-sort="64.1" class="num">64.1</td><td data-sort="33.7" class="num">33.7</td><td data-sort="47.173591746617305" class="pos num">+47.2%</td><td data-sort="32.10880516843218" class="pos num">+32.1%</td></tr>
+<tr><td data-sort="6" class="num">6</td><td data-sort="HL"><span class="ticker">HL</span><span class="metals-tag">METALS</span></td><td data-sort="Hecla Mining Company" style="font-size:0.9em;color:#444;">Hecla Mining Company</td><td data-sort="Basic Materials"><span class="sector-pill">Basic Materials</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="-1.9736842105263164" class="neg num">-2.0%</td><td data-sort="47.44791666666666" class="pos num">+47.4%</td><td data-sort="119.45736434108528" class="pos num">+119.5%</td><td data-sort="65.2" class="num">65.2</td><td data-sort="47.2" class="num">47.2</td><td data-sort="38.17813092114852" class="pos num">+38.2%</td><td data-sort="16.2703338902918" class="pos num">+16.3%</td></tr>
+<tr><td data-sort="7" class="num">7</td><td data-sort="KRMN"><span class="ticker">KRMN</span></td><td data-sort="Karman Holdings Inc." style="font-size:0.9em;color:#444;">Karman Holdings Inc.</td><td data-sort="Industrials"><span class="sector-pill">Industrials</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="8.159175493844838" class="pos num">+8.2%</td><td data-sort="46.03788171627368" class="pos num">+46.0%</td><td data-sort="32.406542056074784" class="pos num">+32.4%</td><td data-sort="74.2" class="num">74.2</td><td data-sort="36.2" class="num">36.2</td><td data-sort="40.81699818213713" class="pos num">+40.8%</td><td data-sort="-0.8017274901575" class="neg num">-0.8%</td></tr>
+<tr><td data-sort="8" class="num">8</td><td data-sort="PSLV"><span class="ticker">PSLV</span><span class="metals-tag">METALS</span></td><td data-sort="Sprott Physical Silver Trust" style="font-size:0.9em;color:#444;">Sprott Physical Silver Trust</td><td data-sort="Financial Services"><span class="sector-pill">Financial Services</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="12.911725955204222" class="pos num">+12.9%</td><td data-sort="41.24433456942729" class="pos num">+41.2%</td><td data-sort="111.99752628324052" class="pos num">+112.0%</td><td data-sort="74.6" class="num">74.6</td><td data-sort="42.4" class="num">42.4</td><td data-sort="45.43811620355599" class="pos num">+45.4%</td><td data-sort="71.80354451371645" class="pos num">+71.8%</td></tr>
+<tr><td data-sort="9" class="num">9</td><td data-sort="CDE"><span class="ticker">CDE</span><span class="metals-tag">METALS</span></td><td data-sort="Coeur Mining, Inc." style="font-size:0.9em;color:#444;">Coeur Mining, Inc.</td><td data-sort="Basic Materials"><span class="sector-pill">Basic Materials</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="12.2217372326495" class="pos num">+12.2%</td><td data-sort="40.4150737302021" class="pos num">+40.4%</td><td data-sort="45.2542372881356" class="pos num">+45.3%</td><td data-sort="76.6" class="num">76.6</td><td data-sort="34.2" class="num">34.2</td><td data-sort="31.145287984683968" class="pos num">+31.1%</td><td data-sort="20.87185780908001" class="pos num">+20.9%</td></tr>
+<tr><td data-sort="10" class="num">10</td><td data-sort="RGC"><span class="ticker">RGC</span></td><td data-sort="Regencell Bioscience Holdings Limited" style="font-size:0.9em;color:#444;">Regencell Bioscience Holdings Limited</td><td data-sort="Healthcare"><span class="sector-pill">Healthcare</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="46.28023733455042" class="pos num">+46.3%</td><td data-sort="36.49914821124361" class="pos num">+36.5%</td><td data-sort="96.02446483180424" class="pos num">+96.0%</td><td data-sort="53.9" class="num">53.9</td><td data-sort="40.2" class="num">40.2</td><td data-sort="36.73019884984191" class="pos num">+36.7%</td><td data-sort="110.32555103134926" class="pos num">+110.3%</td></tr>
+<tr><td data-sort="11" class="num">11</td><td data-sort="EC"><span class="ticker">EC</span></td><td data-sort="Ecopetrol S.A." style="font-size:0.9em;color:#444;">Ecopetrol S.A.</td><td data-sort="Energy"><span class="sector-pill">Energy</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="1.789883268482484" class="pos num">+1.8%</td><td data-sort="32.92682926829269" class="pos num">+32.9%</td><td data-sort="41.4054054054054" class="pos num">+41.4%</td><td data-sort="76.1" class="num">76.1</td><td data-sort="37.3" class="num">37.3</td><td data-sort="21.60903455740071" class="pos num">+21.6%</td><td data-sort="27.20768770130335" class="pos num">+27.2%</td></tr>
+<tr><td data-sort="12" class="num">12</td><td data-sort="PBR"><span class="ticker">PBR</span></td><td data-sort="Petróleo Brasileiro S.A. - Petrobras" style="font-size:0.9em;color:#444;">Petróleo Brasileiro S.A. - Petrobras</td><td data-sort="Energy"><span class="sector-pill">Energy</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="11.176905995558853" class="pos num">+11.2%</td><td data-sort="29.59447799827437" class="pos num">+29.6%</td><td data-sort="28.156996587030704" class="pos num">+28.2%</td><td data-sort="86.7" class="num">86.7</td><td data-sort="38.5" class="num">38.5</td><td data-sort="18.27668328738239" class="pos num">+18.3%</td><td data-sort="13.948848093179912" class="pos num">+13.9%</td></tr>
+<tr><td data-sort="13" class="num">13</td><td data-sort="PBR-A"><span class="ticker">PBR-A</span></td><td data-sort="Petróleo Brasileiro S.A. - Petrobras" style="font-size:0.9em;color:#444;">Petróleo Brasileiro S.A. - Petrobras</td><td data-sort="Energy"><span class="sector-pill">Energy</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="10.838607594936713" class="pos num">+10.8%</td><td data-sort="26.90217391304348" class="pos num">+26.9%</td><td data-sort="26.55826558265581" class="pos num">+26.6%</td><td data-sort="85.4" class="num">85.4</td><td data-sort="36.2" class="num">36.2</td><td data-sort="15.5843792021515" class="pos num">+15.6%</td><td data-sort="15.436418239816806" class="pos num">+15.4%</td></tr>
+<tr><td data-sort="14" class="num">14</td><td data-sort="COG"><span class="ticker">COG</span><span class="metals-tag">METALS</span></td><td data-sort="Cabot Oil & Gas Corporation" style="font-size:0.9em;color:#444;">Cabot Oil & Gas Corporation</td><td data-sort="Energy"><span class="sector-pill">Energy</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="0.8612873980054392" class="pos num">+0.9%</td><td data-sort="24.929814710836617" class="pos num">+24.9%</td><td data-sort="26.348665530948324" class="pos num">+26.3%</td><td data-sort="72.1" class="num">72.1</td><td data-sort="51.1" class="num">51.1</td><td data-sort="13.612019999944636" class="pos num">+13.6%</td><td data-sort="56.45422567779181" class="pos num">+56.5%</td></tr>
+<tr><td data-sort="15" class="num">15</td><td data-sort="RKLB"><span class="ticker">RKLB</span></td><td data-sort="Rocket Lab USA, Inc." style="font-size:0.9em;color:#444;">Rocket Lab USA, Inc.</td><td data-sort="Industrials"><span class="sector-pill">Industrials</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="-0.9337280801639648" class="neg num">-0.9%</td><td data-sort="24.07301768397032" class="pos num">+24.1%</td><td data-sort="42.81024294156271" class="pos num">+42.8%</td><td data-sort="58.1" class="num">58.1</td><td data-sort="40.4" class="num">40.4</td><td data-sort="18.852134149833777" class="pos num">+18.9%</td><td data-sort="13.867973653210576" class="pos num">+13.9%</td></tr>
+<tr><td data-sort="16" class="num">16</td><td data-sort="PAAS"><span class="ticker">PAAS</span><span class="metals-tag">METALS</span></td><td data-sort="Pan American Silver Corp." style="font-size:0.9em;color:#444;">Pan American Silver Corp.</td><td data-sort="Basic Materials"><span class="sector-pill">Basic Materials</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="12.41041775913303" class="pos num">+12.4%</td><td data-sort="23.104900459418065" class="pos num">+23.1%</td><td data-sort="81.00197016605686" class="pos num">+81.0%</td><td data-sort="74.4" class="num">74.4</td><td data-sort="35.7" class="num">35.7</td><td data-sort="13.835114713899932" class="pos num">+13.8%</td><td data-sort="16.801643970665058" class="pos num">+16.8%</td></tr>
+<tr><td data-sort="17" class="num">17</td><td data-sort="TWTR"><span class="ticker">TWTR</span></td><td data-sort="Twitter, Inc. (delisted)" style="font-size:0.9em;color:#444;">Twitter, Inc. (delisted)</td><td data-sort="Communication Services"><span class="sector-pill">Communication Services</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="7.636800962116652" class="pos num">+7.6%</td><td data-sort="22.490875912408747" class="pos num">+22.5%</td><td data-sort="30.784218217243065" class="pos num">+30.8%</td><td data-sort="69.5" class="num">69.5</td><td data-sort="42.8" class="num">42.8</td><td data-sort="23.330641795859417" class="pos num">+23.3%</td><td data-sort="83.99076775655554" class="pos num">+84.0%</td></tr>
+<tr><td data-sort="18" class="num">18</td><td data-sort="HII"><span class="ticker">HII</span></td><td data-sort="Huntington Ingalls Industries, Inc." style="font-size:0.9em;color:#444;">Huntington Ingalls Industries, Inc.</td><td data-sort="Industrials"><span class="sector-pill">Industrials</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="0.0260244156335742" class="pos num">+0.0%</td><td data-sort="22.28906950510514" class="pos num">+22.3%</td><td data-sort="32.50697339141881" class="pos num">+32.5%</td><td data-sort="70.8" class="num">70.8</td><td data-sort="36.7" class="num">36.7</td><td data-sort="17.068185970968596" class="pos num">+17.1%</td><td data-sort="16.557658346057668" class="pos num">+16.6%</td></tr>
+<tr><td data-sort="19" class="num">19</td><td data-sort="LMT"><span class="ticker">LMT</span></td><td data-sort="Lockheed Martin Corporation" style="font-size:0.9em;color:#444;">Lockheed Martin Corporation</td><td data-sort="Industrials"><span class="sector-pill">Industrials</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="1.487470787916001" class="pos num">+1.5%</td><td data-sort="21.69902018941641" class="pos num">+21.7%</td><td data-sort="21.487788940619133" class="pos num">+21.5%</td><td data-sort="73.6" class="num">73.6</td><td data-sort="33.4" class="num">33.4</td><td data-sort="16.478136655279865" class="pos num">+16.5%</td><td data-sort="28.43948657762738" class="pos num">+28.4%</td></tr>
+<tr><td data-sort="20" class="num">20</td><td data-sort="BCH"><span class="ticker">BCH</span></td><td data-sort="Banco de Chile" style="font-size:0.9em;color:#444;">Banco de Chile</td><td data-sort="Financial Services"><span class="sector-pill">Financial Services</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="8.981459186130492" class="pos num">+9.0%</td><td data-sort="18.94875164257557" class="pos num">+18.9%</td><td data-sort="29.759174311926586" class="pos num">+29.8%</td><td data-sort="79.0" class="num">79.0</td><td data-sort="38.2" class="num">38.2</td><td data-sort="23.142533276704267" class="pos num">+23.1%</td><td data-sort="17.206864086152706" class="pos num">+17.2%</td></tr>
+<tr><td data-sort="21" class="num">21</td><td data-sort="BSAC"><span class="ticker">BSAC</span></td><td data-sort="Banco Santander-Chile" style="font-size:0.9em;color:#444;">Banco Santander-Chile</td><td data-sort="Financial Services"><span class="sector-pill">Financial Services</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="8.267370272647323" class="pos num">+8.3%</td><td data-sort="18.02492809204219" class="pos num">+18.0%</td><td data-sort="28.14018043025677" class="pos num">+28.1%</td><td data-sort="78.4" class="num">78.4</td><td data-sort="46.2" class="num">46.2</td><td data-sort="22.218709726170893" class="pos num">+22.2%</td><td data-sort="12.375900141445694" class="pos num">+12.4%</td></tr>
+<tr><td data-sort="22" class="num">22</td><td data-sort="NOC"><span class="ticker">NOC</span></td><td data-sort="Northrop Grumman Corporation" style="font-size:0.9em;color:#444;">Northrop Grumman Corporation</td><td data-sort="Industrials"><span class="sector-pill">Industrials</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="2.1952541556251592" class="pos num">+2.2%</td><td data-sort="17.47377894700406" class="pos num">+17.5%</td><td data-sort="17.30729346698927" class="pos num">+17.3%</td><td data-sort="70.0" class="num">70.0</td><td data-sort="29.4" class="num">29.4</td><td data-sort="12.252895412867517" class="pos num">+12.3%</td><td data-sort="30.11443562411371" class="pos num">+30.1%</td></tr>
+<tr><td data-sort="23" class="num">23</td><td data-sort="STZ"><span class="ticker">STZ</span></td><td data-sort="Constellation Brands, Inc." style="font-size:0.9em;color:#444;">Constellation Brands, Inc.</td><td data-sort="Consumer Defensive"><span class="sector-pill">Consumer Defensive</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="-1.303709144326104" class="neg num">-1.3%</td><td data-sort="16.41758717782111" class="pos num">+16.4%</td><td data-sort="25.116387337057724" class="pos num">+25.1%</td><td data-sort="66.1" class="num">66.1</td><td data-sort="42.6" class="num">42.6</td><td data-sort="10.183555496676508" class="pos num">+10.2%</td><td data-sort="14.546361149098177" class="pos num">+14.5%</td></tr>
+<tr><td data-sort="24" class="num">24</td><td data-sort="KOF"><span class="ticker">KOF</span></td><td data-sort="Coca-Cola FEMSA, S.A.B. de C.V." style="font-size:0.9em;color:#444;">Coca-Cola FEMSA, S.A.B. de C.V.</td><td data-sort="Consumer Defensive"><span class="sector-pill">Consumer Defensive</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="6.64964148904823" class="pos num">+6.6%</td><td data-sort="13.363959072875332" class="pos num">+13.4%</td><td data-sort="25.250893990079604" class="pos num">+25.3%</td><td data-sort="79.4" class="num">79.4</td><td data-sort="44.7" class="num">44.7</td><td data-sort="7.129927391730729" class="pos num">+7.1%</td><td data-sort="7.587624183772568" class="pos num">+7.6%</td></tr>
+<tr><td data-sort="25" class="num">25</td><td data-sort="AGNC"><span class="ticker">AGNC</span></td><td data-sort="AGNC Investment Corp." style="font-size:0.9em;color:#444;">AGNC Investment Corp.</td><td data-sort="Real Estate"><span class="sector-pill">Real Estate</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="4.017094017094025" class="pos num">+4.0%</td><td data-sort="12.476894639556368" class="pos num">+12.5%</td><td data-sort="21.70000000000001" class="pos num">+21.7%</td><td data-sort="76.2" class="num">76.2</td><td data-sort="51.7" class="num">51.7</td><td data-sort="10.950928604606824" class="pos num">+11.0%</td><td data-sort="1.5102338361064005" class="pos num">+1.5%</td></tr>
+<tr><td data-sort="26" class="num">26</td><td data-sort="RTO"><span class="ticker">RTO</span></td><td data-sort="Rentokil Initial plc" style="font-size:0.9em;color:#444;">Rentokil Initial plc</td><td data-sort="Industrials"><span class="sector-pill">Industrials</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="3.720930232558151" class="pos num">+3.7%</td><td data-sort="11.835506519558692" class="pos num">+11.8%</td><td data-sort="21.63636363636365" class="pos num">+21.6%</td><td data-sort="78.3" class="num">78.3</td><td data-sort="35.2" class="num">35.2</td><td data-sort="6.614622985422147" class="pos num">+6.6%</td><td data-sort="27.267143717688192" class="pos num">+27.3%</td></tr>
+<tr><td data-sort="27" class="num">27</td><td data-sort="SAN"><span class="ticker">SAN</span></td><td data-sort="Banco Santander, S.A." style="font-size:0.9em;color:#444;">Banco Santander, S.A.</td><td data-sort="Financial Services"><span class="sector-pill">Financial Services</span></td><td data-sort="7"><span class="score-mid">7/9</span></td><td data-sort="7.142857142857162" class="pos num">+7.1%</td><td data-sort="11.72945205479452" class="pos num">+11.7%</td><td data-sort="27.44140625" class="pos num">+27.4%</td><td data-sort="74.4" class="num">74.4</td><td data-sort="32.8" class="num">32.8</td><td data-sort="15.923233688923222" class="pos num">+15.9%</td><td data-sort="13.856382859439687" class="pos num">+13.9%</td></tr></tbody></table></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-02-27 &mdash; For personal research only.</div>
+<script>
+
+function getGradientColor(score) {
+    var clamped = Math.max(0, Math.min(1, score));
+    var r, g, b;
+    if (clamped < 0.25) {
+        var t = clamped * 4;
+        r = Math.round(211 + (255 - 211) * t);
+        g = Math.round(47 + (152 - 47) * t);
+        b = Math.round(47 + (0 - 47) * t);
+    } else if (clamped < 0.5) {
+        var t = (clamped - 0.25) * 4;
+        r = 255;
+        g = Math.round(152 + (235 - 152) * t);
+        b = Math.round(0 + (59 - 0) * t);
+    } else if (clamped < 0.75) {
+        var t = (clamped - 0.5) * 4;
+        r = Math.round(255 + (139 - 255) * t);
+        g = Math.round(235 + (195 - 235) * t);
+        b = Math.round(59 + (74 - 59) * t);
+    } else {
+        var t = (clamped - 0.75) * 4;
+        r = Math.round(139 + (0 - 139) * t);
+        g = Math.round(195 + (200 - 195) * t);
+        b = Math.round(74 + (83 - 74) * t);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+
+document.querySelectorAll('.sortable-table thead th').forEach(function(th, idx) {
+    th.addEventListener('click', function() {
+        var table = th.closest('table');
+        var tbody = table.querySelector('tbody');
+        var rows = Array.from(tbody.querySelectorAll('tr'));
+        var asc = !th.classList.contains('sorted-asc');
+
+        table.querySelectorAll('th').forEach(function(h) {
+            h.classList.remove('sorted-asc', 'sorted-desc');
+        });
+        th.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
+
+        rows.sort(function(a, b) {
+            var av = a.cells[idx].getAttribute('data-sort') || a.cells[idx].textContent;
+            var bv = b.cells[idx].getAttribute('data-sort') || b.cells[idx].textContent;
+            var an = parseFloat(av), bn = parseFloat(bv);
+            if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+            return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+
+        rows.forEach(function(r) { tbody.appendChild(r); });
+    });
+});
+
+</script>
+</body></html>

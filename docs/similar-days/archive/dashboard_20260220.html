@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Similar Days Analyzer - 2026-02-20</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a2e;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* --- Top stat bar (dark anchor) --- */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    background: #1e1e2e;
+    border-bottom: 3px solid #2d2d4a;
+}
+
+.stat-bar .stat {
+    padding: 20px 26px;
+    border-right: 1px solid #2d2d4a;
+}
+.stat-bar .stat:last-child { border-right: none; }
+
+.stat .stat-label {
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #8888aa;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+}
+
+.stat .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.1em;
+    font-weight: 600;
+    color: #f0f0f0;
+    line-height: 1.1;
+}
+
+.stat .stat-value.pos     { color: #22c55e; }
+.stat .stat-value.neg     { color: #ef4444; }
+.stat .stat-value.warn    { color: #f59e0b; }
+.stat .stat-value.neutral { color: #f0f0f0; }
+
+/* --- Page header --- */
+.page-header {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.page-header .meta {
+    font-size: 0.88em;
+    color: #888;
+}
+
+.page-header .meta a { color: #4f46e5; text-decoration: none; }
+
+/* --- Nav bar --- */
+.page-nav {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 0 30px;
+    display: flex;
+}
+
+.page-nav a {
+    display: inline-block;
+    padding: 13px 20px;
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+.page-nav a:hover  { color: #1a1a2e; }
+.page-nav a.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+/* --- Content area --- */
+.content { padding: 26px 30px; }
+
+/* --- Regime banner --- */
+.regime-banner {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-left: 6px solid #22c55e;
+    border-radius: 8px;
+    padding: 18px 26px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.regime-label {
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.regime-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    color: #888;
+    border-left: 1px solid #e2e4e8;
+    padding-left: 28px;
+    line-height: 1.8;
+}
+
+/* --- Stat/force cards --- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    padding: 18px 22px;
+    border-top: 5px solid #ccc;
+}
+
+.card .label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.9em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.card .sub {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #888;
+}
+
+/* --- Table section wrapper --- */
+.table-section {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.table-section-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid #e2e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.table-section-header h2 {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* --- Tables --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95em;
+}
+
+thead th {
+    background: #f8f9fb;
+    color: #555;
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e2e4e8;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+thead th:hover { background: #f0f2f5; color: #1a1a2e; }
+thead th.sorted-asc  { color: #16a34a; }
+thead th.sorted-desc { color: #dc2626; }
+
+tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbfd; }
+
+/* Numbers and tickers use mono font */
+.num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92em;
+}
+
+.ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #1a1a2e;
+}
+
+/* Color classes */
+.pos   { color: #16a34a; font-weight: 600; }
+.neg   { color: #dc2626; font-weight: 600; }
+.warn  { color: #d97706; font-weight: 600; }
+.muted { color: #aaa; }
+.accent { color: #4f46e5; }
+
+/* Score badges - pill shaped */
+.badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-align: center;
+    min-width: 52px;
+}
+
+.badge-2  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-1  { background: #f0fdf4; color: #16a34a; border: 1px solid #d1fae5; }
+.badge-n1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge-n2 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+/* Qualifier pills */
+.qualifier {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.q-confirmed { background: #dcfce7; color: #15803d; }
+.q-fading    { background: #fff7ed; color: #c2410c; }
+.q-diverging { background: #eff6ff; color: #1d4ed8; }
+.q-holding   { background: #f1f5f9; color: #64748b; }
+
+/* Trend pills */
+.trend-above {
+    background: #dcfce7; color: #15803d;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+.trend-below {
+    background: #fee2e2; color: #b91c1c;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+
+/* --- Playbook text blocks --- */
+.pb-header {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e4e8;
+}
+.pb-header:first-child { margin-top: 0; }
+
+.pb-body {
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.7;
+    margin: 4px 0;
+}
+
+.pb-item {
+    font-size: 0.9em;
+    color: #4f46e5;
+    margin: 5px 0 5px 16px;
+    border-left: 3px solid #c7d2fe;
+    padding-left: 12px;
+    line-height: 1.65;
+}
+
+/* --- Footer --- */
+.dash-footer {
+    padding: 22px 30px;
+    font-size: 0.82em;
+    color: #aaa;
+    border-top: 1px solid #e2e4e8;
+    text-align: center;
+    background: #fff;
+    margin-top: 8px;
+}
+
+
+/* Similar days table overrides */
+.sim-table table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.8em;
+    table-layout: fixed;   /* fixed layout so col widths are respected */
+}
+/* Col 0: Name */
+.sim-table table colgroup col.col-name  { width: 140px; }
+/* Cols 1-9: Before / After / Win% per window (3 cols x 3 windows) */
+.sim-table table colgroup col.col-before { width: 90px; }
+.sim-table table colgroup col.col-after  { width: 80px; }
+.sim-table table colgroup col.col-winpct { width: 72px; }
+.sim-table thead th {
+    padding: 7px 6px;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 2px solid #e2e4e8;
+    white-space: nowrap;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sim-table thead th.col-name { text-align: left; }
+.sim-table tbody td {
+    padding: 6px 6px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sim-table tbody td.col-name {
+    text-align: left;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.9em;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sim-table tbody tr:hover { outline: 2px solid #4f46e5; }
+
+/* Group header row */
+.grp-row th { padding: 5px 4px; font-size: 0.78em; font-weight: 700; letter-spacing: 0.05em; }
+.grp-blank    { background: #f8f9fb; color: transparent; border-bottom: 1px solid #e2e4e8; }
+.grp-before   { background: #1e293b; color: #94a3b8; }
+.grp-25y      { background: #14532d; color: #86efac; }
+.grp-5y       { background: #1e3a5f; color: #93c5fd; }
+.grp-1y       { background: #3b1f5e; color: #c4b5fd; }
+
+/* Sort arrows */
+th.sort-asc::after  { content: ' ▲'; font-size: 0.7em; }
+th.sort-desc::after { content: ' ▼'; font-size: 0.7em; }
+
+/* pred sub-text (win%) */
+.pred-pct { display: block; font-size: 0.78em; color: #333; opacity: 0.75; }
+.cell-miss { color: #ccc !important; background: #fafafa !important; }
+
+/* Similar dates panels */
+.dates-panels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 22px;
+}
+.dates-panel {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.dates-panel-header {
+    padding: 10px 14px;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.dates-panel-header .count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.1em;
+    font-weight: 700;
+}
+.dates-panel-body {
+    padding: 10px 14px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+.date-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82em;
+    padding: 4px 0;
+    border-bottom: 1px solid #f5f5f5;
+    font-family: 'IBM Plex Mono', monospace;
+}
+.date-row:last-child { border-bottom: none; }
+.date-corr { color: #888; }
+
+</style>
+</head><body>
+<div class="stat-bar"><div class="stat"><div class="stat-label">Target Date</div><div class="stat-value neutral">2026-02-20</div></div><div class="stat"><div class="stat-label">25Y Matches</div><div class="stat-value neutral">100</div></div><div class="stat"><div class="stat-label">5Y Matches</div><div class="stat-value neutral">100</div></div><div class="stat"><div class="stat-label">1Y Matches</div><div class="stat-value neutral">89</div></div></div>
+<div class="page-header">
+  <h1>Similar Days Analyzer</h1>
+  <div class="meta">
+    Pattern-matched similar days: before vs after analysis &nbsp;|&nbsp;
+    <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
+  </div>
+</div>
+<div class="page-nav">
+  <a href="#spreads" class="active">Dashboard</a>
+  <a href="archive/dashboard_20260220.html">Archive: 2026-02-20</a>
+  <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
+</div>
+<div class="content">
+<div class="dates-panels"><div class="dates-panel" style="border-top:4px solid #14532d;"><div class="dates-panel-header" style="background:#14532d;color:#86efac;"><span>25Y Similar Days</span><span class="count">100</span></div><div class="dates-panel-body"><div class="date-row"><span>2026-02-19</span><span class="date-corr">0.820</span></div><div class="date-row"><span>2026-02-18</span><span class="date-corr">0.742</span></div><div class="date-row"><span>2026-02-17</span><span class="date-corr">0.677</span></div><div class="date-row"><span>2026-02-13</span><span class="date-corr">0.562</span></div><div class="date-row"><span>2023-01-17</span><span class="date-corr">0.521</span></div><div class="date-row"><span>2019-03-22</span><span class="date-corr">0.517</span></div><div class="date-row"><span>2009-07-28</span><span class="date-corr">0.516</span></div><div class="date-row"><span>2025-03-24</span><span class="date-corr">0.514</span></div><div class="date-row"><span>2019-03-21</span><span class="date-corr">0.512</span></div><div class="date-row"><span>2009-05-12</span><span class="date-corr">0.506</span></div><div class="date-row"><span>2009-07-27</span><span class="date-corr">0.503</span></div><div class="date-row"><span>2009-10-15</span><span class="date-corr">0.502</span></div><div class="date-row"><span>2023-01-13</span><span class="date-corr">0.499</span></div><div class="date-row"><span>2009-06-05</span><span class="date-corr">0.494</span></div><div class="date-row"><span>2009-10-19</span><span class="date-corr">0.492</span></div><div class="date-row"><span>2003-06-03</span><span class="date-corr">0.491</span></div><div class="date-row"><span>2009-07-22</span><span class="date-corr">0.490</span></div><div class="date-row"><span>2006-01-13</span><span class="date-corr">0.489</span></div><div class="date-row"><span>2025-03-25</span><span class="date-corr">0.488</span></div><div class="date-row"><span>2009-10-16</span><span class="date-corr">0.488</span></div><div class="date-row"><span>2003-06-11</span><span class="date-corr">0.483</span></div><div class="date-row"><span>2006-01-12</span><span class="date-corr">0.483</span></div><div class="date-row"><span>2023-01-18</span><span class="date-corr">0.482</span></div><div class="date-row"><span>2009-06-08</span><span class="date-corr">0.481</span></div><div class="date-row"><span>2006-01-11</span><span class="date-corr">0.481</span></div><div class="date-row"><span>2009-07-21</span><span class="date-corr">0.480</span></div><div class="date-row"><span>2009-07-09</span><span class="date-corr">0.479</span></div><div class="date-row"><span>2019-03-25</span><span class="date-corr">0.478</span></div><div class="date-row"><span>2009-05-29</span><span class="date-corr">0.478</span></div><div class="date-row"><span>2019-04-11</span><span class="date-corr">0.477</span></div><div class="date-row"><span>2019-03-26</span><span class="date-corr">0.477</span></div><div class="date-row"><span>2024-05-06</span><span class="date-corr">0.476</span></div><div class="date-row"><span>2023-01-20</span><span class="date-corr">0.475</span></div><div class="date-row"><span>2009-06-09</span><span class="date-corr">0.475</span></div><div class="date-row"><span>2019-03-28</span><span class="date-corr">0.475</span></div><div class="date-row"><span>2016-04-21</span><span class="date-corr">0.474</span></div><div class="date-row"><span>2009-05-28</span><span class="date-corr">0.474</span></div><div class="date-row"><span>2009-07-07</span><span class="date-corr">0.472</span></div><div class="date-row"><span>2009-06-01</span><span class="date-corr">0.472</span></div><div class="date-row"><span>2012-01-04</span><span class="date-corr">0.471</span></div><div class="date-row"><span>2009-07-23</span><span class="date-corr">0.470</span></div><div class="date-row"><span>2016-04-20</span><span class="date-corr">0.470</span></div><div class="date-row"><span>2009-09-17</span><span class="date-corr">0.470</span></div><div class="date-row"><span>2025-08-15</span><span class="date-corr">0.468</span></div><div class="date-row"><span>2009-06-10</span><span class="date-corr">0.467</span></div><div class="date-row"><span>2009-09-21</span><span class="date-corr">0.467</span></div><div class="date-row"><span>2009-04-22</span><span class="date-corr">0.467</span></div><div class="date-row"><span>2020-06-25</span><span class="date-corr">0.466</span></div><div class="date-row"><span>2024-05-14</span><span class="date-corr">0.466</span></div><div class="date-row"><span>2009-09-22</span><span class="date-corr">0.464</span></div><div class="date-row"><span>2009-05-11</span><span class="date-corr">0.463</span></div><div class="date-row"><span>2023-01-12</span><span class="date-corr">0.462</span></div><div class="date-row"><span>2012-01-03</span><span class="date-corr">0.462</span></div><div class="date-row"><span>2009-07-24</span><span class="date-corr">0.461</span></div><div class="date-row"><span>2016-04-19</span><span class="date-corr">0.461</span></div><div class="date-row"><span>2022-12-12</span><span class="date-corr">0.460</span></div><div class="date-row"><span>2010-11-11</span><span class="date-corr">0.459</span></div><div class="date-row"><span>2009-08-31</span><span class="date-corr">0.459</span></div><div class="date-row"><span>2009-09-18</span><span class="date-corr">0.458</span></div><div class="date-row"><span>2009-07-08</span><span class="date-corr">0.458</span></div><div class="date-row"><span>2024-09-20</span><span class="date-corr">0.458</span></div><div class="date-row"><span>2019-04-10</span><span class="date-corr">0.458</span></div><div class="date-row"><span>2009-07-31</span><span class="date-corr">0.455</span></div><div class="date-row"><span>2023-01-11</span><span class="date-corr">0.455</span></div><div class="date-row"><span>2019-03-20</span><span class="date-corr">0.455</span></div><div class="date-row"><span>2009-09-01</span><span class="date-corr">0.454</span></div><div class="date-row"><span>2006-03-23</span><span class="date-corr">0.453</span></div><div class="date-row"><span>2006-01-17</span><span class="date-corr">0.451</span></div><div class="date-row"><span>2009-09-16</span><span class="date-corr">0.449</span></div><div class="date-row"><span>2012-03-20</span><span class="date-corr">0.449</span></div><div class="date-row"><span>2002-03-13</span><span class="date-corr">0.448</span></div><div class="date-row"><span>2003-06-05</span><span class="date-corr">0.447</span></div><div class="date-row"><span>2003-06-12</span><span class="date-corr">0.447</span></div><div class="date-row"><span>2003-06-04</span><span class="date-corr">0.446</span></div><div class="date-row"><span>2024-02-01</span><span class="date-corr">0.445</span></div><div class="date-row"><span>2025-07-10</span><span class="date-corr">0.444</span></div><div class="date-row"><span>2009-05-04</span><span class="date-corr">0.442</span></div><div class="date-row"><span>2019-04-12</span><span class="date-corr">0.441</span></div><div class="date-row"><span>2009-04-23</span><span class="date-corr">0.440</span></div><div class="date-row"><span>2025-07-08</span><span class="date-corr">0.440</span></div><div class="date-row"><span>2009-09-15</span><span class="date-corr">0.439</span></div><div class="date-row"><span>2003-06-06</span><span class="date-corr">0.439</span></div><div class="date-row"><span>2009-11-16</span><span class="date-corr">0.437</span></div><div class="date-row"><span>2009-06-02</span><span class="date-corr">0.436</span></div><div class="date-row"><span>2024-01-31</span><span class="date-corr">0.435</span></div><div class="date-row"><span>2019-03-27</span><span class="date-corr">0.435</span></div><div class="date-row"><span>2025-07-07</span><span class="date-corr">0.434</span></div><div class="date-row"><span>2011-12-30</span><span class="date-corr">0.434</span></div><div class="date-row"><span>2003-05-22</span><span class="date-corr">0.432</span></div><div class="date-row"><span>2006-03-22</span><span class="date-corr">0.432</span></div><div class="date-row"><span>2023-01-19</span><span class="date-corr">0.430</span></div><div class="date-row"><span>2013-09-19</span><span class="date-corr">0.430</span></div><div class="date-row"><span>2009-06-11</span><span class="date-corr">0.430</span></div><div class="date-row"><span>2002-03-14</span><span class="date-corr">0.430</span></div><div class="date-row"><span>2020-06-10</span><span class="date-corr">0.428</span></div><div class="date-row"><span>2023-01-04</span><span class="date-corr">0.428</span></div><div class="date-row"><span>2009-05-06</span><span class="date-corr">0.428</span></div><div class="date-row"><span>2009-09-23</span><span class="date-corr">0.427</span></div><div class="date-row"><span>2009-05-15</span><span class="date-corr">0.426</span></div><div class="date-row"><span>2009-07-29</span><span class="date-corr">0.426</span></div></div></div><div class="dates-panel" style="border-top:4px solid #1e3a5f;"><div class="dates-panel-header" style="background:#1e3a5f;color:#93c5fd;"><span>5Y Similar Days</span><span class="count">100</span></div><div class="dates-panel-body"><div class="date-row"><span>2026-02-19</span><span class="date-corr">0.820</span></div><div class="date-row"><span>2026-02-18</span><span class="date-corr">0.742</span></div><div class="date-row"><span>2026-02-17</span><span class="date-corr">0.677</span></div><div class="date-row"><span>2026-02-13</span><span class="date-corr">0.562</span></div><div class="date-row"><span>2023-01-17</span><span class="date-corr">0.521</span></div><div class="date-row"><span>2025-03-24</span><span class="date-corr">0.514</span></div><div class="date-row"><span>2023-01-13</span><span class="date-corr">0.499</span></div><div class="date-row"><span>2025-03-25</span><span class="date-corr">0.488</span></div><div class="date-row"><span>2023-01-18</span><span class="date-corr">0.482</span></div><div class="date-row"><span>2024-05-06</span><span class="date-corr">0.476</span></div><div class="date-row"><span>2023-01-20</span><span class="date-corr">0.475</span></div><div class="date-row"><span>2025-08-15</span><span class="date-corr">0.468</span></div><div class="date-row"><span>2024-05-14</span><span class="date-corr">0.466</span></div><div class="date-row"><span>2023-01-12</span><span class="date-corr">0.462</span></div><div class="date-row"><span>2022-12-12</span><span class="date-corr">0.460</span></div><div class="date-row"><span>2024-09-20</span><span class="date-corr">0.458</span></div><div class="date-row"><span>2023-01-11</span><span class="date-corr">0.455</span></div><div class="date-row"><span>2024-02-01</span><span class="date-corr">0.445</span></div><div class="date-row"><span>2025-07-10</span><span class="date-corr">0.444</span></div><div class="date-row"><span>2025-07-08</span><span class="date-corr">0.440</span></div><div class="date-row"><span>2024-01-31</span><span class="date-corr">0.435</span></div><div class="date-row"><span>2025-07-07</span><span class="date-corr">0.434</span></div><div class="date-row"><span>2023-01-19</span><span class="date-corr">0.430</span></div><div class="date-row"><span>2023-01-04</span><span class="date-corr">0.428</span></div><div class="date-row"><span>2024-09-23</span><span class="date-corr">0.423</span></div><div class="date-row"><span>2022-12-13</span><span class="date-corr">0.415</span></div><div class="date-row"><span>2024-09-24</span><span class="date-corr">0.415</span></div><div class="date-row"><span>2025-03-27</span><span class="date-corr">0.413</span></div><div class="date-row"><span>2025-03-26</span><span class="date-corr">0.409</span></div><div class="date-row"><span>2022-06-06</span><span class="date-corr">0.408</span></div><div class="date-row"><span>2024-03-13</span><span class="date-corr">0.406</span></div><div class="date-row"><span>2023-01-24</span><span class="date-corr">0.404</span></div><div class="date-row"><span>2023-01-10</span><span class="date-corr">0.403</span></div><div class="date-row"><span>2025-08-14</span><span class="date-corr">0.402</span></div><div class="date-row"><span>2022-11-23</span><span class="date-corr">0.400</span></div><div class="date-row"><span>2024-05-10</span><span class="date-corr">0.400</span></div><div class="date-row"><span>2025-07-09</span><span class="date-corr">0.399</span></div><div class="date-row"><span>2026-01-13</span><span class="date-corr">0.398</span></div><div class="date-row"><span>2024-05-15</span><span class="date-corr">0.397</span></div><div class="date-row"><span>2022-06-03</span><span class="date-corr">0.397</span></div><div class="date-row"><span>2023-01-23</span><span class="date-corr">0.397</span></div><div class="date-row"><span>2024-05-09</span><span class="date-corr">0.393</span></div><div class="date-row"><span>2025-06-12</span><span class="date-corr">0.392</span></div><div class="date-row"><span>2024-05-03</span><span class="date-corr">0.391</span></div><div class="date-row"><span>2021-03-22</span><span class="date-corr">0.390</span></div><div class="date-row"><span>2025-12-05</span><span class="date-corr">0.387</span></div><div class="date-row"><span>2023-01-09</span><span class="date-corr">0.387</span></div><div class="date-row"><span>2022-09-19</span><span class="date-corr">0.385</span></div><div class="date-row"><span>2023-01-03</span><span class="date-corr">0.384</span></div><div class="date-row"><span>2025-06-11</span><span class="date-corr">0.382</span></div><div class="date-row"><span>2025-04-23</span><span class="date-corr">0.380</span></div><div class="date-row"><span>2025-08-22</span><span class="date-corr">0.378</span></div><div class="date-row"><span>2024-01-30</span><span class="date-corr">0.377</span></div><div class="date-row"><span>2021-03-18</span><span class="date-corr">0.377</span></div><div class="date-row"><span>2025-09-17</span><span class="date-corr">0.375</span></div><div class="date-row"><span>2025-08-25</span><span class="date-corr">0.372</span></div><div class="date-row"><span>2022-12-21</span><span class="date-corr">0.368</span></div><div class="date-row"><span>2022-12-20</span><span class="date-corr">0.368</span></div><div class="date-row"><span>2023-06-09</span><span class="date-corr">0.364</span></div><div class="date-row"><span>2025-08-20</span><span class="date-corr">0.363</span></div><div class="date-row"><span>2026-02-03</span><span class="date-corr">0.362</span></div><div class="date-row"><span>2025-10-24</span><span class="date-corr">0.362</span></div><div class="date-row"><span>2025-07-11</span><span class="date-corr">0.362</span></div><div class="date-row"><span>2023-07-20</span><span class="date-corr">0.358</span></div><div class="date-row"><span>2023-01-06</span><span class="date-corr">0.355</span></div><div class="date-row"><span>2024-02-02</span><span class="date-corr">0.354</span></div><div class="date-row"><span>2024-09-26</span><span class="date-corr">0.354</span></div><div class="date-row"><span>2025-08-19</span><span class="date-corr">0.353</span></div><div class="date-row"><span>2024-02-28</span><span class="date-corr">0.352</span></div><div class="date-row"><span>2023-08-30</span><span class="date-corr">0.351</span></div><div class="date-row"><span>2026-02-05</span><span class="date-corr">0.348</span></div><div class="date-row"><span>2022-12-30</span><span class="date-corr">0.345</span></div><div class="date-row"><span>2024-08-26</span><span class="date-corr">0.344</span></div><div class="date-row"><span>2025-07-30</span><span class="date-corr">0.340</span></div><div class="date-row"><span>2026-01-12</span><span class="date-corr">0.337</span></div><div class="date-row"><span>2025-07-29</span><span class="date-corr">0.337</span></div><div class="date-row"><span>2025-06-13</span><span class="date-corr">0.335</span></div><div class="date-row"><span>2023-01-05</span><span class="date-corr">0.335</span></div><div class="date-row"><span>2025-09-16</span><span class="date-corr">0.334</span></div><div class="date-row"><span>2025-04-22</span><span class="date-corr">0.333</span></div><div class="date-row"><span>2025-09-18</span><span class="date-corr">0.333</span></div><div class="date-row"><span>2024-09-25</span><span class="date-corr">0.332</span></div><div class="date-row"><span>2023-12-27</span><span class="date-corr">0.331</span></div><div class="date-row"><span>2024-02-20</span><span class="date-corr">0.331</span></div><div class="date-row"><span>2024-01-22</span><span class="date-corr">0.330</span></div><div class="date-row"><span>2022-06-02</span><span class="date-corr">0.330</span></div><div class="date-row"><span>2024-02-05</span><span class="date-corr">0.329</span></div><div class="date-row"><span>2023-03-10</span><span class="date-corr">0.328</span></div><div class="date-row"><span>2022-09-16</span><span class="date-corr">0.326</span></div><div class="date-row"><span>2022-12-06</span><span class="date-corr">0.326</span></div><div class="date-row"><span>2023-06-14</span><span class="date-corr">0.324</span></div><div class="date-row"><span>2022-10-11</span><span class="date-corr">0.323</span></div><div class="date-row"><span>2024-01-05</span><span class="date-corr">0.323</span></div><div class="date-row"><span>2026-01-14</span><span class="date-corr">0.320</span></div><div class="date-row"><span>2026-01-15</span><span class="date-corr">0.320</span></div><div class="date-row"><span>2025-08-18</span><span class="date-corr">0.319</span></div><div class="date-row"><span>2025-07-03</span><span class="date-corr">0.318</span></div><div class="date-row"><span>2025-10-31</span><span class="date-corr">0.318</span></div><div class="date-row"><span>2023-01-25</span><span class="date-corr">0.318</span></div><div class="date-row"><span>2024-05-02</span><span class="date-corr">0.318</span></div></div></div><div class="dates-panel" style="border-top:4px solid #3b1f5e;"><div class="dates-panel-header" style="background:#3b1f5e;color:#c4b5fd;"><span>1Y Similar Days</span><span class="count">89</span></div><div class="dates-panel-body"><div class="date-row"><span>2026-02-19</span><span class="date-corr">0.820</span></div><div class="date-row"><span>2026-02-18</span><span class="date-corr">0.742</span></div><div class="date-row"><span>2026-02-17</span><span class="date-corr">0.677</span></div><div class="date-row"><span>2026-02-13</span><span class="date-corr">0.562</span></div><div class="date-row"><span>2025-03-24</span><span class="date-corr">0.514</span></div><div class="date-row"><span>2025-03-25</span><span class="date-corr">0.488</span></div><div class="date-row"><span>2025-08-15</span><span class="date-corr">0.468</span></div><div class="date-row"><span>2025-07-10</span><span class="date-corr">0.444</span></div><div class="date-row"><span>2025-07-08</span><span class="date-corr">0.440</span></div><div class="date-row"><span>2025-07-07</span><span class="date-corr">0.434</span></div><div class="date-row"><span>2025-03-27</span><span class="date-corr">0.413</span></div><div class="date-row"><span>2025-03-26</span><span class="date-corr">0.409</span></div><div class="date-row"><span>2025-08-14</span><span class="date-corr">0.402</span></div><div class="date-row"><span>2025-07-09</span><span class="date-corr">0.399</span></div><div class="date-row"><span>2026-01-13</span><span class="date-corr">0.398</span></div><div class="date-row"><span>2025-06-12</span><span class="date-corr">0.392</span></div><div class="date-row"><span>2025-12-05</span><span class="date-corr">0.387</span></div><div class="date-row"><span>2025-06-11</span><span class="date-corr">0.382</span></div><div class="date-row"><span>2025-04-23</span><span class="date-corr">0.380</span></div><div class="date-row"><span>2025-08-22</span><span class="date-corr">0.378</span></div><div class="date-row"><span>2025-09-17</span><span class="date-corr">0.375</span></div><div class="date-row"><span>2025-08-25</span><span class="date-corr">0.372</span></div><div class="date-row"><span>2025-08-20</span><span class="date-corr">0.363</span></div><div class="date-row"><span>2026-02-03</span><span class="date-corr">0.362</span></div><div class="date-row"><span>2025-10-24</span><span class="date-corr">0.362</span></div><div class="date-row"><span>2025-07-11</span><span class="date-corr">0.362</span></div><div class="date-row"><span>2025-08-19</span><span class="date-corr">0.353</span></div><div class="date-row"><span>2026-02-05</span><span class="date-corr">0.348</span></div><div class="date-row"><span>2025-07-30</span><span class="date-corr">0.340</span></div><div class="date-row"><span>2026-01-12</span><span class="date-corr">0.337</span></div><div class="date-row"><span>2025-07-29</span><span class="date-corr">0.337</span></div><div class="date-row"><span>2025-06-13</span><span class="date-corr">0.335</span></div><div class="date-row"><span>2025-09-16</span><span class="date-corr">0.334</span></div><div class="date-row"><span>2025-04-22</span><span class="date-corr">0.333</span></div><div class="date-row"><span>2025-09-18</span><span class="date-corr">0.333</span></div><div class="date-row"><span>2026-01-14</span><span class="date-corr">0.320</span></div><div class="date-row"><span>2026-01-15</span><span class="date-corr">0.320</span></div><div class="date-row"><span>2025-08-18</span><span class="date-corr">0.319</span></div><div class="date-row"><span>2025-07-03</span><span class="date-corr">0.318</span></div><div class="date-row"><span>2025-10-31</span><span class="date-corr">0.318</span></div><div class="date-row"><span>2025-11-04</span><span class="date-corr">0.317</span></div><div class="date-row"><span>2025-04-25</span><span class="date-corr">0.317</span></div><div class="date-row"><span>2026-01-23</span><span class="date-corr">0.316</span></div><div class="date-row"><span>2025-08-21</span><span class="date-corr">0.315</span></div><div class="date-row"><span>2025-09-15</span><span class="date-corr">0.309</span></div><div class="date-row"><span>2025-12-08</span><span class="date-corr">0.307</span></div><div class="date-row"><span>2025-07-14</span><span class="date-corr">0.303</span></div><div class="date-row"><span>2025-04-21</span><span class="date-corr">0.295</span></div><div class="date-row"><span>2025-05-02</span><span class="date-corr">0.294</span></div><div class="date-row"><span>2026-02-04</span><span class="date-corr">0.290</span></div><div class="date-row"><span>2025-12-04</span><span class="date-corr">0.285</span></div><div class="date-row"><span>2025-09-23</span><span class="date-corr">0.284</span></div><div class="date-row"><span>2025-06-09</span><span class="date-corr">0.281</span></div><div class="date-row"><span>2026-02-09</span><span class="date-corr">0.279</span></div><div class="date-row"><span>2025-11-05</span><span class="date-corr">0.273</span></div><div class="date-row"><span>2025-12-03</span><span class="date-corr">0.271</span></div><div class="date-row"><span>2025-08-01</span><span class="date-corr">0.270</span></div><div class="date-row"><span>2025-07-16</span><span class="date-corr">0.263</span></div><div class="date-row"><span>2025-08-13</span><span class="date-corr">0.257</span></div><div class="date-row"><span>2025-07-15</span><span class="date-corr">0.256</span></div><div class="date-row"><span>2025-07-28</span><span class="date-corr">0.255</span></div><div class="date-row"><span>2025-07-21</span><span class="date-corr">0.250</span></div><div class="date-row"><span>2025-07-17</span><span class="date-corr">0.249</span></div><div class="date-row"><span>2025-10-28</span><span class="date-corr">0.248</span></div><div class="date-row"><span>2025-10-27</span><span class="date-corr">0.248</span></div><div class="date-row"><span>2025-07-31</span><span class="date-corr">0.247</span></div><div class="date-row"><span>2025-07-02</span><span class="date-corr">0.244</span></div><div class="date-row"><span>2025-10-30</span><span class="date-corr">0.242</span></div><div class="date-row"><span>2025-05-01</span><span class="date-corr">0.241</span></div><div class="date-row"><span>2025-11-18</span><span class="date-corr">0.240</span></div><div class="date-row"><span>2026-02-11</span><span class="date-corr">0.238</span></div><div class="date-row"><span>2025-11-03</span><span class="date-corr">0.235</span></div><div class="date-row"><span>2025-09-19</span><span class="date-corr">0.233</span></div><div class="date-row"><span>2025-06-20</span><span class="date-corr">0.230</span></div><div class="date-row"><span>2026-01-16</span><span class="date-corr">0.230</span></div><div class="date-row"><span>2025-03-14</span><span class="date-corr">0.229</span></div><div class="date-row"><span>2025-06-17</span><span class="date-corr">0.228</span></div><div class="date-row"><span>2025-12-09</span><span class="date-corr">0.227</span></div><div class="date-row"><span>2025-06-16</span><span class="date-corr">0.225</span></div><div class="date-row"><span>2025-03-21</span><span class="date-corr">0.224</span></div><div class="date-row"><span>2025-12-10</span><span class="date-corr">0.224</span></div><div class="date-row"><span>2025-04-24</span><span class="date-corr">0.219</span></div><div class="date-row"><span>2025-09-05</span><span class="date-corr">0.218</span></div><div class="date-row"><span>2026-02-06</span><span class="date-corr">0.217</span></div><div class="date-row"><span>2025-04-28</span><span class="date-corr">0.217</span></div><div class="date-row"><span>2025-05-05</span><span class="date-corr">0.216</span></div><div class="date-row"><span>2026-01-22</span><span class="date-corr">0.216</span></div><div class="date-row"><span>2026-01-26</span><span class="date-corr">0.212</span></div><div class="date-row"><span>2025-07-25</span><span class="date-corr">0.202</span></div></div></div></div>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>Risk Regime &amp; Continuation</h2><span style="font-size:0.85em;color:#888;">Before 5d = what happened leading into similar days &nbsp;|&nbsp; After → = what followed &nbsp;|&nbsp; Click column headers to sort</span></div><div class="sim-table" style="overflow-x:auto;padding:0;"><div id="tbl-risk"></div></div></div>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>Major Indexes — Before vs After</h2><span style="font-size:0.85em;color:#888;">Before 5d = what happened leading into similar days &nbsp;|&nbsp; After → = what followed &nbsp;|&nbsp; Click column headers to sort</span></div><div class="sim-table" style="overflow-x:auto;padding:0;"><div id="tbl-indexes"></div></div></div>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>Market Cap — Before vs After</h2><span style="font-size:0.85em;color:#888;">Before 5d = what happened leading into similar days &nbsp;|&nbsp; After → = what followed &nbsp;|&nbsp; Click column headers to sort</span></div><div class="sim-table" style="overflow-x:auto;padding:0;"><div id="tbl-market-cap"></div></div></div>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>Sectors — Before vs After</h2><span style="font-size:0.85em;color:#888;">Before 5d = what happened leading into similar days &nbsp;|&nbsp; After → = what followed &nbsp;|&nbsp; Click column headers to sort</span></div><div class="sim-table" style="overflow-x:auto;padding:0;"><div id="tbl-sectors"></div></div></div>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>Style Factors — Before vs After</h2><span style="font-size:0.85em;color:#888;">Before 5d = what happened leading into similar days &nbsp;|&nbsp; After → = what followed &nbsp;|&nbsp; Click column headers to sort</span></div><div class="sim-table" style="overflow-x:auto;padding:0;"><div id="tbl-styles"></div></div></div>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>LLM Research Prompt</h2><span style="font-size:0.85em;color:#888;">Copy into ChatGPT / Claude / Perplexity to research what was happening on these similar days</span></div><div style="padding:16px;"><div style="font-size:0.82em;color:#555;margin-bottom:10px;">Top 25 similar days per window. Paste the prompt below into an LLM to get a structured analysis of market conditions on those dates.</div><button onclick="navigator.clipboard.writeText(document.getElementById('llm-prompt-text').innerText)" style="margin-bottom:12px;padding:6px 16px;background:#4f46e5;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.85em;">Copy Prompt</button><pre id="llm-prompt-text" style="background:#f8f9fb;border:1px solid #e2e4e8;border-radius:6px;padding:14px;font-size:0.78em;font-family:'IBM Plex Mono',monospace;white-space:pre-wrap;overflow-x:auto;max-height:400px;overflow-y:auto;">You are a financial market historian and analyst.
+
+I am running a quantitative pattern-matching system that identifies historical market days
+with similar momentum profiles to today. Below are the top 25 most similar days for each
+lookback window (25Y = all history, 5Y = last 5 years, 1Y = last year).
+
+For each window's dates, please analyze what was happening in the market on and around
+those dates across these 10 dimensions:
+
+1. MACRO REGIME — What was the broad economic backdrop? (expansion/contraction, Fed stance)
+2. VOLATILITY — Was the VIX elevated or suppressed? Any fear/complacency signals?
+3. SECTOR LEADERSHIP — Which sectors were leading or lagging?
+4. EARNINGS CYCLE — Where were we in the earnings calendar? Any major beats/misses?
+5. FED & RATES — What was the Fed doing? Direction of yields?
+6. GEOPOLITICAL — Any major geopolitical events or policy shifts?
+7. SENTIMENT — What was investor sentiment? (retail flows, positioning, put/call)
+8. CREDIT CONDITIONS — Was credit tight or loose? HY spreads direction?
+9. DOLLAR & COMMODITIES — Strength/weakness in USD, gold, oil?
+10. WHAT HAPPENED NEXT — What did the market do in the 5-10 days after these dates?
+
+After analyzing each window separately, identify:
+- Common themes across all three windows (what do they share?)
+- Key differences (what makes the 25Y matches different from the 1Y matches?)
+- Your best synthesis: given all three windows, what does the pattern suggest about
+  likely market behavior over the next 5-10 trading days?
+
+============================================================
+
+--- 25Y WINDOW (top 25 similar days) ---
+  2026-02-19  (correlation: 0.820)
+  2026-02-18  (correlation: 0.742)
+  2026-02-17  (correlation: 0.677)
+  2026-02-13  (correlation: 0.562)
+  2023-01-17  (correlation: 0.521)
+  2019-03-22  (correlation: 0.517)
+  2009-07-28  (correlation: 0.516)
+  2025-03-24  (correlation: 0.514)
+  2019-03-21  (correlation: 0.512)
+  2009-05-12  (correlation: 0.506)
+  2009-07-27  (correlation: 0.503)
+  2009-10-15  (correlation: 0.502)
+  2023-01-13  (correlation: 0.499)
+  2009-06-05  (correlation: 0.494)
+  2009-10-19  (correlation: 0.492)
+  2003-06-03  (correlation: 0.491)
+  2009-07-22  (correlation: 0.490)
+  2006-01-13  (correlation: 0.489)
+  2025-03-25  (correlation: 0.488)
+  2009-10-16  (correlation: 0.488)
+  2003-06-11  (correlation: 0.483)
+  2006-01-12  (correlation: 0.483)
+  2023-01-18  (correlation: 0.482)
+  2009-06-08  (correlation: 0.481)
+  2006-01-11  (correlation: 0.481)
+
+--- 5Y WINDOW (top 25 similar days) ---
+  2026-02-19  (correlation: 0.820)
+  2026-02-18  (correlation: 0.742)
+  2026-02-17  (correlation: 0.677)
+  2026-02-13  (correlation: 0.562)
+  2023-01-17  (correlation: 0.521)
+  2025-03-24  (correlation: 0.514)
+  2023-01-13  (correlation: 0.499)
+  2025-03-25  (correlation: 0.488)
+  2023-01-18  (correlation: 0.482)
+  2024-05-06  (correlation: 0.476)
+  2023-01-20  (correlation: 0.475)
+  2025-08-15  (correlation: 0.468)
+  2024-05-14  (correlation: 0.466)
+  2023-01-12  (correlation: 0.462)
+  2022-12-12  (correlation: 0.460)
+  2024-09-20  (correlation: 0.458)
+  2023-01-11  (correlation: 0.455)
+  2024-02-01  (correlation: 0.445)
+  2025-07-10  (correlation: 0.444)
+  2025-07-08  (correlation: 0.440)
+  2024-01-31  (correlation: 0.435)
+  2025-07-07  (correlation: 0.434)
+  2023-01-19  (correlation: 0.430)
+  2023-01-04  (correlation: 0.428)
+  2024-09-23  (correlation: 0.423)
+
+--- 1Y WINDOW (top 25 similar days) ---
+  2026-02-19  (correlation: 0.820)
+  2026-02-18  (correlation: 0.742)
+  2026-02-17  (correlation: 0.677)
+  2026-02-13  (correlation: 0.562)
+  2025-03-24  (correlation: 0.514)
+  2025-03-25  (correlation: 0.488)
+  2025-08-15  (correlation: 0.468)
+  2025-07-10  (correlation: 0.444)
+  2025-07-08  (correlation: 0.440)
+  2025-07-07  (correlation: 0.434)
+  2025-03-27  (correlation: 0.413)
+  2025-03-26  (correlation: 0.409)
+  2025-08-14  (correlation: 0.402)
+  2025-07-09  (correlation: 0.399)
+  2026-01-13  (correlation: 0.398)
+  2025-06-12  (correlation: 0.392)
+  2025-12-05  (correlation: 0.387)
+  2025-06-11  (correlation: 0.382)
+  2025-04-23  (correlation: 0.380)
+  2025-08-22  (correlation: 0.378)
+  2025-09-17  (correlation: 0.375)
+  2025-08-25  (correlation: 0.372)
+  2025-08-20  (correlation: 0.363)
+  2026-02-03  (correlation: 0.362)
+  2025-10-24  (correlation: 0.362)
+
+============================================================
+Please structure your response with clear sections for each window,
+followed by the cross-window synthesis.</pre></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-02-20 &mdash; For personal research only.</div>
+<script>
+
+function getGradientColor(score) {
+    var clamped = Math.max(0, Math.min(1, score));
+    var r, g, b;
+    if (clamped < 0.25) {
+        var t = clamped * 4;
+        r = Math.round(211 + (255 - 211) * t);
+        g = Math.round(47 + (152 - 47) * t);
+        b = Math.round(47 + (0 - 47) * t);
+    } else if (clamped < 0.5) {
+        var t = (clamped - 0.25) * 4;
+        r = 255;
+        g = Math.round(152 + (235 - 152) * t);
+        b = Math.round(0 + (59 - 0) * t);
+    } else if (clamped < 0.75) {
+        var t = (clamped - 0.5) * 4;
+        r = Math.round(255 + (139 - 255) * t);
+        g = Math.round(235 + (195 - 235) * t);
+        b = Math.round(59 + (74 - 59) * t);
+    } else {
+        var t = (clamped - 0.75) * 4;
+        r = Math.round(139 + (0 - 139) * t);
+        g = Math.round(195 + (200 - 195) * t);
+        b = Math.round(74 + (83 - 74) * t);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+
+(function() {
+    const DATA = {"generated_at": "2026-02-20T11:13:15.485460", "target_date": "2026-02-20", "windows": {"25Y": {"similar_days_count": 100, "similar_days": [{"date": "2026-02-19", "correlation": 0.8203}, {"date": "2026-02-18", "correlation": 0.7418}, {"date": "2026-02-17", "correlation": 0.6767}, {"date": "2026-02-13", "correlation": 0.5622}, {"date": "2023-01-17", "correlation": 0.5215}, {"date": "2019-03-22", "correlation": 0.5168}, {"date": "2009-07-28", "correlation": 0.5163}, {"date": "2025-03-24", "correlation": 0.5138}, {"date": "2019-03-21", "correlation": 0.5124}, {"date": "2009-05-12", "correlation": 0.5058}, {"date": "2009-07-27", "correlation": 0.5033}, {"date": "2009-10-15", "correlation": 0.5018}, {"date": "2023-01-13", "correlation": 0.4992}, {"date": "2009-06-05", "correlation": 0.4938}, {"date": "2009-10-19", "correlation": 0.4922}, {"date": "2003-06-03", "correlation": 0.4912}, {"date": "2009-07-22", "correlation": 0.4899}, {"date": "2006-01-13", "correlation": 0.4887}, {"date": "2025-03-25", "correlation": 0.4884}, {"date": "2009-10-16", "correlation": 0.4877}, {"date": "2003-06-11", "correlation": 0.4832}, {"date": "2006-01-12", "correlation": 0.4827}, {"date": "2023-01-18", "correlation": 0.4816}, {"date": "2009-06-08", "correlation": 0.4815}, {"date": "2006-01-11", "correlation": 0.4807}, {"date": "2009-07-21", "correlation": 0.4802}, {"date": "2009-07-09", "correlation": 0.4791}, {"date": "2019-03-25", "correlation": 0.478}, {"date": "2009-05-29", "correlation": 0.4777}, {"date": "2019-04-11", "correlation": 0.4773}, {"date": "2019-03-26", "correlation": 0.4771}, {"date": "2024-05-06", "correlation": 0.4759}, {"date": "2023-01-20", "correlation": 0.4753}, {"date": "2009-06-09", "correlation": 0.4748}, {"date": "2019-03-28", "correlation": 0.4746}, {"date": "2016-04-21", "correlation": 0.4744}, {"date": "2009-05-28", "correlation": 0.474}, {"date": "2009-07-07", "correlation": 0.4724}, {"date": "2009-06-01", "correlation": 0.4719}, {"date": "2012-01-04", "correlation": 0.4715}, {"date": "2009-07-23", "correlation": 0.4705}, {"date": "2016-04-20", "correlation": 0.4703}, {"date": "2009-09-17", "correlation": 0.47}, {"date": "2025-08-15", "correlation": 0.4684}, {"date": "2009-06-10", "correlation": 0.4669}, {"date": "2009-09-21", "correlation": 0.4668}, {"date": "2009-04-22", "correlation": 0.4665}, {"date": "2020-06-25", "correlation": 0.4657}, {"date": "2024-05-14", "correlation": 0.4655}, {"date": "2009-09-22", "correlation": 0.4644}, {"date": "2009-05-11", "correlation": 0.4629}, {"date": "2023-01-12", "correlation": 0.4624}, {"date": "2012-01-03", "correlation": 0.4618}, {"date": "2009-07-24", "correlation": 0.4614}, {"date": "2016-04-19", "correlation": 0.4609}, {"date": "2022-12-12", "correlation": 0.46}, {"date": "2010-11-11", "correlation": 0.4589}, {"date": "2009-08-31", "correlation": 0.4587}, {"date": "2009-09-18", "correlation": 0.4582}, {"date": "2009-07-08", "correlation": 0.4582}, {"date": "2024-09-20", "correlation": 0.4578}, {"date": "2019-04-10", "correlation": 0.4578}, {"date": "2009-07-31", "correlation": 0.4552}, {"date": "2023-01-11", "correlation": 0.4546}, {"date": "2019-03-20", "correlation": 0.4545}, {"date": "2009-09-01", "correlation": 0.4541}, {"date": "2006-03-23", "correlation": 0.4533}, {"date": "2006-01-17", "correlation": 0.4512}, {"date": "2009-09-16", "correlation": 0.4494}, {"date": "2012-03-20", "correlation": 0.4487}, {"date": "2002-03-13", "correlation": 0.4482}, {"date": "2003-06-05", "correlation": 0.4471}, {"date": "2003-06-12", "correlation": 0.4466}, {"date": "2003-06-04", "correlation": 0.4463}, {"date": "2024-02-01", "correlation": 0.4454}, {"date": "2025-07-10", "correlation": 0.4442}, {"date": "2009-05-04", "correlation": 0.442}, {"date": "2019-04-12", "correlation": 0.4409}, {"date": "2009-04-23", "correlation": 0.4403}, {"date": "2025-07-08", "correlation": 0.4401}, {"date": "2009-09-15", "correlation": 0.4391}, {"date": "2003-06-06", "correlation": 0.4386}, {"date": "2009-11-16", "correlation": 0.437}, {"date": "2009-06-02", "correlation": 0.4365}, {"date": "2024-01-31", "correlation": 0.4353}, {"date": "2019-03-27", "correlation": 0.4346}, {"date": "2025-07-07", "correlation": 0.4345}, {"date": "2011-12-30", "correlation": 0.4336}, {"date": "2003-05-22", "correlation": 0.4324}, {"date": "2006-03-22", "correlation": 0.432}, {"date": "2023-01-19", "correlation": 0.4305}, {"date": "2013-09-19", "correlation": 0.4305}, {"date": "2009-06-11", "correlation": 0.4297}, {"date": "2002-03-14", "correlation": 0.4297}, {"date": "2020-06-10", "correlation": 0.4281}, {"date": "2023-01-04", "correlation": 0.4281}, {"date": "2009-05-06", "correlation": 0.4277}, {"date": "2009-09-23", "correlation": 0.4274}, {"date": "2009-05-15", "correlation": 0.4259}, {"date": "2009-07-29", "correlation": 0.4258}], "sectors": {"XLF": {"name": "Financials", "backward": {"avg_return": 0.79, "pct_positive": 62.0, "sample_count": 100}, "forward": {"avg_return": 0.77, "pct_positive": 55.2, "sample_count": 96}}, "XLY": {"name": "Consumer Disc", "backward": {"avg_return": 1.3, "pct_positive": 71.0, "sample_count": 100}, "forward": {"avg_return": 0.74, "pct_positive": 58.3, "sample_count": 96}}, "XLI": {"name": "Industrials", "backward": {"avg_return": 0.92, "pct_positive": 69.0, "sample_count": 100}, "forward": {"avg_return": 0.66, "pct_positive": 59.4, "sample_count": 96}}, "XLB": {"name": "Materials", "backward": {"avg_return": 1.1, "pct_positive": 60.0, "sample_count": 100}, "forward": {"avg_return": 0.66, "pct_positive": 59.4, "sample_count": 96}}, "XLK": {"name": "Technology", "backward": {"avg_return": 0.97, "pct_positive": 67.0, "sample_count": 100}, "forward": {"avg_return": 0.55, "pct_positive": 63.5, "sample_count": 96}}, "XLE": {"name": "Energy", "backward": {"avg_return": 1.45, "pct_positive": 74.0, "sample_count": 100}, "forward": {"avg_return": 0.49, "pct_positive": 63.5, "sample_count": 96}}, "XLRE": {"name": "Real Estate", "backward": {"avg_return": 0.9, "pct_positive": 66.7, "sample_count": 39}, "forward": {"avg_return": 0.21, "pct_positive": 57.1, "sample_count": 35}}, "XLP": {"name": "Consumer Staples", "backward": {"avg_return": 0.42, "pct_positive": 65.0, "sample_count": 100}, "forward": {"avg_return": 0.18, "pct_positive": 55.2, "sample_count": 96}}, "XLV": {"name": "Healthcare", "backward": {"avg_return": 0.44, "pct_positive": 59.0, "sample_count": 100}, "forward": {"avg_return": 0.06, "pct_positive": 51.0, "sample_count": 96}}, "XLU": {"name": "Utilities", "backward": {"avg_return": 0.6, "pct_positive": 60.0, "sample_count": 100}, "forward": {"avg_return": -0.05, "pct_positive": 44.8, "sample_count": 96}}}, "indexes": {"spy": {"name": "S&P 500 (SPY)", "backward": {"avg_return": 0.88, "pct_positive": 68.0}, "forward": {"avg_return": 0.46, "pct_positive": 58.3}}, "dia": {"name": "Dow Jones (DIA)", "backward": {"avg_return": 0.78, "pct_positive": 67.0}, "forward": {"avg_return": 0.38, "pct_positive": 60.4}}, "iau": {"name": "Gold (IAU)", "backward": {"avg_return": 0.61, "pct_positive": 63.7}, "forward": {"avg_return": 0.33, "pct_positive": 58.6}}, "vgk": {"name": "Europe (VGK)", "backward": {"avg_return": 1.02, "pct_positive": 69.2}, "forward": {"avg_return": 0.48, "pct_positive": 55.2}}, "mchi": {"name": "China (MCHI)", "backward": {"avg_return": 0.09, "pct_positive": 54.5}, "forward": {"avg_return": 1.88, "pct_positive": 70.0}}, "tlt": {"name": "20Y Treasury (TLT)", "backward": {"avg_return": 0.16, "pct_positive": 55.1}, "forward": {"avg_return": -0.17, "pct_positive": 45.7}}}, "styles": {"growth": {"name": "Growth (QQQ)", "backward": {"avg_return": 1.13, "pct_positive": 70.0}, "forward": {"avg_return": 0.67, "pct_positive": 63.5}}, "value": {"name": "Value (VTV)", "backward": {"avg_return": 0.74, "pct_positive": 68.1}, "forward": {"avg_return": 0.25, "pct_positive": 51.7}}, "quality": {"name": "Quality (QUAL)", "backward": {"avg_return": 0.59, "pct_positive": 62.5}, "forward": {"avg_return": 0.52, "pct_positive": 58.3}}, "momentum": {"name": "Momentum (MTUM)", "backward": {"avg_return": 0.33, "pct_positive": 60.0}, "forward": {"avg_return": 0.04, "pct_positive": 50.0}}, "size": {"name": "Size (IJR)", "backward": {"avg_return": 1.16, "pct_positive": 66.0}, "forward": {"avg_return": 0.6, "pct_positive": 54.2}}, "min_vol": {"name": "Min Volatility (USMV)", "backward": {"avg_return": 0.21, "pct_positive": 70.5}, "forward": {"avg_return": -0.03, "pct_positive": 55.0}}, "dividend": {"name": "Dividend (VIG)", "backward": {"avg_return": 0.69, "pct_positive": 67.1}, "forward": {"avg_return": 0.32, "pct_positive": 56.8}}}, "market_cap": {"large": {"backward": {"avg_return": 0.88, "pct_positive": 68.0}, "forward": {"avg_return": 0.46, "pct_positive": 58.3}}, "mid": {"backward": {"avg_return": 1.03, "pct_positive": 64.0}, "forward": {"avg_return": 0.61, "pct_positive": 60.4}}, "small": {"backward": {"avg_return": 1.24, "pct_positive": 65.0}, "forward": {"avg_return": 0.64, "pct_positive": 60.4}}}, "risk_regime": {"backward": {"regime": "MIXED", "avg_risk_score": 0.28, "equities_avg": 0.83, "bonds_avg": 0.11}, "forward": {"regime": "MIXED", "avg_risk_score": 0.31, "equities_avg": 0.42, "bonds_avg": -0.23}, "continuation": true}, "continuation": {"sector_leaders_continued": 38.5, "sample_count": 96}}, "5Y": {"similar_days_count": 100, "similar_days": [{"date": "2026-02-19", "correlation": 0.8203}, {"date": "2026-02-18", "correlation": 0.7418}, {"date": "2026-02-17", "correlation": 0.6767}, {"date": "2026-02-13", "correlation": 0.5622}, {"date": "2023-01-17", "correlation": 0.5215}, {"date": "2025-03-24", "correlation": 0.5138}, {"date": "2023-01-13", "correlation": 0.4992}, {"date": "2025-03-25", "correlation": 0.4884}, {"date": "2023-01-18", "correlation": 0.4816}, {"date": "2024-05-06", "correlation": 0.4759}, {"date": "2023-01-20", "correlation": 0.4753}, {"date": "2025-08-15", "correlation": 0.4684}, {"date": "2024-05-14", "correlation": 0.4655}, {"date": "2023-01-12", "correlation": 0.4624}, {"date": "2022-12-12", "correlation": 0.46}, {"date": "2024-09-20", "correlation": 0.4578}, {"date": "2023-01-11", "correlation": 0.4546}, {"date": "2024-02-01", "correlation": 0.4454}, {"date": "2025-07-10", "correlation": 0.4442}, {"date": "2025-07-08", "correlation": 0.4401}, {"date": "2024-01-31", "correlation": 0.4353}, {"date": "2025-07-07", "correlation": 0.4345}, {"date": "2023-01-19", "correlation": 0.4305}, {"date": "2023-01-04", "correlation": 0.4281}, {"date": "2024-09-23", "correlation": 0.423}, {"date": "2022-12-13", "correlation": 0.4155}, {"date": "2024-09-24", "correlation": 0.4148}, {"date": "2025-03-27", "correlation": 0.4134}, {"date": "2025-03-26", "correlation": 0.4091}, {"date": "2022-06-06", "correlation": 0.4084}, {"date": "2024-03-13", "correlation": 0.4061}, {"date": "2023-01-24", "correlation": 0.4038}, {"date": "2023-01-10", "correlation": 0.4029}, {"date": "2025-08-14", "correlation": 0.4019}, {"date": "2022-11-23", "correlation": 0.4}, {"date": "2024-05-10", "correlation": 0.3999}, {"date": "2025-07-09", "correlation": 0.3994}, {"date": "2026-01-13", "correlation": 0.3975}, {"date": "2024-05-15", "correlation": 0.3974}, {"date": "2022-06-03", "correlation": 0.3969}, {"date": "2023-01-23", "correlation": 0.3966}, {"date": "2024-05-09", "correlation": 0.3934}, {"date": "2025-06-12", "correlation": 0.3915}, {"date": "2024-05-03", "correlation": 0.3905}, {"date": "2021-03-22", "correlation": 0.39}, {"date": "2025-12-05", "correlation": 0.3867}, {"date": "2023-01-09", "correlation": 0.3865}, {"date": "2022-09-19", "correlation": 0.3845}, {"date": "2023-01-03", "correlation": 0.3835}, {"date": "2025-06-11", "correlation": 0.3824}, {"date": "2025-04-23", "correlation": 0.38}, {"date": "2025-08-22", "correlation": 0.3778}, {"date": "2024-01-30", "correlation": 0.3773}, {"date": "2021-03-18", "correlation": 0.3769}, {"date": "2025-09-17", "correlation": 0.3747}, {"date": "2025-08-25", "correlation": 0.3723}, {"date": "2022-12-21", "correlation": 0.3684}, {"date": "2022-12-20", "correlation": 0.3682}, {"date": "2023-06-09", "correlation": 0.3643}, {"date": "2025-08-20", "correlation": 0.3633}, {"date": "2026-02-03", "correlation": 0.3624}, {"date": "2025-10-24", "correlation": 0.3621}, {"date": "2025-07-11", "correlation": 0.3616}, {"date": "2023-07-20", "correlation": 0.3576}, {"date": "2023-01-06", "correlation": 0.3554}, {"date": "2024-02-02", "correlation": 0.3536}, {"date": "2024-09-26", "correlation": 0.3536}, {"date": "2025-08-19", "correlation": 0.3533}, {"date": "2024-02-28", "correlation": 0.352}, {"date": "2023-08-30", "correlation": 0.3509}, {"date": "2026-02-05", "correlation": 0.3483}, {"date": "2022-12-30", "correlation": 0.3455}, {"date": "2024-08-26", "correlation": 0.3438}, {"date": "2025-07-30", "correlation": 0.3401}, {"date": "2026-01-12", "correlation": 0.337}, {"date": "2025-07-29", "correlation": 0.3369}, {"date": "2025-06-13", "correlation": 0.335}, {"date": "2023-01-05", "correlation": 0.3349}, {"date": "2025-09-16", "correlation": 0.3341}, {"date": "2025-04-22", "correlation": 0.3326}, {"date": "2025-09-18", "correlation": 0.3325}, {"date": "2024-09-25", "correlation": 0.332}, {"date": "2023-12-27", "correlation": 0.3308}, {"date": "2024-02-20", "correlation": 0.3307}, {"date": "2024-01-22", "correlation": 0.3303}, {"date": "2022-06-02", "correlation": 0.3297}, {"date": "2024-02-05", "correlation": 0.3289}, {"date": "2023-03-10", "correlation": 0.3283}, {"date": "2022-09-16", "correlation": 0.3263}, {"date": "2022-12-06", "correlation": 0.3259}, {"date": "2023-06-14", "correlation": 0.3243}, {"date": "2022-10-11", "correlation": 0.3234}, {"date": "2024-01-05", "correlation": 0.3231}, {"date": "2026-01-14", "correlation": 0.32}, {"date": "2026-01-15", "correlation": 0.3197}, {"date": "2025-08-18", "correlation": 0.3189}, {"date": "2025-07-03", "correlation": 0.3184}, {"date": "2025-10-31", "correlation": 0.3179}, {"date": "2023-01-25", "correlation": 0.3178}, {"date": "2024-05-02", "correlation": 0.3176}], "sectors": {"XLE": {"name": "Energy", "backward": {"avg_return": 0.84, "pct_positive": 74.0, "sample_count": 100}, "forward": {"avg_return": 0.43, "pct_positive": 63.5, "sample_count": 96}}, "XLK": {"name": "Technology", "backward": {"avg_return": 0.4, "pct_positive": 60.0, "sample_count": 100}, "forward": {"avg_return": 0.39, "pct_positive": 60.4, "sample_count": 96}}, "XLRE": {"name": "Real Estate", "backward": {"avg_return": 0.22, "pct_positive": 56.0, "sample_count": 100}, "forward": {"avg_return": 0.19, "pct_positive": 54.2, "sample_count": 96}}, "XLI": {"name": "Industrials", "backward": {"avg_return": 0.52, "pct_positive": 74.0, "sample_count": 100}, "forward": {"avg_return": 0.16, "pct_positive": 61.5, "sample_count": 96}}, "XLY": {"name": "Consumer Disc", "backward": {"avg_return": 0.92, "pct_positive": 68.0, "sample_count": 100}, "forward": {"avg_return": 0.15, "pct_positive": 56.2, "sample_count": 96}}, "XLB": {"name": "Materials", "backward": {"avg_return": 0.64, "pct_positive": 66.0, "sample_count": 100}, "forward": {"avg_return": 0.09, "pct_positive": 55.2, "sample_count": 96}}, "XLU": {"name": "Utilities", "backward": {"avg_return": 0.24, "pct_positive": 54.0, "sample_count": 100}, "forward": {"avg_return": 0.09, "pct_positive": 57.3, "sample_count": 96}}, "XLP": {"name": "Consumer Staples", "backward": {"avg_return": 0.15, "pct_positive": 55.0, "sample_count": 100}, "forward": {"avg_return": -0.09, "pct_positive": 54.2, "sample_count": 96}}, "XLF": {"name": "Financials", "backward": {"avg_return": 0.21, "pct_positive": 63.0, "sample_count": 100}, "forward": {"avg_return": -0.15, "pct_positive": 52.1, "sample_count": 96}}, "XLV": {"name": "Healthcare", "backward": {"avg_return": 0.12, "pct_positive": 55.0, "sample_count": 100}, "forward": {"avg_return": -0.15, "pct_positive": 52.1, "sample_count": 96}}}, "indexes": {"spy": {"name": "S&P 500 (SPY)", "backward": {"avg_return": 0.39, "pct_positive": 70.0}, "forward": {"avg_return": 0.13, "pct_positive": 58.3}}, "dia": {"name": "Dow Jones (DIA)", "backward": {"avg_return": 0.36, "pct_positive": 70.0}, "forward": {"avg_return": -0.02, "pct_positive": 54.2}}, "iau": {"name": "Gold (IAU)", "backward": {"avg_return": 0.5, "pct_positive": 67.0}, "forward": {"avg_return": 1.03, "pct_positive": 66.7}}, "vgk": {"name": "Europe (VGK)", "backward": {"avg_return": 0.6, "pct_positive": 70.0}, "forward": {"avg_return": -0.14, "pct_positive": 52.1}}, "mchi": {"name": "China (MCHI)", "backward": {"avg_return": 1.13, "pct_positive": 60.0}, "forward": {"avg_return": 1.56, "pct_positive": 62.5}}, "tlt": {"name": "20Y Treasury (TLT)", "backward": {"avg_return": 0.12, "pct_positive": 50.0}, "forward": {"avg_return": -0.04, "pct_positive": 44.8}}}, "styles": {"growth": {"name": "Growth (QQQ)", "backward": {"avg_return": 0.48, "pct_positive": 65.0}, "forward": {"avg_return": 0.31, "pct_positive": 59.4}}, "value": {"name": "Value (VTV)", "backward": {"avg_return": 0.38, "pct_positive": 68.0}, "forward": {"avg_return": -0.01, "pct_positive": 55.2}}, "quality": {"name": "Quality (QUAL)", "backward": {"avg_return": 0.42, "pct_positive": 68.0}, "forward": {"avg_return": 0.19, "pct_positive": 57.3}}, "momentum": {"name": "Momentum (MTUM)", "backward": {"avg_return": 0.17, "pct_positive": 51.0}, "forward": {"avg_return": 0.05, "pct_positive": 50.0}}, "size": {"name": "Size (IJR)", "backward": {"avg_return": 0.59, "pct_positive": 65.0}, "forward": {"avg_return": -0.09, "pct_positive": 45.8}}, "min_vol": {"name": "Min Volatility (USMV)", "backward": {"avg_return": 0.03, "pct_positive": 59.0}, "forward": {"avg_return": -0.04, "pct_positive": 57.3}}, "dividend": {"name": "Dividend (VIG)", "backward": {"avg_return": 0.27, "pct_positive": 68.0}, "forward": {"avg_return": -0.01, "pct_positive": 51.0}}}, "market_cap": {"large": {"backward": {"avg_return": 0.39, "pct_positive": 70.0}, "forward": {"avg_return": 0.13, "pct_positive": 58.3}}, "mid": {"backward": {"avg_return": 0.56, "pct_positive": 68.0}, "forward": {"avg_return": 0.03, "pct_positive": 53.1}}, "small": {"backward": {"avg_return": 0.62, "pct_positive": 63.0}, "forward": {"avg_return": 0.02, "pct_positive": 54.2}}}, "risk_regime": {"backward": {"regime": "MIXED", "avg_risk_score": -0.31, "equities_avg": 0.39, "bonds_avg": 0.12}, "forward": {"regime": "RISK-OFF", "avg_risk_score": -1.01, "equities_avg": 0.13, "bonds_avg": -0.04}, "continuation": false}, "continuation": {"sector_leaders_continued": 50.0, "sample_count": 96}}, "1Y": {"similar_days_count": 89, "similar_days": [{"date": "2026-02-19", "correlation": 0.8203}, {"date": "2026-02-18", "correlation": 0.7418}, {"date": "2026-02-17", "correlation": 0.6767}, {"date": "2026-02-13", "correlation": 0.5622}, {"date": "2025-03-24", "correlation": 0.5138}, {"date": "2025-03-25", "correlation": 0.4884}, {"date": "2025-08-15", "correlation": 0.4684}, {"date": "2025-07-10", "correlation": 0.4442}, {"date": "2025-07-08", "correlation": 0.4401}, {"date": "2025-07-07", "correlation": 0.4345}, {"date": "2025-03-27", "correlation": 0.4134}, {"date": "2025-03-26", "correlation": 0.4091}, {"date": "2025-08-14", "correlation": 0.4019}, {"date": "2025-07-09", "correlation": 0.3994}, {"date": "2026-01-13", "correlation": 0.3975}, {"date": "2025-06-12", "correlation": 0.3915}, {"date": "2025-12-05", "correlation": 0.3867}, {"date": "2025-06-11", "correlation": 0.3824}, {"date": "2025-04-23", "correlation": 0.38}, {"date": "2025-08-22", "correlation": 0.3778}, {"date": "2025-09-17", "correlation": 0.3747}, {"date": "2025-08-25", "correlation": 0.3723}, {"date": "2025-08-20", "correlation": 0.3633}, {"date": "2026-02-03", "correlation": 0.3624}, {"date": "2025-10-24", "correlation": 0.3621}, {"date": "2025-07-11", "correlation": 0.3616}, {"date": "2025-08-19", "correlation": 0.3533}, {"date": "2026-02-05", "correlation": 0.3483}, {"date": "2025-07-30", "correlation": 0.3401}, {"date": "2026-01-12", "correlation": 0.337}, {"date": "2025-07-29", "correlation": 0.3369}, {"date": "2025-06-13", "correlation": 0.335}, {"date": "2025-09-16", "correlation": 0.3341}, {"date": "2025-04-22", "correlation": 0.3326}, {"date": "2025-09-18", "correlation": 0.3325}, {"date": "2026-01-14", "correlation": 0.32}, {"date": "2026-01-15", "correlation": 0.3197}, {"date": "2025-08-18", "correlation": 0.3189}, {"date": "2025-07-03", "correlation": 0.3184}, {"date": "2025-10-31", "correlation": 0.3179}, {"date": "2025-11-04", "correlation": 0.317}, {"date": "2025-04-25", "correlation": 0.317}, {"date": "2026-01-23", "correlation": 0.3163}, {"date": "2025-08-21", "correlation": 0.315}, {"date": "2025-09-15", "correlation": 0.3087}, {"date": "2025-12-08", "correlation": 0.307}, {"date": "2025-07-14", "correlation": 0.3027}, {"date": "2025-04-21", "correlation": 0.2947}, {"date": "2025-05-02", "correlation": 0.2938}, {"date": "2026-02-04", "correlation": 0.2904}, {"date": "2025-12-04", "correlation": 0.285}, {"date": "2025-09-23", "correlation": 0.2841}, {"date": "2025-06-09", "correlation": 0.2815}, {"date": "2026-02-09", "correlation": 0.279}, {"date": "2025-11-05", "correlation": 0.2729}, {"date": "2025-12-03", "correlation": 0.2712}, {"date": "2025-08-01", "correlation": 0.27}, {"date": "2025-07-16", "correlation": 0.2629}, {"date": "2025-08-13", "correlation": 0.2572}, {"date": "2025-07-15", "correlation": 0.2555}, {"date": "2025-07-28", "correlation": 0.2546}, {"date": "2025-07-21", "correlation": 0.2502}, {"date": "2025-07-17", "correlation": 0.2494}, {"date": "2025-10-28", "correlation": 0.2484}, {"date": "2025-10-27", "correlation": 0.2476}, {"date": "2025-07-31", "correlation": 0.2467}, {"date": "2025-07-02", "correlation": 0.2436}, {"date": "2025-10-30", "correlation": 0.2424}, {"date": "2025-05-01", "correlation": 0.2414}, {"date": "2025-11-18", "correlation": 0.2404}, {"date": "2026-02-11", "correlation": 0.2385}, {"date": "2025-11-03", "correlation": 0.2349}, {"date": "2025-09-19", "correlation": 0.2334}, {"date": "2025-06-20", "correlation": 0.2299}, {"date": "2026-01-16", "correlation": 0.2296}, {"date": "2025-03-14", "correlation": 0.2288}, {"date": "2025-06-17", "correlation": 0.2275}, {"date": "2025-12-09", "correlation": 0.2265}, {"date": "2025-06-16", "correlation": 0.2254}, {"date": "2025-03-21", "correlation": 0.2242}, {"date": "2025-12-10", "correlation": 0.2241}, {"date": "2025-04-24", "correlation": 0.2194}, {"date": "2025-09-05", "correlation": 0.2184}, {"date": "2026-02-06", "correlation": 0.2174}, {"date": "2025-04-28", "correlation": 0.2166}, {"date": "2025-05-05", "correlation": 0.2165}, {"date": "2026-01-22", "correlation": 0.2162}, {"date": "2026-01-26", "correlation": 0.2123}, {"date": "2025-07-25", "correlation": 0.2018}], "sectors": {"XLU": {"name": "Utilities", "backward": {"avg_return": 0.2, "pct_positive": 46.1, "sample_count": 89}, "forward": {"avg_return": 0.8, "pct_positive": 67.1, "sample_count": 85}}, "XLI": {"name": "Industrials", "backward": {"avg_return": 0.83, "pct_positive": 67.4, "sample_count": 89}, "forward": {"avg_return": 0.64, "pct_positive": 67.1, "sample_count": 85}}, "XLE": {"name": "Energy", "backward": {"avg_return": 1.67, "pct_positive": 77.5, "sample_count": 89}, "forward": {"avg_return": 0.6, "pct_positive": 62.4, "sample_count": 85}}, "XLRE": {"name": "Real Estate", "backward": {"avg_return": 0.24, "pct_positive": 57.3, "sample_count": 89}, "forward": {"avg_return": 0.4, "pct_positive": 60.0, "sample_count": 85}}, "XLB": {"name": "Materials", "backward": {"avg_return": 0.43, "pct_positive": 56.2, "sample_count": 89}, "forward": {"avg_return": 0.35, "pct_positive": 54.1, "sample_count": 85}}, "XLY": {"name": "Consumer Disc", "backward": {"avg_return": 0.52, "pct_positive": 61.8, "sample_count": 89}, "forward": {"avg_return": 0.33, "pct_positive": 60.0, "sample_count": 85}}, "XLK": {"name": "Technology", "backward": {"avg_return": 0.66, "pct_positive": 64.0, "sample_count": 89}, "forward": {"avg_return": 0.31, "pct_positive": 58.8, "sample_count": 85}}, "XLF": {"name": "Financials", "backward": {"avg_return": 0.09, "pct_positive": 56.2, "sample_count": 89}, "forward": {"avg_return": 0.22, "pct_positive": 56.5, "sample_count": 85}}, "XLP": {"name": "Consumer Staples", "backward": {"avg_return": 0.15, "pct_positive": 44.9, "sample_count": 89}, "forward": {"avg_return": 0.07, "pct_positive": 52.9, "sample_count": 85}}, "XLV": {"name": "Healthcare", "backward": {"avg_return": 0.07, "pct_positive": 53.9, "sample_count": 89}, "forward": {"avg_return": 0.02, "pct_positive": 49.4, "sample_count": 85}}}, "indexes": {"spy": {"name": "S&P 500 (SPY)", "backward": {"avg_return": 0.43, "pct_positive": 65.2}, "forward": {"avg_return": 0.26, "pct_positive": 57.6}}, "dia": {"name": "Dow Jones (DIA)", "backward": {"avg_return": 0.4, "pct_positive": 64.0}, "forward": {"avg_return": 0.35, "pct_positive": 52.9}}, "iau": {"name": "Gold (IAU)", "backward": {"avg_return": 0.23, "pct_positive": 55.1}, "forward": {"avg_return": 1.27, "pct_positive": 72.9}}, "vgk": {"name": "Europe (VGK)", "backward": {"avg_return": 0.22, "pct_positive": 62.9}, "forward": {"avg_return": 0.15, "pct_positive": 50.6}}, "mchi": {"name": "China (MCHI)", "backward": {"avg_return": 0.21, "pct_positive": 55.1}, "forward": {"avg_return": 0.29, "pct_positive": 50.6}}, "tlt": {"name": "20Y Treasury (TLT)", "backward": {"avg_return": -0.27, "pct_positive": 42.7}, "forward": {"avg_return": 0.17, "pct_positive": 47.1}}}, "styles": {"growth": {"name": "Growth (QQQ)", "backward": {"avg_return": 0.46, "pct_positive": 66.3}, "forward": {"avg_return": 0.17, "pct_positive": 56.5}}, "value": {"name": "Value (VTV)", "backward": {"avg_return": 0.5, "pct_positive": 67.4}, "forward": {"avg_return": 0.43, "pct_positive": 62.4}}, "quality": {"name": "Quality (QUAL)", "backward": {"avg_return": 0.29, "pct_positive": 62.9}, "forward": {"avg_return": 0.17, "pct_positive": 51.8}}, "momentum": {"name": "Momentum (MTUM)", "backward": {"avg_return": 0.36, "pct_positive": 58.4}, "forward": {"avg_return": 0.37, "pct_positive": 58.8}}, "size": {"name": "Size (IJR)", "backward": {"avg_return": 0.78, "pct_positive": 66.3}, "forward": {"avg_return": 0.42, "pct_positive": 54.1}}, "min_vol": {"name": "Min Volatility (USMV)", "backward": {"avg_return": -0.03, "pct_positive": 47.2}, "forward": {"avg_return": 0.2, "pct_positive": 61.2}}, "dividend": {"name": "Dividend (VIG)", "backward": {"avg_return": 0.33, "pct_positive": 64.0}, "forward": {"avg_return": 0.21, "pct_positive": 51.8}}}, "market_cap": {"large": {"backward": {"avg_return": 0.43, "pct_positive": 65.2}, "forward": {"avg_return": 0.26, "pct_positive": 57.6}}, "mid": {"backward": {"avg_return": 0.62, "pct_positive": 61.8}, "forward": {"avg_return": 0.32, "pct_positive": 50.6}}, "small": {"backward": {"avg_return": 0.85, "pct_positive": 60.7}, "forward": {"avg_return": 0.34, "pct_positive": 52.9}}}, "risk_regime": {"backward": {"regime": "MIXED", "avg_risk_score": 0.15, "equities_avg": 0.43, "bonds_avg": -0.27}, "forward": {"regime": "RISK-OFF", "avg_risk_score": -1.2, "equities_avg": 0.26, "bonds_avg": 0.17}, "continuation": false}, "continuation": {"sector_leaders_continued": 44.7, "sample_count": 85}}}};
+
+    // ---- Gradient: red(0) -> orange -> yellow -> green(1) ----
+    function getGradientColor(norm01) {
+        const c = Math.max(0, Math.min(1, norm01));
+        let r, g, b;
+        if (c < 0.25) {
+            const t = c * 4;
+            r = Math.round(211+(255-211)*t); g = Math.round(47+(152-47)*t); b = Math.round(47*(1-t));
+        } else if (c < 0.5) {
+            const t = (c-0.25)*4;
+            r = 255; g = Math.round(152+(235-152)*t); b = Math.round(59*t);
+        } else if (c < 0.75) {
+            const t = (c-0.5)*4;
+            r = Math.round(255+(139-255)*t); g = Math.round(235+(195-235)*t); b = Math.round(59+(74-59)*t);
+        } else {
+            const t = (c-0.75)*4;
+            r = Math.round(139*(1-t)); g = Math.round(195+(200-195)*t); b = Math.round(74+(83-74)*t);
+        }
+        return `rgb(${r},${g},${b})`;
+    }
+
+    function textColor(bgRgb) {
+        const m = bgRgb.match(/rgb[(]([0-9]+),([0-9]+),([0-9]+)[)]/);
+        if (!m) return '#000';
+        return (0.299*m[1] + 0.587*m[2] + 0.114*m[3]) > 140 ? '#000' : '#fff';
+    }
+
+    // Per-column 5th-95th percentile ranges across all windows for a given tableKey
+    // All analysis dicts are {key: {name?, backward:{avg_return,...}, forward:{avg_return,...}}}
+    function calcRanges(tableKey) {
+        const cols = {
+            before_25Y:[], before_5Y:[], before_1Y:[],
+            after_25Y:[], after_5Y:[], after_1Y:[]
+        };
+        ['25Y','5Y','1Y'].forEach(win => {
+            const wdata = DATA.windows[win];
+            if (!wdata) return;
+            const tbl = wdata[tableKey];
+            if (!tbl) return;
+            Object.values(tbl).forEach(item => {
+                const bv = item?.backward?.avg_return;
+                const fv = item?.forward?.avg_return;
+                if (bv != null && !isNaN(bv)) cols['before_'+win].push(bv);
+                if (fv != null && !isNaN(fv)) cols['after_'+win].push(fv);
+            });
+        });
+        const ranges = {};
+        for (const [k, vals] of Object.entries(cols)) {
+            if (!vals.length) continue;
+            const s = [...vals].sort((a,b) => a-b);
+            ranges[k] = {
+                min: s[Math.floor(s.length*0.05)],
+                max: s[Math.floor(s.length*0.95)]
+            };
+        }
+        return ranges;
+    }
+
+    function normalize(val, ranges, key) {
+        if (val == null || isNaN(val)) return null;
+        const r = ranges[key];
+        if (!r || r.max === r.min) return 0.5;
+        return Math.max(0, Math.min(1, (val - r.min) / (r.max - r.min)));
+    }
+
+    function bgCell(val, ranges, key) {
+        const n = normalize(val, ranges, key);
+        return n == null ? null : getGradientColor(n);
+    }
+
+    // Get all unique row keys across all windows for a tableKey
+    function getRows(tableKey) {
+        const seen = new Set();
+        const rows = [];
+        // Use 25Y as primary ordering source, then fill from others
+        ['25Y','5Y','1Y'].forEach(win => {
+            const wdata = DATA.windows[win];
+            if (!wdata) return;
+            const tbl = wdata[tableKey];
+            if (!tbl) return;
+            Object.entries(tbl).forEach(([key, item]) => {
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    rows.push({ key, name: item.name || key });
+                }
+            });
+        });
+        return rows;
+    }
+
+    // Get one item from a table by row key
+    function getItem(tableKey, win, rowKey) {
+        return DATA.windows[win]?.[tableKey]?.[rowKey] ?? null;
+    }
+
+    // Sort state per container
+    const sortState = {};
+
+    function buildTable(containerId, tableKey) {
+        const ss = sortState[containerId] || { col: 'after_25Y', dir: 'desc' };
+        sortState[containerId] = ss;
+
+        const ranges = calcRanges(tableKey);
+        let rows = getRows(tableKey);
+
+        // Sort
+        rows.sort((a, b) => {
+            if (ss.col === 'name') {
+                return ss.dir === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+            }
+            // col format: 'before_25Y', 'after_1Y', etc
+            const isBack = ss.col.startsWith('before_');
+            const win    = ss.col.replace('before_','').replace('after_','');
+            const field  = isBack ? 'backward' : 'forward';
+            const va = getItem(tableKey, win, a.key)?.[field]?.avg_return ?? -999;
+            const vb = getItem(tableKey, win, b.key)?.[field]?.avg_return ?? -999;
+            return ss.dir === 'asc' ? va - vb : vb - va;
+        });
+
+        const arrow  = col => ss.col === col ? (ss.dir === 'asc' ? ' ▲' : ' ▼') : '';
+        const thSort = (col, label) =>
+            `<th style="cursor:pointer;white-space:nowrap;" onclick="window._simSort('${containerId}','${tableKey}','${col}')">${label}${arrow(col)}</th>`;
+
+        const grpCls = { '25Y':'grp-25y', '5Y':'grp-5y', '1Y':'grp-1y' };
+        const wins = ['25Y','5Y','1Y'];
+
+        // Fixed column widths via colgroup - same across all tables
+        let html = '<table><colgroup>';
+        html += '<col class="col-name">';
+        wins.forEach(() => {
+            html += '<col class="col-before">';
+            html += '<col class="col-after">';
+            html += '<col class="col-winpct">';
+        });
+        html += '</colgroup><thead>';
+        // Group header row
+        html += '<tr class="grp-row">';
+        html += '<th class="grp-blank col-name"></th>';
+        wins.forEach(w => html += `<th colspan="3" class="${grpCls[w]}">${w} Window</th>`);
+        html += '</tr>';
+        // Column header row
+        html += '<tr>';
+        html += thSort('name', 'Name');
+        wins.forEach(w => {
+            html += thSort('before_'+w, 'Before 5d');
+            html += thSort('after_'+w,  'After →');
+            html += '<th style="cursor:default;white-space:nowrap;">Win% / n</th>';
+        });
+        html += '</tr></thead><tbody>';
+
+        rows.forEach(row => {
+            html += '<tr>';
+            html += `<td class="col-name">${row.name}</td>`;
+            wins.forEach(w => {
+                const item    = getItem(tableKey, w, row.key);
+                const backAvg = item?.backward?.avg_return ?? null;
+                const backPct = item?.backward?.pct_positive ?? null;
+                const fwdAvg  = item?.forward?.avg_return ?? null;
+                const fwdPct  = item?.forward?.pct_positive ?? null;
+                const fwdN    = item?.forward?.sample_count ?? item?.backward?.sample_count ?? null;
+
+                // Before cell
+                if (backAvg != null) {
+                    const bg = bgCell(backAvg, ranges, 'before_'+w);
+                    const fg = textColor(bg);
+                    const sign = backAvg >= 0 ? '+' : '';
+                    html += `<td style="background:${bg};color:${fg};">${sign}${backAvg.toFixed(1)}%`;
+                    if (backPct != null) html += `<span class="pred-pct">${backPct.toFixed(0)}%</span>`;
+                    html += '</td>';
+                } else { html += '<td class="cell-miss">—</td>'; }
+
+                // After cell
+                if (fwdAvg != null) {
+                    const bg = bgCell(fwdAvg, ranges, 'after_'+w);
+                    const fg = textColor(bg);
+                    const sign = fwdAvg >= 0 ? '+' : '';
+                    html += `<td style="background:${bg};color:${fg};">${sign}${fwdAvg.toFixed(1)}%`;
+                    if (fwdPct != null) html += `<span class="pred-pct">${fwdPct.toFixed(0)}%</span>`;
+                    html += '</td>';
+                } else { html += '<td class="cell-miss">—</td>'; }
+
+                // Win% / n cell
+                if (fwdPct != null) {
+                    html += `<td style="color:#555;font-size:0.85em;">${fwdPct.toFixed(0)}%`;
+                    if (fwdN != null) html += ` <span style="color:#aaa;">n=${fwdN}</span>`;
+                    html += '</td>';
+                } else { html += '<td class="cell-miss">—</td>'; }
+            });
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        document.getElementById(containerId).innerHTML = html;
+    }
+
+    window._simSort = function(containerId, tableKey, col) {
+        const ss = sortState[containerId] || { col: 'after_25Y', dir: 'desc' };
+        sortState[containerId] = {
+            col,
+            dir: (ss.col === col && ss.dir === 'desc') ? 'asc' : 'desc'
+        };
+        buildTable(containerId, tableKey);
+    };
+
+    // Risk regime table — dedicated builder with coloring
+    function buildRiskTable() {
+        // Collect numeric values for gradient ranging
+        const scoreVals = [], eqVals = [], bondVals = [], contVals = [];
+        ['25Y','5Y','1Y'].forEach(w => {
+            const rr = DATA.windows[w]?.risk_regime;
+            if (!rr) return;
+            if (rr.backward?.avg_risk_score != null) scoreVals.push(rr.backward.avg_risk_score);
+            if (rr.forward?.avg_risk_score  != null) scoreVals.push(rr.forward.avg_risk_score);
+            if (rr.backward?.equities_avg   != null) eqVals.push(rr.backward.equities_avg);
+            if (rr.forward?.equities_avg    != null) eqVals.push(rr.forward.equities_avg);
+            if (rr.backward?.bonds_avg      != null) bondVals.push(rr.backward.bonds_avg);
+            if (rr.forward?.bonds_avg       != null) bondVals.push(rr.forward.bonds_avg);
+            const cont = DATA.windows[w]?.continuation?.sector_leaders_continued;
+            if (cont != null) contVals.push(cont);
+        });
+
+        function makeRange(vals) {
+            if (!vals.length) return null;
+            const s = [...vals].sort((a,b) => a-b);
+            return { min: s[0], max: s[s.length-1] };
+        }
+        const rr = { score: makeRange(scoreVals), eq: makeRange(eqVals), bond: makeRange(bondVals), cont: makeRange(contVals) };
+
+        function numTd(val, range, fmt) {
+            if (val == null) return '<td class="cell-miss">—</td>';
+            if (!range || range.max === range.min) {
+                return `<td>${fmt(val)}</td>`;
+            }
+            const n = Math.max(0, Math.min(1, (val - range.min) / (range.max - range.min)));
+            const bg = getGradientColor(n);
+            const fg = textColor(bg);
+            return `<td style="background:${bg};color:${fg};">${fmt(val)}</td>`;
+        }
+
+        function regimeTd(regime) {
+            if (!regime) return '<td class="cell-miss">—</td>';
+            const colors = { 'RISK-ON':'#16a34a', 'RISK-OFF':'#dc2626', 'MIXED':'#d97706' };
+            const bg = colors[regime] || '#888';
+            return `<td style="background:${bg};color:#fff;font-weight:700;">${regime}</td>`;
+        }
+
+        const grpCls = { '25Y':'grp-25y', '5Y':'grp-5y', '1Y':'grp-1y' };
+        let html = '<table><thead><tr class="grp-row">';
+        html += '<th class="grp-blank col-name">Metric</th>';
+        ['25Y','5Y','1Y'].forEach(w => html += `<th colspan="2" class="${grpCls[w]}">${w} Window</th>`);
+        html += '</tr><tr><th class="col-name">Metric</th>';
+        ['25Y','5Y','1Y'].forEach(() => { html += '<th>Before</th><th>After →</th>'; });
+        html += '</tr></thead><tbody>';
+
+        // Regime
+        html += '<tr><td class="col-name">Regime</td>';
+        ['25Y','5Y','1Y'].forEach(w => {
+            const r = DATA.windows[w]?.risk_regime;
+            html += regimeTd(r?.backward?.regime) + regimeTd(r?.forward?.regime);
+        });
+        html += '</tr>';
+
+        // Risk Score
+        html += '<tr><td class="col-name">Risk Score</td>';
+        ['25Y','5Y','1Y'].forEach(w => {
+            const r = DATA.windows[w]?.risk_regime;
+            html += numTd(r?.backward?.avg_risk_score, rr.score, v => (v>=0?'+':'')+v.toFixed(2));
+            html += numTd(r?.forward?.avg_risk_score,  rr.score, v => (v>=0?'+':'')+v.toFixed(2));
+        });
+        html += '</tr>';
+
+        // Equities Avg
+        html += '<tr><td class="col-name">Equities Avg</td>';
+        ['25Y','5Y','1Y'].forEach(w => {
+            const r = DATA.windows[w]?.risk_regime;
+            html += numTd(r?.backward?.equities_avg, rr.eq, v => (v>=0?'+':'')+v.toFixed(2)+'%');
+            html += numTd(r?.forward?.equities_avg,  rr.eq, v => (v>=0?'+':'')+v.toFixed(2)+'%');
+        });
+        html += '</tr>';
+
+        // Bonds Avg
+        html += '<tr><td class="col-name">Bonds Avg</td>';
+        ['25Y','5Y','1Y'].forEach(w => {
+            const r = DATA.windows[w]?.risk_regime;
+            html += numTd(r?.backward?.bonds_avg, rr.bond, v => (v>=0?'+':'')+v.toFixed(2)+'%');
+            html += numTd(r?.forward?.bonds_avg,  rr.bond, v => (v>=0?'+':'')+v.toFixed(2)+'%');
+        });
+        html += '</tr>';
+
+        // Sector Continuation — spans 2 cols per window
+        html += '<tr><td class="col-name">Sector Continuation</td>';
+        ['25Y','5Y','1Y'].forEach(w => {
+            const cont = DATA.windows[w]?.continuation;
+            const pct  = cont?.sector_leaders_continued;
+            const n    = cont?.sample_count;
+            if (pct != null) {
+                const nr = Math.max(0, Math.min(1, (pct - 40) / 30));  // 40-70% range
+                const bg = getGradientColor(nr);
+                const fg = textColor(bg);
+                html += `<td colspan="2" style="background:${bg};color:${fg};font-weight:600;">${pct.toFixed(1)}% <span style="opacity:0.7;">n=${n}</span></td>`;
+            } else {
+                html += '<td colspan="2" class="cell-miss">—</td>';
+            }
+        });
+        html += '</tr>';
+
+        html += '</tbody></table>';
+        document.getElementById('tbl-risk').innerHTML = html;
+    }
+
+    function renderAll() {
+        buildRiskTable();
+        buildTable('tbl-indexes',    'indexes');
+        buildTable('tbl-market-cap', 'market_cap');
+        buildTable('tbl-sectors',    'sectors');
+        buildTable('tbl-styles',     'styles');
+    }
+
+    renderAll();
+})();
+
+</script>
+</body></html>

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intermarket Spread Monitor - 2026-02-26</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a2e;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* --- Top stat bar (dark anchor) --- */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    background: #1e1e2e;
+    border-bottom: 3px solid #2d2d4a;
+}
+
+.stat-bar .stat {
+    padding: 20px 26px;
+    border-right: 1px solid #2d2d4a;
+}
+.stat-bar .stat:last-child { border-right: none; }
+
+.stat .stat-label {
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #8888aa;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+}
+
+.stat .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.1em;
+    font-weight: 600;
+    color: #f0f0f0;
+    line-height: 1.1;
+}
+
+.stat .stat-value.pos     { color: #22c55e; }
+.stat .stat-value.neg     { color: #ef4444; }
+.stat .stat-value.warn    { color: #f59e0b; }
+.stat .stat-value.neutral { color: #f0f0f0; }
+
+/* --- Page header --- */
+.page-header {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.page-header .meta {
+    font-size: 0.88em;
+    color: #888;
+}
+
+.page-header .meta a { color: #4f46e5; text-decoration: none; }
+
+/* --- Nav bar --- */
+.page-nav {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 0 30px;
+    display: flex;
+}
+
+.page-nav a {
+    display: inline-block;
+    padding: 13px 20px;
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+.page-nav a:hover  { color: #1a1a2e; }
+.page-nav a.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+/* --- Content area --- */
+.content { padding: 26px 30px; }
+
+/* --- Regime banner --- */
+.regime-banner {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-left: 6px solid #22c55e;
+    border-radius: 8px;
+    padding: 18px 26px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.regime-label {
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.regime-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    color: #888;
+    border-left: 1px solid #e2e4e8;
+    padding-left: 28px;
+    line-height: 1.8;
+}
+
+/* --- Stat/force cards --- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    padding: 18px 22px;
+    border-top: 5px solid #ccc;
+}
+
+.card .label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.9em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.card .sub {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #888;
+}
+
+/* --- Table section wrapper --- */
+.table-section {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.table-section-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid #e2e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.table-section-header h2 {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* --- Tables --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95em;
+}
+
+thead th {
+    background: #f8f9fb;
+    color: #555;
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e2e4e8;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+thead th:hover { background: #f0f2f5; color: #1a1a2e; }
+thead th.sorted-asc  { color: #16a34a; }
+thead th.sorted-desc { color: #dc2626; }
+
+tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbfd; }
+
+/* Numbers and tickers use mono font */
+.num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92em;
+}
+
+.ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #1a1a2e;
+}
+
+/* Color classes */
+.pos   { color: #16a34a; font-weight: 600; }
+.neg   { color: #dc2626; font-weight: 600; }
+.warn  { color: #d97706; font-weight: 600; }
+.muted { color: #aaa; }
+.accent { color: #4f46e5; }
+
+/* Score badges - pill shaped */
+.badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-align: center;
+    min-width: 52px;
+}
+
+.badge-2  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-1  { background: #f0fdf4; color: #16a34a; border: 1px solid #d1fae5; }
+.badge-n1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge-n2 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+/* Qualifier pills */
+.qualifier {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.q-confirmed { background: #dcfce7; color: #15803d; }
+.q-fading    { background: #fff7ed; color: #c2410c; }
+.q-diverging { background: #eff6ff; color: #1d4ed8; }
+.q-holding   { background: #f1f5f9; color: #64748b; }
+
+/* Trend pills */
+.trend-above {
+    background: #dcfce7; color: #15803d;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+.trend-below {
+    background: #fee2e2; color: #b91c1c;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+
+/* --- Playbook text blocks --- */
+.pb-header {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e4e8;
+}
+.pb-header:first-child { margin-top: 0; }
+
+.pb-body {
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.7;
+    margin: 4px 0;
+}
+
+.pb-item {
+    font-size: 0.9em;
+    color: #4f46e5;
+    margin: 5px 0 5px 16px;
+    border-left: 3px solid #c7d2fe;
+    padding-left: 12px;
+    line-height: 1.65;
+}
+
+/* --- Footer --- */
+.dash-footer {
+    padding: 22px 30px;
+    font-size: 0.82em;
+    color: #aaa;
+    border-top: 1px solid #e2e4e8;
+    text-align: center;
+    background: #fff;
+    margin-top: 8px;
+}
+
+
+.force-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+.force-gravity { background: #8b5cf6; }
+.force-em      { background: #f59e0b; }
+.force-strong  { background: #0ea5e9; }
+.force-weak    { background: #f87171; }
+
+</style>
+</head><body>
+<div class="stat-bar"><div class="stat"><div class="stat-label">Generated</div><div class="stat-value neutral">2026-02-26</div></div><div class="stat"><div class="stat-label">Spreads</div><div class="stat-value neutral">18</div></div><div class="stat"><div class="stat-label">Bullish</div><div class="stat-value pos">10</div></div><div class="stat"><div class="stat-label">Bearish</div><div class="stat-value neg">8</div></div><div class="stat"><div class="stat-label">Regime Score</div><div class="stat-value neg">+0</div></div></div>
+<div class="page-header">
+  <h1>Intermarket Spread Monitor</h1>
+  <div class="meta">
+    SMA Period: 50 &nbsp;|&nbsp; Slope Lookback: 10d &nbsp;|&nbsp;
+    <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
+  </div>
+</div>
+<div class="page-nav">
+  <a href="#spreads" class="active">Dashboard</a>
+  <a href="archive/dashboard_20260226.html">Archive: 2026-02-26</a>
+  <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
+</div>
+<div class="content">
+<div class="regime-banner" style="border-left-color:#d97706;"><div class="regime-label" style="color:#d97706;">MIXED / TRANSITIONING</div><div class="regime-score">Score: 0 / 36 &nbsp;&bull;&nbsp; Normalized: +0.00<br>+1.0 = full risk-on &nbsp;&bull;&nbsp; -1.0 = full risk-off</div></div>
+<div class="cards"><div class="card" style="border-top-color:#8b5cf6"><div class="label">I: Rates / Duration</div><div class="value pos">+0.12</div><div class="sub">Leaning Bullish</div></div><div class="card" style="border-top-color:#f59e0b"><div class="label">II: Earnings / Fundamentals</div><div class="value pos">+0.62</div><div class="sub">Bullish</div></div><div class="card" style="border-top-color:#0ea5e9"><div class="label">III: Liquidity / Structure</div><div class="value pos">+0.25</div><div class="sub">Leaning Bullish</div></div><div class="card" style="border-top-color:#f87171"><div class="label">IV: Sentiment / Positioning</div><div class="value neg">-0.17</div><div class="sub">Leaning Bearish</div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>All Spreads</h2><span style="font-size:0.85em;color:#888;">Click any column to sort</span></div><div style="padding:20px 24px;"><table class="sortable-table"><thead><tr><th>Market Level</th><th>Category</th><th>Spread</th><th>Trend</th><th>Dist %</th><th>Slope</th><th>5d Mom</th><th>20d Mom</th><th>Score &#9660;</th><th>Status / Meaning</th><th>Playbook</th></tr></thead><tbody><tr><td data-sort="3"><span class="force-dot force-strong"></span><span style="font-size:0.88em;color:#555;">III: Liquidity / Structure</span></td><td data-sort="Breadth / Small-Cap Confidence" style="color:#555;">Breadth / Small-Cap Confidence</td><td data-sort="IWM/SPY"><span class="ticker">IWM/SPY</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="0.0,21.2 2.4,21.9 4.9,21.8 7.3,22.4 9.8,22.6 12.2,20.9 14.7,24.7 17.1,25.0 19.6,26.8 22.0,27.7 24.5,30.0 26.9,30.0 29.4,26.9 31.8,23.6 34.3,21.0 36.7,20.7 39.2,16.7 41.6,16.3 44.1,15.1 46.5,14.6 49.0,10.1 51.4,7.9 53.9,7.2 56.3,4.0 58.8,0.9 61.2,0.0 63.7,7.2 66.1,10.3 68.6,10.7 71.0,12.7 73.5,11.9 75.9,16.0 78.4,14.3 80.8,10.3 83.3,11.7 85.7,13.8 88.2,7.7 90.6,6.9 93.1,6.9 95.5,8.5 98.0,10.4 100.4,5.8 102.9,6.2 105.3,6.8 107.8,4.9 110.2,7.6 112.7,9.7 115.1,8.3 117.6,9.7 120.0,5.5" /></svg></td><td data-sort="1"><span class="trend-above">ABOVE</span></td><td data-sort="2.33" class="pos num">+2.33%</td><td data-sort="RISING" class="pos">RISING <span class="num" style="font-size:0.85em;color:#aaa;">(+0.906%)</span></td><td data-sort="0.57" class="pos num">+0.6%</td><td data-sort="1.72" class="pos num">+1.7%</td><td data-sort="2"><span class="badge badge-2">+2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Small-cap confidence, broad risk-on, market breadth expanding</span></td><td data-sort="Broaden equity exposure into small/mid caps. IWM longs, sell large-cap premium." style="font-size:0.88em;color:#4f46e5;max-width:240px;">Broaden equity exposure into small/mid caps. IWM longs, sell large-cap premium.</td></tr>
+<tr><td data-sort="3"><span class="force-dot force-strong"></span><span style="font-size:0.88em;color:#555;">III: Liquidity / Structure</span></td><td data-sort="Global Risk Appetite" style="color:#555;">Global Risk Appetite</td><td data-sort="EEM/SPY"><span class="ticker">EEM/SPY</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="0.0,29.3 2.4,30.0 4.9,29.3 7.3,28.6 9.8,28.5 12.2,28.6 14.7,28.5 17.1,28.7 19.6,27.4 22.0,27.3 24.5,26.3 26.9,25.5 29.4,20.7 31.8,19.9 34.3,19.6 36.7,20.4 39.2,20.3 41.6,20.7 44.1,18.3 46.5,19.4 49.0,17.6 51.4,17.0 53.9,17.6 56.3,15.5 58.8,14.5 61.2,14.1 63.7,12.9 66.1,13.6 68.6,10.5 71.0,9.1 73.5,9.8 75.9,13.6 78.4,14.0 80.8,11.3 83.3,13.0 85.7,11.4 88.2,10.0 90.6,9.5 93.1,8.7 95.5,5.4 98.0,4.6 100.4,3.9 102.9,5.0 105.3,5.0 107.8,5.0 110.2,2.1 112.7,2.3 115.1,0.5 117.6,0.0 120.0,0.8" /></svg></td><td data-sort="1"><span class="trend-above">ABOVE</span></td><td data-sort="7.57" class="pos num">+7.57%</td><td data-sort="RISING" class="pos">RISING <span class="num" style="font-size:0.85em;color:#aaa;">(+2.729%)</span></td><td data-sort="0.62" class="pos num">+0.6%</td><td data-sort="4.48" class="pos num">+4.5%</td><td data-sort="2"><span class="badge badge-2">+2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Global risk-on, EM bid, dollar weakening</span></td><td data-sort="Add EM equity/FX exposure. Short DXY or UUP. Favor commodity exporters." style="font-size:0.88em;color:#4f46e5;max-width:240px;">Add EM equity/FX exposure. Short DXY or UUP. Favor commodity exporters.</td></tr>
+<tr><td data-sort="1"><span class="force-dot force-gravity"></span><span style="font-size:0.88em;color:#555;">I: Rates / Duration</span></td><td data-sort="Credit Stress" style="color:#555;">Credit Stress</td><td data-sort="TLT/HYG"><span class="ticker">TLT/HYG</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="0.0,20.0 2.4,16.5 4.9,16.3 7.3,14.8 9.8,17.1 12.2,19.3 14.7,18.7 17.1,15.6 19.6,17.7 22.0,15.2 24.5,17.7 26.9,22.8 29.4,24.3 31.8,22.6 34.3,24.3 36.7,19.8 39.2,24.0 41.6,19.8 44.1,22.3 46.5,21.0 49.0,16.9 51.4,17.0 53.9,21.6 56.3,29.3 58.8,26.0 61.2,23.4 63.7,21.0 66.1,18.0 68.6,22.4 71.0,22.9 73.5,22.6 75.9,27.5 78.4,30.0 80.8,27.8 83.3,28.7 85.7,20.1 88.2,22.1 90.6,23.3 93.1,14.2 95.5,18.0 98.0,7.9 100.4,4.4 102.9,2.8 105.3,6.6 107.8,6.1 110.2,8.4 112.7,4.4 115.1,2.6 117.6,3.5 120.0,0.0" /></svg></td><td data-sort="1"><span class="trend-above">ABOVE</span></td><td data-sort="2.44" class="pos num">+2.44%</td><td data-sort="RISING" class="pos">RISING <span class="num" style="font-size:0.85em;color:#aaa;">(+0.220%)</span></td><td data-sort="1.13" class="pos num">+1.1%</td><td data-sort="3.11" class="pos num">+3.1%</td><td data-sort="2"><span class="badge badge-2">+2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Credit stress rising, spreads widening, risk-off -- often leads equity weakness</span></td><td data-sort="Defensive posture -- raise cash, add TLT, reduce credit exposure. Often leads SPX by 2-4 weeks." style="font-size:0.88em;color:#4f46e5;max-width:240px;">Defensive posture -- raise cash, add TLT, reduce credit exposure. Often leads SPX by 2-4 weeks.</td></tr>
+<tr><td data-sort="2"><span class="force-dot force-em"></span><span style="font-size:0.88em;color:#555;">II: Earnings / Fundamentals</span></td><td data-sort="Global Growth (Copper/Gold)" style="color:#555;">Global Growth (Copper/Gold)</td><td data-sort="COPX/GLD"><span class="ticker">COPX/GLD</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="0.0,28.6 2.4,29.6 4.9,30.0 7.3,28.8 9.8,26.4 12.2,25.0 14.7,24.1 17.1,23.8 19.6,21.5 22.0,20.2 24.5,17.5 26.9,18.1 29.4,16.0 31.8,12.2 34.3,10.9 36.7,14.1 39.2,15.7 41.6,12.6 44.1,10.3 46.5,10.5 49.0,6.8 51.4,6.4 53.9,8.4 56.3,11.7 58.8,10.6 61.2,17.3 63.7,12.0 66.1,10.4 68.6,10.0 71.0,13.6 73.5,9.9 75.9,9.4 78.4,1.2 80.8,0.9 83.3,9.2 85.7,15.5 88.2,13.7 90.6,9.4 93.1,9.2 95.5,7.4 98.0,7.1 100.4,9.9 102.9,10.7 105.3,10.8 107.8,12.3 110.2,9.8 112.7,11.1 115.1,3.7 117.6,0.0 120.0,3.0" /></svg></td><td data-sort="1"><span class="trend-above">ABOVE</span></td><td data-sort="6.0" class="pos num">+6.00%</td><td data-sort="RISING" class="pos">RISING <span class="num" style="font-size:0.85em;color:#aaa;">(+2.568%)</span></td><td data-sort="3.88" class="pos num">+3.9%</td><td data-sort="3.93" class="pos num">+3.9%</td><td data-sort="2"><span class="badge badge-2">+2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Growth optimism, inflation expectations, rising rate expectations -- tracks ISM and 10Y closely</span></td><td data-sort="Favor cyclicals, commodities, and industrials. Long copper miners, short gold. Rates going higher." style="font-size:0.88em;color:#4f46e5;max-width:240px;">Favor cyclicals, commodities, and industrials. Long copper miners, short gold. Rates going higher.</td></tr>
+<tr><td data-sort="2"><span class="force-dot force-em"></span><span style="font-size:0.88em;color:#555;">II: Earnings / Fundamentals</span></td><td data-sort="Semiconductor Leadership" style="color:#555;">Semiconductor Leadership</td><td data-sort="SMH/SPY"><span class="ticker">SMH/SPY</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="0.0,26.4 2.4,26.4 4.9,30.0 7.3,27.8 9.8,25.5 12.2,24.5 14.7,23.8 17.1,23.9 19.6,23.2 22.0,23.4 24.5,23.5 26.9,23.7 29.4,18.7 31.8,18.0 34.3,14.9 36.7,15.5 39.2,17.8 41.6,14.8 44.1,14.5 46.5,13.8 49.0,14.3 51.4,11.5 53.9,9.8 56.3,10.6 58.8,7.8 61.2,8.3 63.7,9.4 66.1,10.7 68.6,8.0 71.0,4.3 73.5,3.6 75.9,8.7 78.4,7.7 80.8,10.4 83.3,15.9 85.7,14.4 88.2,9.1 90.6,7.9 93.1,8.2 95.5,4.2 98.0,5.1 100.4,4.6 102.9,4.9 105.3,3.7 107.8,4.3 110.2,3.5 112.7,2.7 115.1,1.4 117.6,0.0 120.0,5.6" /></svg></td><td data-sort="1"><span class="trend-above">ABOVE</span></td><td data-sort="4.8" class="pos num">+4.80%</td><td data-sort="RISING" class="pos">RISING <span class="num" style="font-size:0.85em;color:#aaa;">(+2.525%)</span></td><td data-sort="-1.24" class="neg num">-1.2%</td><td data-sort="-1.18" class="neg num">-1.2%</td><td data-sort="2"><span class="badge badge-2">+2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Tech/semis leading, growth cycle intact -- semis are leading economic indicator</span></td><td data-sort="Semis leading = growth intact. Overweight tech, favor NVDA/AVGO/AMD. Add on pullbacks." style="font-size:0.88em;color:#4f46e5;max-width:240px;">Semis leading = growth intact. Overweight tech, favor NVDA/AVGO/AMD. Add on pullbacks.</td></tr>
+<tr><td data-sort="2"><span class="force-dot force-em"></span><span style="font-size:0.88em;color:#555;">II: Earnings / Fundamentals</span></td><td data-sort="Inflation vs Credit Cycle" style="color:#555;">Inflation vs Credit Cycle</td><td data-sort="XLE/XLF"><span class="ticker">XLE/XLF</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="0.0,27.6 2.4,29.7 4.9,27.9 7.3,28.9 9.8,29.4 12.2,29.5 14.7,29.2 17.1,29.8 19.6,30.0 22.0,28.8 24.5,27.9 26.9,27.8 29.4,26.3 31.8,25.8 34.3,28.5 36.7,28.3 39.2,26.1 41.6,25.6 44.1,25.5 46.5,22.6 49.0,20.5 51.4,21.7 53.9,21.7 56.3,19.7 58.8,18.0 61.2,18.3 63.7,16.4 66.1,17.0 68.6,15.4 71.0,14.6 73.5,14.8 75.9,13.5 78.4,16.5 80.8,12.5 83.3,11.1 85.7,11.0 88.2,10.8 90.6,9.5 93.1,8.9 95.5,4.6 98.0,4.4 100.4,3.6 102.9,5.9 105.3,4.7 107.8,3.0 110.2,4.3 112.7,0.0 115.1,0.6 117.6,3.0 120.0,3.6" /></svg></td><td data-sort="1"><span class="trend-above">ABOVE</span></td><td data-sort="14.99" class="pos num">+14.99%</td><td data-sort="RISING" class="pos">RISING <span class="num" style="font-size:0.85em;color:#aaa;">(+4.748%)</span></td><td data-sort="0.59" class="pos num">+0.6%</td><td data-sort="11.5" class="pos num">+11.5%</td><td data-sort="2"><span class="badge badge-2">+2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Energy outperforming financials, commodity inflation cycle, supply-driven</span></td><td data-sort="Commodity inflation regime -- overweight energy, underweight rate-sensitive financials." style="font-size:0.88em;color:#4f46e5;max-width:240px;">Commodity inflation regime -- overweight energy, underweight rate-sensitive financials.</td></tr>
+<tr><td data-sort="4"><span class="force-dot force-weak"></span><span style="font-size:0.88em;color:#555;">IV: Sentiment / Positioning</span></td><td data-sort="Gold Miner Confidence" style="color:#555;">Gold Miner Confidence</td><td data-sort="GDX/GLD"><span class="ticker">GDX/GLD</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="0.0,26.1 2.4,26.2 4.9,25.5 7.3,25.6 9.8,20.2 12.2,17.6 14.7,20.4 17.1,20.9 19.6,19.5 22.0,23.4 24.5,21.0 26.9,22.3 29.4,23.6 31.8,22.4 34.3,15.4 36.7,15.9 39.2,15.9 41.6,15.0 44.1,11.4 46.5,9.2 49.0,10.7 51.4,8.6 53.9,7.1 56.3,2.5 58.8,9.7 61.2,5.0 63.7,4.0 66.1,6.6 68.6,8.4 71.0,11.3 73.5,20.9 75.9,27.3 78.4,18.0 80.8,22.6 83.3,21.3 85.7,30.0 88.2,25.1 90.6,18.2 93.1,15.6 95.5,11.5 98.0,20.9 100.4,13.6 102.9,14.6 105.3,14.5 107.8,11.3 110.2,11.4 112.7,8.8 115.1,4.5 117.6,2.8 120.0,0.0" /></svg></td><td data-sort="1"><span class="trend-above">ABOVE</span></td><td data-sort="6.64" class="pos num">+6.64%</td><td data-sort="RISING" class="pos">RISING <span class="num" style="font-size:0.85em;color:#aaa;">(+1.584%)</span></td><td data-sort="4.73" class="pos num">+4.7%</td><td data-sort="9.06" class="pos num">+9.1%</td><td data-sort="2"><span class="badge badge-2">+2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Miners outperforming bullion, speculative risk-on in gold equities</span></td><td data-sort="Gold miners leveraging -- overweight GDX/GDXJ over GLD. Add junior miners for beta." style="font-size:0.88em;color:#4f46e5;max-width:240px;">Gold miners leveraging -- overweight GDX/GDXJ over GLD. Add junior miners for beta.</td></tr>
+<tr><td data-sort="1"><span class="force-dot force-gravity"></span><span style="font-size:0.88em;color:#555;">I: Rates / Duration</span></td><td data-sort="Housing Cycle" style="color:#555;">Housing Cycle</td><td data-sort="XHB/SPY"><span class="ticker">XHB/SPY</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="0.0,21.5 2.4,22.5 4.9,22.3 7.3,22.5 9.8,26.0 12.2,27.6 14.7,29.1 17.1,28.6 19.6,28.2 22.0,28.3 24.5,28.9 26.9,29.4 29.4,27.2 31.8,27.2 34.3,27.2 36.7,30.0 39.2,23.9 41.6,16.2 44.1,15.9 46.5,13.5 49.0,14.2 51.4,12.2 53.9,13.5 56.3,14.0 58.8,11.4 61.2,14.3 63.7,17.4 66.1,18.7 68.6,21.5 71.0,22.2 73.5,20.6 75.9,23.3 78.4,23.0 80.8,17.7 83.3,10.8 85.7,8.5 88.2,8.9 90.6,10.2 93.1,4.5 95.5,4.1 98.0,3.5 100.4,0.0 102.9,2.3 105.3,4.1 107.8,6.4 110.2,6.0 112.7,8.0 115.1,8.1 117.6,14.6 120.0,11.3" /></svg></td><td data-sort="1"><span class="trend-above">ABOVE</span></td><td data-sort="3.22" class="pos num">+3.22%</td><td data-sort="RISING" class="pos">RISING <span class="num" style="font-size:0.85em;color:#aaa;">(+1.821%)</span></td><td data-sort="-2.82" class="neg num">-2.8%</td><td data-sort="5.36" class="pos num">+5.4%</td><td data-sort="2"><span class="badge badge-2">+2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Housing leading, rate-sensitive consumer confidence strong</span></td><td data-sort="Housing leading -- favor homebuilders, building materials, mortgage REITs. Consumer is strong." style="font-size:0.88em;color:#4f46e5;max-width:240px;">Housing leading -- favor homebuilders, building materials, mortgage REITs. Consumer is strong.</td></tr>
+<tr><td data-sort="4"><span class="force-dot force-weak"></span><span style="font-size:0.88em;color:#555;">IV: Sentiment / Positioning</span></td><td data-sort="Gold/Silver Ratio (Fear Gauge)" style="color:#555;">Gold/Silver Ratio (Fear Gauge)</td><td data-sort="GLD/SLV"><span class="ticker">GLD/SLV</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="0.0,0.6 2.4,0.0 4.9,3.2 7.3,1.9 9.8,4.3 12.2,4.5 14.7,6.6 17.1,7.5 19.6,13.8 22.0,11.3 24.5,14.8 26.9,9.7 29.4,11.0 31.8,13.0 34.3,17.3 36.7,15.0 39.2,13.2 41.6,15.6 44.1,19.2 46.5,20.6 49.0,25.1 51.4,24.5 53.9,22.9 56.3,24.0 58.8,21.7 61.2,23.1 63.7,26.6 66.1,29.4 68.6,30.0 71.0,30.0 73.5,29.8 75.9,13.2 78.4,13.3 80.8,13.2 83.3,15.5 85.7,3.2 88.2,5.1 90.6,9.9 93.1,7.7 95.5,10.3 98.0,2.7 100.4,3.1 102.9,1.4 105.3,4.4 107.8,5.3 110.2,10.2 112.7,12.2 115.1,11.8 117.6,13.0 120.0,12.7" /></svg></td><td data-sort="1"><span class="trend-above">ABOVE</span></td><td data-sort="0.6" class="pos num">+0.60%</td><td data-sort="FALLING" class="neg">FALLING <span class="num" style="font-size:0.85em;color:#aaa;">(-2.932%)</span></td><td data-sort="-2.9" class="neg num">-2.9%</td><td data-sort="26.42" class="pos num">+26.4%</td><td data-sort="1"><span class="badge badge-1">+1</span></td><td data-sort="FADING"><span class="qualifier q-fading">FADING</span><br><span style="font-size:0.88em;color:#555;">Fear rising, safe-haven demand, economic pessimism -- readings above 80 signal silver undervaluation</span></td><td data-sort="Fear trade -- hold gold, reduce silver. If ratio > 80, watch for silver mean-reversion long." style="font-size:0.88em;color:#4f46e5;max-width:240px;">Fear trade -- hold gold, reduce silver. If ratio > 80, watch for silver mean-reversion long.</td></tr>
+<tr><td data-sort="4"><span class="force-dot force-weak"></span><span style="font-size:0.88em;color:#555;">IV: Sentiment / Positioning</span></td><td data-sort="Silver Miner Confidence" style="color:#555;">Silver Miner Confidence</td><td data-sort="SIL/SLV"><span class="ticker">SIL/SLV</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="0.0,5.0 2.4,4.8 4.9,8.1 7.3,7.3 9.8,6.7 12.2,5.3 14.7,8.6 17.1,9.9 19.6,15.5 22.0,13.7 24.5,16.4 26.9,12.3 29.4,14.7 31.8,16.0 34.3,18.2 36.7,16.6 39.2,15.3 41.6,16.3 44.1,18.0 46.5,19.1 49.0,24.8 51.4,22.3 53.9,18.2 56.3,18.4 58.8,17.9 61.2,15.8 63.7,19.1 66.1,23.5 68.6,25.6 71.0,27.4 73.5,30.0 75.9,15.6 78.4,12.9 80.8,12.7 83.3,15.1 85.7,6.5 88.2,5.8 90.6,8.1 93.1,5.2 95.5,6.8 98.0,3.0 100.4,0.8 102.9,0.0 105.3,2.5 107.8,1.1 110.2,4.5 112.7,7.3 115.1,4.1 117.6,3.9 120.0,1.7" /></svg></td><td data-sort="1"><span class="trend-above">ABOVE</span></td><td data-sort="11.33" class="pos num">+11.33%</td><td data-sort="FLAT" class="warn">FLAT <span class="num" style="font-size:0.85em;color:#aaa;">(-0.037%)</span></td><td data-sort="2.81" class="pos num">+2.8%</td><td data-sort="37.93" class="pos num">+37.9%</td><td data-sort="1"><span class="badge badge-1">+1</span></td><td data-sort="HOLDING"><span class="qualifier q-holding">HOLDING</span><br><span style="font-size:0.88em;color:#555;">Miners outperforming metal, operating leverage in play, equity risk appetite</span></td><td data-sort="Miners leveraging silver rally -- overweight SIL/SILJ over physical SLV. Equity risk appetite intact." style="font-size:0.88em;color:#4f46e5;max-width:240px;">Miners leveraging silver rally -- overweight SIL/SILJ over physical SLV. Equity risk appetite intact.</td></tr>
+<tr><td data-sort="3"><span class="force-dot force-strong"></span><span style="font-size:0.88em;color:#555;">III: Liquidity / Structure</span></td><td data-sort="Credit Confidence" style="color:#555;">Credit Confidence</td><td data-sort="HYG/LQD"><span class="ticker">HYG/LQD</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#dc2626" stroke-width="1.5" points="0.0,14.7 2.4,17.8 4.9,18.1 7.3,20.1 9.8,16.3 12.2,14.3 14.7,14.7 17.1,18.6 19.6,19.4 22.0,21.2 24.5,17.1 26.9,10.9 29.4,9.5 31.8,9.9 34.3,9.4 36.7,11.2 39.2,4.5 41.6,10.0 44.1,6.8 46.5,10.9 49.0,15.7 51.4,13.3 53.9,6.6 56.3,0.0 58.8,5.8 61.2,8.0 63.7,10.1 66.1,10.7 68.6,8.9 71.0,9.2 73.5,9.9 75.9,5.9 78.4,3.0 80.8,5.1 83.3,5.0 85.7,16.2 88.2,10.7 90.6,8.1 93.1,14.4 95.5,12.6 98.0,22.4 100.4,27.2 102.9,30.0 105.3,25.8 107.8,26.7 110.2,23.7 112.7,28.8 115.1,29.7 117.6,26.6 120.0,28.5" /></svg></td><td data-sort="0"><span class="trend-below">BELOW</span></td><td data-sort="-0.74" class="neg num">-0.74%</td><td data-sort="FLAT" class="warn">FLAT <span class="num" style="font-size:0.85em;color:#aaa;">(-0.046%)</span></td><td data-sort="-0.25" class="neg num">-0.2%</td><td data-sort="-0.98" class="neg num">-1.0%</td><td data-sort="-1"><span class="badge badge-n1">-1</span></td><td data-sort="HOLDING BELOW"><span class="qualifier q-holding">HOLDING BELOW</span><br><span style="font-size:0.88em;color:#555;">Credit stress, risk aversion, flight to quality in bonds</span></td><td data-sort="Reduce HY exposure, rotate to IG or Treasuries. Watch for equity follow-through." style="font-size:0.88em;color:#dc2626;max-width:240px;">Reduce HY exposure, rotate to IG or Treasuries. Watch for equity follow-through.</td></tr>
+<tr><td data-sort="3"><span class="force-dot force-strong"></span><span style="font-size:0.88em;color:#555;">III: Liquidity / Structure</span></td><td data-sort="Credit Risk Appetite" style="color:#555;">Credit Risk Appetite</td><td data-sort="JNK/LQD"><span class="ticker">JNK/LQD</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#dc2626" stroke-width="1.5" points="0.0,16.6 2.4,20.6 4.9,20.7 7.3,22.5 9.8,18.4 12.2,16.4 14.7,16.7 17.1,19.9 19.6,20.6 22.0,22.6 24.5,18.3 26.9,12.2 29.4,11.1 31.8,11.3 34.3,10.6 36.7,12.5 39.2,5.8 41.6,10.6 44.1,8.6 46.5,12.0 49.0,16.1 51.4,13.8 53.9,6.9 56.3,0.0 58.8,6.0 61.2,8.4 63.7,10.5 66.1,11.1 68.6,9.2 71.0,9.6 73.5,9.9 75.9,6.9 78.4,3.0 80.8,5.5 83.3,6.6 85.7,16.4 88.2,11.0 90.6,8.3 93.1,13.6 95.5,11.8 98.0,22.5 100.4,26.5 102.9,30.0 105.3,25.6 107.8,26.7 110.2,23.9 112.7,28.1 115.1,29.7 117.6,26.0 120.0,27.5" /></svg></td><td data-sort="0"><span class="trend-below">BELOW</span></td><td data-sort="-0.67" class="neg num">-0.67%</td><td data-sort="FLAT" class="warn">FLAT <span class="num" style="font-size:0.85em;color:#aaa;">(-0.017%)</span></td><td data-sort="-0.2" class="neg num">-0.2%</td><td data-sort="-0.95" class="neg num">-0.9%</td><td data-sort="-1"><span class="badge badge-n1">-1</span></td><td data-sort="HOLDING BELOW"><span class="qualifier q-holding">HOLDING BELOW</span><br><span style="font-size:0.88em;color:#555;">Investment grade outperforming, credit stress, de-risking</span></td><td data-sort="De-risk credit book. Rotate JNK to LQD or AGG. Widen stop-losses on equity." style="font-size:0.88em;color:#dc2626;max-width:240px;">De-risk credit book. Rotate JNK to LQD or AGG. Widen stop-losses on equity.</td></tr>
+<tr><td data-sort="2"><span class="force-dot force-em"></span><span style="font-size:0.88em;color:#555;">II: Earnings / Fundamentals</span></td><td data-sort="Growth Expectations (Real-Time PMI)" style="color:#555;">Growth Expectations (Real-Time PMI)</td><td data-sort="XLB/XLU"><span class="ticker">XLB/XLU</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#dc2626" stroke-width="1.5" points="0.0,30.0 2.4,29.7 4.9,27.5 7.3,29.6 9.8,26.1 12.2,24.5 14.7,24.9 17.1,25.4 19.6,24.0 22.0,26.1 24.5,26.6 26.9,27.0 29.4,25.9 31.8,21.6 34.3,18.5 36.7,17.0 39.2,13.9 41.6,13.1 44.1,12.3 46.5,12.8 49.0,14.3 51.4,15.5 53.9,15.7 56.3,15.7 58.8,11.4 61.2,8.5 63.7,5.8 66.1,7.1 68.6,10.2 71.0,9.8 73.5,9.6 75.9,12.4 78.4,7.5 80.8,6.1 83.3,0.0 85.7,6.2 88.2,3.1 90.6,0.8 93.1,1.4 95.5,0.4 98.0,7.0 100.4,11.0 102.9,12.9 105.3,8.0 107.8,11.1 110.2,11.6 112.7,13.3 115.1,14.0 117.6,16.0 120.0,15.6" /></svg></td><td data-sort="0"><span class="trend-below">BELOW</span></td><td data-sort="-0.39" class="neg num">-0.39%</td><td data-sort="RISING" class="pos">RISING <span class="num" style="font-size:0.85em;color:#aaa;">(+2.092%)</span></td><td data-sort="-1.83" class="neg num">-1.8%</td><td data-sort="-2.75" class="neg num">-2.8%</td><td data-sort="-1"><span class="badge badge-n1">-1</span></td><td data-sort="HOLDING BELOW"><span class="qualifier q-holding">HOLDING BELOW</span><br><span style="font-size:0.88em;color:#555;">Growth expectations falling, defensive rotation, recession positioning</span></td><td data-sort="ISM proxy contracting -- rotate to defensives. Long XLU, short XLB. Reduce cyclical exposure." style="font-size:0.88em;color:#dc2626;max-width:240px;">ISM proxy contracting -- rotate to defensives. Long XLU, short XLB. Reduce cyclical exposure.</td></tr>
+<tr><td data-sort="1"><span class="force-dot force-gravity"></span><span style="font-size:0.88em;color:#555;">I: Rates / Duration</span></td><td data-sort="Inflation Expectations" style="color:#555;">Inflation Expectations</td><td data-sort="TIP/IEF"><span class="ticker">TIP/IEF</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#dc2626" stroke-width="1.5" points="0.0,16.6 2.4,23.5 4.9,20.1 7.3,21.9 9.8,21.1 12.2,22.2 14.7,19.9 17.1,21.3 19.6,23.9 22.0,25.4 24.5,23.1 26.9,19.7 29.4,18.7 31.8,19.5 34.3,19.4 36.7,20.3 39.2,17.6 41.6,17.1 44.1,13.8 46.5,14.7 49.0,17.3 51.4,15.9 53.9,10.8 56.3,8.2 58.8,4.9 61.2,7.2 63.7,6.4 66.1,6.6 68.6,3.4 71.0,0.0 73.5,0.8 75.9,0.1 78.4,1.8 80.8,0.0 83.3,2.3 85.7,10.3 88.2,7.7 90.6,6.1 93.1,12.1 95.5,9.0 98.0,14.6 100.4,21.5 102.9,25.0 105.3,21.3 107.8,21.6 110.2,23.0 112.7,30.0 115.1,29.0 117.6,24.5 120.0,24.7" /></svg></td><td data-sort="0"><span class="trend-below">BELOW</span></td><td data-sort="-0.36" class="neg num">-0.36%</td><td data-sort="FLAT" class="warn">FLAT <span class="num" style="font-size:0.85em;color:#aaa;">(-0.055%)</span></td><td data-sort="-0.07" class="neg num">-0.1%</td><td data-sort="-0.91" class="neg num">-0.9%</td><td data-sort="-1"><span class="badge badge-n1">-1</span></td><td data-sort="HOLDING BELOW"><span class="qualifier q-holding">HOLDING BELOW</span><br><span style="font-size:0.88em;color:#555;">Inflation expectations falling, disinflation, nominals outperforming</span></td><td data-sort="Disinflation trade -- favor nominal Treasuries, growth over value, long duration." style="font-size:0.88em;color:#dc2626;max-width:240px;">Disinflation trade -- favor nominal Treasuries, growth over value, long duration.</td></tr>
+<tr><td data-sort="1"><span class="force-dot force-gravity"></span><span style="font-size:0.88em;color:#555;">I: Rates / Duration</span></td><td data-sort="Risk-On/Off" style="color:#555;">Risk-On/Off</td><td data-sort="SPY/TLT"><span class="ticker">SPY/TLT</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#dc2626" stroke-width="1.5" points="0.0,14.4 2.4,18.7 4.9,24.1 7.3,22.7 9.8,15.9 12.2,11.4 14.7,9.8 17.1,11.2 19.6,9.4 22.0,13.4 24.5,12.8 26.9,12.5 29.4,10.7 31.8,9.7 34.3,5.4 36.7,10.3 39.2,7.6 41.6,7.7 44.1,5.2 46.5,7.2 49.0,13.0 51.4,11.4 53.9,8.8 56.3,12.7 58.8,10.6 61.2,10.2 63.7,11.5 66.1,11.3 68.6,5.7 71.0,4.5 73.5,5.8 75.9,4.3 78.4,0.0 80.8,6.0 83.3,7.3 85.7,19.8 88.2,10.0 90.6,7.3 93.1,14.9 95.5,12.2 98.0,27.5 100.4,30.0 102.9,30.0 105.3,25.4 107.8,27.3 110.2,22.3 112.7,29.6 115.1,26.7 117.6,22.4 120.0,27.8" /></svg></td><td data-sort="0"><span class="trend-below">BELOW</span></td><td data-sort="-2.59" class="neg num">-2.59%</td><td data-sort="FALLING" class="neg">FALLING <span class="num" style="font-size:0.85em;color:#aaa;">(-0.358%)</span></td><td data-sort="-1.05" class="neg num">-1.1%</td><td data-sort="-4.04" class="neg num">-4.0%</td><td data-sort="-2"><span class="badge badge-n2">-2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Risk-off, flight to safety into bonds</span></td><td data-sort="Favor long-duration Treasuries, reduce equity beta. Hedge with TLT calls." style="font-size:0.88em;color:#dc2626;max-width:240px;">Favor long-duration Treasuries, reduce equity beta. Hedge with TLT calls.</td></tr>
+<tr><td data-sort="4"><span class="force-dot force-weak"></span><span style="font-size:0.88em;color:#555;">IV: Sentiment / Positioning</span></td><td data-sort="Speculative Sentiment" style="color:#555;">Speculative Sentiment</td><td data-sort="ARKK/QQQ"><span class="ticker">ARKK/QQQ</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#dc2626" stroke-width="1.5" points="0.0,5.7 2.4,4.0 4.9,6.1 7.3,6.4 9.8,5.2 12.2,3.5 14.7,6.3 17.1,6.5 19.6,8.5 22.0,9.9 24.5,11.1 26.9,11.7 29.4,8.5 31.8,3.5 34.3,3.9 36.7,5.5 39.2,5.8 41.6,8.0 44.1,3.5 46.5,1.8 49.0,0.0 51.4,3.3 53.9,3.6 56.3,5.2 58.8,5.2 61.2,2.4 63.7,6.1 66.1,8.4 68.6,10.2 71.0,12.5 73.5,14.2 75.9,18.0 78.4,20.1 80.8,19.6 83.3,24.3 85.7,30.0 88.2,24.3 90.6,21.2 93.1,20.8 95.5,24.2 98.0,26.3 100.4,22.7 102.9,22.5 105.3,21.3 107.8,18.9 110.2,21.8 112.7,23.2 115.1,20.3 117.6,19.5 120.0,16.1" /></svg></td><td data-sort="0"><span class="trend-below">BELOW</span></td><td data-sort="-2.39" class="neg num">-2.39%</td><td data-sort="FALLING" class="neg">FALLING <span class="num" style="font-size:0.85em;color:#aaa;">(-1.972%)</span></td><td data-sort="3.77" class="pos num">+3.8%</td><td data-sort="-1.21" class="neg num">-1.2%</td><td data-sort="-2"><span class="badge badge-n2">-2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">De-risking, quality rotation within growth</span></td><td data-sort="Rotate to profitable growth (QQQ, XLK). Avoid unprofitable tech, meme stocks, SPACs." style="font-size:0.88em;color:#dc2626;max-width:240px;">Rotate to profitable growth (QQQ, XLK). Avoid unprofitable tech, meme stocks, SPACs.</td></tr>
+<tr><td data-sort="4"><span class="force-dot force-weak"></span><span style="font-size:0.88em;color:#555;">IV: Sentiment / Positioning</span></td><td data-sort="Consumer Confidence / Cycle" style="color:#555;">Consumer Confidence / Cycle</td><td data-sort="XLY/XLP"><span class="ticker">XLY/XLP</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#dc2626" stroke-width="1.5" points="0.0,4.2 2.4,3.2 4.9,5.8 7.3,2.5 9.8,2.3 12.2,0.7 14.7,0.2 17.1,0.9 19.6,1.9 22.0,3.6 24.5,4.0 26.9,4.3 29.4,5.7 31.8,2.4 34.3,1.6 36.7,0.0 39.2,1.1 41.6,0.8 44.1,2.6 46.5,4.9 49.0,9.6 51.4,9.3 53.9,9.3 56.3,13.8 58.8,11.1 61.2,9.2 63.7,9.8 66.1,10.5 68.6,10.8 71.0,10.4 73.5,10.8 75.9,13.3 78.4,14.1 80.8,17.8 83.3,20.7 85.7,23.7 88.2,24.8 90.6,24.5 93.1,23.1 95.5,25.8 98.0,29.0 100.4,29.4 102.9,27.6 105.3,26.1 107.8,26.5 110.2,25.4 112.7,30.0 115.1,29.1 117.6,27.6 120.0,27.4" /></svg></td><td data-sort="0"><span class="trend-below">BELOW</span></td><td data-sort="-9.63" class="neg num">-9.63%</td><td data-sort="FALLING" class="neg">FALLING <span class="num" style="font-size:0.85em;color:#aaa;">(-2.823%)</span></td><td data-sort="-1.45" class="neg num">-1.4%</td><td data-sort="-10.75" class="neg num">-10.8%</td><td data-sort="-2"><span class="badge badge-n2">-2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Recession fears, defensive rotation into staples</span></td><td data-sort="Consumer weakening -- favor staples, healthcare, discount retail. Avoid discretionary longs." style="font-size:0.88em;color:#dc2626;max-width:240px;">Consumer weakening -- favor staples, healthcare, discount retail. Avoid discretionary longs.</td></tr>
+<tr><td data-sort="4"><span class="force-dot force-weak"></span><span style="font-size:0.88em;color:#555;">IV: Sentiment / Positioning</span></td><td data-sort="Growth vs Value Rotation" style="color:#555;">Growth vs Value Rotation</td><td data-sort="IWF/IWD"><span class="ticker">IWF/IWD</span><br><svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#dc2626" stroke-width="1.5" points="0.0,5.0 2.4,2.3 4.9,6.1 7.3,3.4 9.8,1.0 12.2,1.4 14.7,0.0 17.1,0.5 19.6,0.5 22.0,1.2 24.5,1.6 26.9,1.7 29.4,4.7 31.8,6.6 34.3,7.7 36.7,4.5 39.2,8.5 41.6,8.6 44.1,8.2 46.5,8.7 49.0,12.6 51.4,13.3 53.9,13.1 56.3,15.9 58.8,17.4 61.2,16.2 63.7,13.7 66.1,12.9 68.6,11.2 71.0,12.1 73.5,15.1 75.9,16.4 78.4,17.6 80.8,22.1 83.3,25.5 85.7,27.6 88.2,26.0 90.6,24.0 93.1,24.4 95.5,25.7 98.0,27.6 100.4,30.0 102.9,28.4 105.3,28.1 107.8,28.5 110.2,28.2 112.7,28.9 115.1,27.9 117.6,25.7 120.0,28.6" /></svg></td><td data-sort="0"><span class="trend-below">BELOW</span></td><td data-sort="-5.83" class="neg num">-5.83%</td><td data-sort="FALLING" class="neg">FALLING <span class="num" style="font-size:0.85em;color:#aaa;">(-2.409%)</span></td><td data-sort="-0.16" class="neg num">-0.2%</td><td data-sort="-5.62" class="neg num">-5.6%</td><td data-sort="-2"><span class="badge badge-n2">-2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Value outperforming growth, rate-hiking regime, late-cycle or mean-reversion</span></td><td data-sort="Value regime -- favor XLF, XLE, XLI. Underweight long-duration growth. Rates rising." style="font-size:0.88em;color:#dc2626;max-width:240px;">Value regime -- favor XLF, XLE, XLI. Underweight long-duration growth. Rates rising.</td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>General Market Playbook</h2></div><div style="padding:20px 24px;"><div class="pb-header">OVERALL POSTURE</div>
+<div class="pb-body">The board is split -- 7 bullish, 5 bearish, 1 in transition. This is a stock-picker's market, not a beta market. Reduce directional bets, favor pair trades and relative value. Raise cash to 20-30% to stay nimble.</div>
+<div class="pb-header">MARKET LEVEL SUMMARY</div>
+<div class="pb-body">I: Rates / Duration: LEANING BULLISH (norm +0.12) -- SPY/TLT, TLT/HYG, TIP/IEF, XHB/SPY</div>
+<div class="pb-body">II: Earnings / Fundamentals: BULLISH (norm +0.62) -- COPX/GLD, XLB/XLU, SMH/SPY, XLE/XLF</div>
+<div class="pb-body">III: Liquidity / Structure: LEANING BULLISH (norm +0.25) -- HYG/LQD, IWM/SPY, EEM/SPY, JNK/LQD</div>
+<div class="pb-body">IV: Sentiment / Positioning: LEANING BEARISH (norm -0.17) -- ARKK/QQQ, XLY/XLP, GLD/SLV, SIL/SLV, GDX/GLD, IWF/IWD</div>
+<div class="pb-header">WHAT'S WORKING</div>
+<div class="pb-body">7 spreads with confirmed tailwinds:</div>
+<div class="pb-body">IWM/SPY (Breadth / Small-Cap Confidence) [III: Liquidity / Structure]: Broaden equity exposure into small/mid caps. IWM longs, sell large-cap premium.</div>
+<div class="pb-body">EEM/SPY (Global Risk Appetite) [III: Liquidity / Structure]: Add EM equity/FX exposure. Short DXY or UUP. Favor commodity exporters.</div>
+<div class="pb-body">COPX/GLD (Global Growth (Copper/Gold)) [II: Earnings / Fundamentals]: Favor cyclicals, commodities, and industrials. Long copper miners, short gold. Rates going higher.</div>
+<div class="pb-body">SMH/SPY (Semiconductor Leadership) [II: Earnings / Fundamentals]: Semis leading = growth intact. Overweight tech, favor NVDA/AVGO/AMD. Add on pullbacks.</div>
+<div class="pb-body">XLE/XLF (Inflation vs Credit Cycle) [II: Earnings / Fundamentals]: Commodity inflation regime -- overweight energy, underweight rate-sensitive financials.</div>
+<div class="pb-body">GDX/GLD (Gold Miner Confidence) [IV: Sentiment / Positioning]: Gold miners leveraging -- overweight GDX/GDXJ over GLD. Add junior miners for beta.</div>
+<div class="pb-body">XHB/SPY (Housing Cycle) [I: Rates / Duration]: Housing leading -- favor homebuilders, building materials, mortgage REITs. Consumer is strong.</div>
+<div class="pb-header">WHAT TO AVOID</div>
+<div class="pb-body">5 spreads with confirmed headwinds:</div>
+<div class="pb-body">SPY/TLT (Risk-On/Off) [I: Rates / Duration]: Favor long-duration Treasuries, reduce equity beta. Hedge with TLT calls.</div>
+<div class="pb-body">ARKK/QQQ (Speculative Sentiment) [IV: Sentiment / Positioning]: Rotate to profitable growth (QQQ, XLK). Avoid unprofitable tech, meme stocks, SPACs.</div>
+<div class="pb-body">TLT/HYG (Credit Stress) [I: Rates / Duration]: Defensive posture -- raise cash, add TLT, reduce credit exposure. Often leads SPX by 2-4 weeks.</div>
+<div class="pb-body">XLY/XLP (Consumer Confidence / Cycle) [IV: Sentiment / Positioning]: Consumer weakening -- favor staples, healthcare, discount retail. Avoid discretionary longs.</div>
+<div class="pb-body">IWF/IWD (Growth vs Value Rotation) [IV: Sentiment / Positioning]: Value regime -- favor XLF, XLE, XLI. Underweight long-duration growth. Rates rising.</div>
+<div class="pb-header">WATCH LIST (signals in transition)</div>
+<div class="pb-body">FADING (1): GLD/SLV -- still above SMA but momentum rolling over. These tailwinds are dying. Take profits in themes supported by these spreads. If they cross below SMA, the bullish case evaporates.</div>
+<div class="pb-header">KEY RISK</div>
+<div class="pb-body">SMH/SPY is in focus. Currently: Tech/semis leading, growth cycle intact -- semis are leading economic indicator. If this flips, it changes the picture fast -- SMH/SPY is a high-impact spread for overall regime.</div>
+<div class="pb-body">SPY/TLT is in focus. Currently: Risk-off, flight to safety into bonds. If this flips, it changes the picture fast -- SPY/TLT is a high-impact spread for overall regime.</div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Text Summary</h2></div><div style="padding:20px 24px;"><div style="background:#f8f9fb;border:1px solid #e2e4e8;border-radius:6px;padding:16px 20px;font-family:'IBM Plex Mono',monospace;font-size:0.88em;white-space:pre-line;cursor:pointer;position:relative;line-height:1.7;color:#333;" onclick="navigator.clipboard.writeText(this.innerText.replace('Click to copy','').trim()).then(function(){this.style.borderColor='#16a34a';}.bind(this))" title="Click to copy"><span style="position:absolute;top:8px;right:12px;font-size:0.85em;color:#aaa;">Click to copy</span>Spread Monitor 02/26: MIXED / TRANSITIONING (+0%)
+
+^ IWM/SPY [+2] CONFIRMED: Small-cap confidence, broad risk-on, market breadth expanding
+^ EEM/SPY [+2] CONFIRMED: Global risk-on, EM bid, dollar weakening
+^ TLT/HYG [+2] CONFIRMED: Credit stress rising, spreads widening, risk-off -- often leads equity weakness
+^ COPX/GLD [+2] CONFIRMED: Growth optimism, inflation expectations, rising rate expectations -- tracks ISM and 10Y closely
+^ SMH/SPY [+2] CONFIRMED: Tech/semis leading, growth cycle intact -- semis are leading economic indicator
+^ XLE/XLF [+2] CONFIRMED: Energy outperforming financials, commodity inflation cycle, supply-driven
+^ GDX/GLD [+2] CONFIRMED: Miners outperforming bullion, speculative risk-on in gold equities
+^ XHB/SPY [+2] CONFIRMED: Housing leading, rate-sensitive consumer confidence strong
+^ GLD/SLV [+1] FADING: Fear rising, safe-haven demand, economic pessimism -- readings above 80 signal silver undervaluation
+^ SIL/SLV [+1] HOLDING: Miners outperforming metal, operating leverage in play, equity risk appetite
+v HYG/LQD [-1] HOLDING BELOW: Credit stress, risk aversion, flight to quality in bonds
+v JNK/LQD [-1] HOLDING BELOW: Investment grade outperforming, credit stress, de-risking
+v XLB/XLU [-1] HOLDING BELOW: Growth expectations falling, defensive rotation, recession positioning
+v TIP/IEF [-1] HOLDING BELOW: Inflation expectations falling, disinflation, nominals outperforming
+v SPY/TLT [-2] CONFIRMED: Risk-off, flight to safety into bonds
+v ARKK/QQQ [-2] CONFIRMED: De-risking, quality rotation within growth
+v XLY/XLP [-2] CONFIRMED: Recession fears, defensive rotation into staples
+v IWF/IWD [-2] CONFIRMED: Value outperforming growth, rate-hiking regime, late-cycle or mean-reversion</div></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-02-26 &mdash; For personal research only.</div>
+<script>
+
+function getGradientColor(score) {
+    var clamped = Math.max(0, Math.min(1, score));
+    var r, g, b;
+    if (clamped < 0.25) {
+        var t = clamped * 4;
+        r = Math.round(211 + (255 - 211) * t);
+        g = Math.round(47 + (152 - 47) * t);
+        b = Math.round(47 + (0 - 47) * t);
+    } else if (clamped < 0.5) {
+        var t = (clamped - 0.25) * 4;
+        r = 255;
+        g = Math.round(152 + (235 - 152) * t);
+        b = Math.round(0 + (59 - 0) * t);
+    } else if (clamped < 0.75) {
+        var t = (clamped - 0.5) * 4;
+        r = Math.round(255 + (139 - 255) * t);
+        g = Math.round(235 + (195 - 235) * t);
+        b = Math.round(59 + (74 - 59) * t);
+    } else {
+        var t = (clamped - 0.75) * 4;
+        r = Math.round(139 + (0 - 139) * t);
+        g = Math.round(195 + (200 - 195) * t);
+        b = Math.round(74 + (83 - 74) * t);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+
+(function() {
+  // Works on any table with class 'sortable-table'.
+  // Reads data-sort attribute from each <td> for comparison.
+  // Numeric if parseFloat succeeds and is not NaN; string otherwise.
+  document.querySelectorAll('table.sortable-table').forEach(function(table) {
+    var headers = Array.from(table.querySelectorAll('thead th'));
+    var currentSort = {col: -1, asc: true};
+    headers.forEach(function(th, colIdx) {
+      th.style.cursor = 'pointer';
+      th.title = 'Click to sort';
+      th.addEventListener('click', function() {
+        var asc = (currentSort.col === colIdx) ? !currentSort.asc : true;
+        currentSort = {col: colIdx, asc: asc};
+        headers.forEach(function(h) { h.classList.remove('sorted-asc', 'sorted-desc'); });
+        th.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
+        var tbody = table.querySelector('tbody');
+        var rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort(function(a, b) {
+          var aVal = (a.children[colIdx] && a.children[colIdx].getAttribute('data-sort')) || '';
+          var bVal = (b.children[colIdx] && b.children[colIdx].getAttribute('data-sort')) || '';
+          var aNum = parseFloat(aVal);
+          var bNum = parseFloat(bVal);
+          var cmp = (!isNaN(aNum) && !isNaN(bNum))
+            ? aNum - bNum
+            : aVal.localeCompare(bVal);
+          return asc ? cmp : -cmp;
+        });
+        rows.forEach(function(row) { tbody.appendChild(row); });
+      });
+    });
+  });
+})();
+
+</script>
+</body></html>

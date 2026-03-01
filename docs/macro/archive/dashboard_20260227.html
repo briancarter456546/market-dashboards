@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macro Dashboard - 2026-02-27</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a2e;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* --- Top stat bar (dark anchor) --- */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    background: #1e1e2e;
+    border-bottom: 3px solid #2d2d4a;
+}
+
+.stat-bar .stat {
+    padding: 20px 26px;
+    border-right: 1px solid #2d2d4a;
+}
+.stat-bar .stat:last-child { border-right: none; }
+
+.stat .stat-label {
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #8888aa;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+}
+
+.stat .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.1em;
+    font-weight: 600;
+    color: #f0f0f0;
+    line-height: 1.1;
+}
+
+.stat .stat-value.pos     { color: #22c55e; }
+.stat .stat-value.neg     { color: #ef4444; }
+.stat .stat-value.warn    { color: #f59e0b; }
+.stat .stat-value.neutral { color: #f0f0f0; }
+
+/* --- Page header --- */
+.page-header {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.page-header .meta {
+    font-size: 0.88em;
+    color: #888;
+}
+
+.page-header .meta a { color: #4f46e5; text-decoration: none; }
+
+/* --- Nav bar --- */
+.page-nav {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 0 30px;
+    display: flex;
+}
+
+.page-nav a {
+    display: inline-block;
+    padding: 13px 20px;
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+.page-nav a:hover  { color: #1a1a2e; }
+.page-nav a.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+/* --- Content area --- */
+.content { padding: 26px 30px; }
+
+/* --- Regime banner --- */
+.regime-banner {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-left: 6px solid #22c55e;
+    border-radius: 8px;
+    padding: 18px 26px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.regime-label {
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.regime-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    color: #888;
+    border-left: 1px solid #e2e4e8;
+    padding-left: 28px;
+    line-height: 1.8;
+}
+
+/* --- Stat/force cards --- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    padding: 18px 22px;
+    border-top: 5px solid #ccc;
+}
+
+.card .label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.9em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.card .sub {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #888;
+}
+
+/* --- Table section wrapper --- */
+.table-section {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.table-section-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid #e2e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.table-section-header h2 {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* --- Tables --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95em;
+}
+
+thead th {
+    background: #f8f9fb;
+    color: #555;
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e2e4e8;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+thead th:hover { background: #f0f2f5; color: #1a1a2e; }
+thead th.sorted-asc  { color: #16a34a; }
+thead th.sorted-desc { color: #dc2626; }
+
+tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbfd; }
+
+/* Numbers and tickers use mono font */
+.num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92em;
+}
+
+.ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #1a1a2e;
+}
+
+/* Color classes */
+.pos   { color: #16a34a; font-weight: 600; }
+.neg   { color: #dc2626; font-weight: 600; }
+.warn  { color: #d97706; font-weight: 600; }
+.muted { color: #aaa; }
+.accent { color: #4f46e5; }
+
+/* Score badges - pill shaped */
+.badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-align: center;
+    min-width: 52px;
+}
+
+.badge-2  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-1  { background: #f0fdf4; color: #16a34a; border: 1px solid #d1fae5; }
+.badge-n1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge-n2 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+/* Qualifier pills */
+.qualifier {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.q-confirmed { background: #dcfce7; color: #15803d; }
+.q-fading    { background: #fff7ed; color: #c2410c; }
+.q-diverging { background: #eff6ff; color: #1d4ed8; }
+.q-holding   { background: #f1f5f9; color: #64748b; }
+
+/* Trend pills */
+.trend-above {
+    background: #dcfce7; color: #15803d;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+.trend-below {
+    background: #fee2e2; color: #b91c1c;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+
+/* --- Playbook text blocks --- */
+.pb-header {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e4e8;
+}
+.pb-header:first-child { margin-top: 0; }
+
+.pb-body {
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.7;
+    margin: 4px 0;
+}
+
+.pb-item {
+    font-size: 0.9em;
+    color: #4f46e5;
+    margin: 5px 0 5px 16px;
+    border-left: 3px solid #c7d2fe;
+    padding-left: 12px;
+    line-height: 1.65;
+}
+
+/* --- Footer --- */
+.dash-footer {
+    padding: 22px 30px;
+    font-size: 0.82em;
+    color: #aaa;
+    border-top: 1px solid #e2e4e8;
+    text-align: center;
+    background: #fff;
+    margin-top: 8px;
+}
+
+
+/* -- Alert rows -- */
+.alert-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 0.95em;
+}
+.alert-high   { background: #fef2f2; border-left: 4px solid #ef4444; color: #b91c1c; }
+.alert-medium { background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e; }
+.alert-icon   { font-size: 1.3em; }
+.alert-msg    { flex: 1; }
+.alert-sev    {
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.07);
+}
+
+/* -- Trend arrows -- */
+.trend-up   { color: #ef4444; font-weight: 700; }
+.trend-dn   { color: #22c55e; font-weight: 700; }
+.trend-flat { color: #888;    font-weight: 600; }
+
+/* -- Regime change table pills -- */
+.regime-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+.rp-from { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.rp-to   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+</style>
+</head><body>
+<div class="stat-bar"><div class="stat"><div class="stat-label">Overall Regime</div><div class="stat-value warn">Neutral/Mixed</div></div><div class="stat"><div class="stat-label">VIX</div><div class="stat-value warn">20.8</div></div><div class="stat"><div class="stat-label">10Y-2Y Spread</div><div class="stat-value pos">0.600%</div></div><div class="stat"><div class="stat-label">HYG/LQD Ratio</div><div class="stat-value warn">0.7217</div></div><div class="stat"><div class="stat-label">Breadth %</div><div class="stat-value neg">0.0%</div></div></div>
+<div class="page-header">
+  <h1>Macro Dashboard</h1>
+  <div class="meta">
+    Generated 2026-02-27 13:50 &nbsp;|&nbsp;
+    <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
+  </div>
+</div>
+<div class="page-nav">
+  <a href="#spreads" class="active">Dashboard</a>
+  <a href="archive/dashboard_20260227.html">Archive: 2026-02-27</a>
+  <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
+</div>
+<div class="content">
+<div class="regime-banner" style="border-left-color:#f59e0b;"><div class="regime-label" style="color:#f59e0b;">NEUTRAL/MIXED</div><div class="regime-score">Net Score: -0.5 &nbsp;|&nbsp; Bullish: 1 &nbsp;|&nbsp; Bearish: 1.5<br>Confidence: Low</div></div>
+<div class="table-section"><div class="table-section-header"><h2>Regime Changes (3)</h2><span style="font-size:0.85em;color:#888;">vs yesterday</span></div><div style="padding:20px 24px;"><table><thead><tr><th>Indicator</th><th>From</th><th></th><th>To</th></tr></thead><tbody><tr><td class="ticker">VIX</td><td><span class="regime-pill rp-from">Unknown</span></td><td style="color:#888;font-size:1.2em;">&#8594;</td><td><span class="regime-pill rp-to">Elevated</span></td></tr><tr><td class="ticker">Credit (HYG/LQD)</td><td><span class="regime-pill rp-from">Unknown</span></td><td style="color:#888;font-size:1.2em;">&#8594;</td><td><span class="regime-pill rp-to">Neutral</span></td></tr><tr><td class="ticker">Overall Market</td><td><span class="regime-pill rp-from">Bearish</span></td><td style="color:#888;font-size:1.2em;">&#8594;</td><td><span class="regime-pill rp-to">Neutral</span></td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Alerts (2)</h2><span style="font-size:0.85em;color:#888;">Threshold breaches</span></div><div style="padding:20px 24px;"><div class="alert-row alert-medium"><span class="alert-icon">&#9675;</span><span class="alert-msg">VIX Elevated: 20.8</span><span class="alert-sev">MEDIUM</span></div><div class="alert-row alert-high"><span class="alert-icon">&#9888;</span><span class="alert-msg">Breadth Weak: 0.0% above 200MA</span><span class="alert-sev">HIGH</span></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>5-Day Trends</h2></div><div style="padding:20px 24px;"><p class="muted">Not enough history to compute trends (need 2+ days).</p></div></div>
+<div class="table-section"><div class="table-section-header"><h2>VIX and Volatility</h2></div><div style="padding:20px 24px;"><div class="cards"><div class="card" style="border-top-color:#f59e0b;"><div class="label">VIX Level</div><div class="value warn">20.8</div><div class="sub">Elevated</div></div><div class="card"><div class="label">VVIX</div><div class="value neutral">111.0</div><div class="sub">Vol of Vol</div></div></div><table><thead><tr><th>ETF Proxy</th><th>Price</th></tr></thead><tbody><tr><td class="ticker">VIXY</td><td class="num">28.34</td></tr><tr><td class="ticker">UVXY</td><td class="num">40.49</td></tr><tr><td class="ticker">VXX</td><td class="num">29.32</td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Treasury Yield Curve</h2></div><div style="padding:20px 24px;"><div class="cards"><div class="card" style="border-top-color:#22c55e;"><div class="label">Curve Regime</div><div class="value pos">Normal</div><div class="sub">Date: 2026-02-26</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;"><div><p class="pb-header">Yield Rates</p><table><thead><tr><th>Tenor</th><th>Rate</th></tr></thead><tbody><tr><td class="ticker">1M</td><td class="num">3.740%</td></tr><tr><td class="ticker">2M</td><td class="num">3.750%</td></tr><tr><td class="ticker">3M</td><td class="num">3.680%</td></tr><tr><td class="ticker">6M</td><td class="num">3.610%</td></tr><tr><td class="ticker">1Y</td><td class="num">3.520%</td></tr><tr><td class="ticker">2Y</td><td class="num">3.420%</td></tr><tr><td class="ticker">3Y</td><td class="num">3.460%</td></tr><tr><td class="ticker">5Y</td><td class="num">3.570%</td></tr><tr><td class="ticker">7Y</td><td class="num">3.780%</td></tr><tr><td class="ticker">10Y</td><td class="num">4.020%</td></tr><tr><td class="ticker">20Y</td><td class="num">4.600%</td></tr><tr><td class="ticker">30Y</td><td class="num">4.670%</td></tr></tbody></table></div><div><p class="pb-header">Key Spreads</p><table><thead><tr><th>Spread</th><th>Value</th></tr></thead><tbody><tr><td>10Y - 2Y</td><td class="num pos">0.600%</td></tr><tr><td>10Y - 3M</td><td class="num pos">0.340%</td></tr><tr><td>30Y - 10Y</td><td class="num pos">0.650%</td></tr></tbody></table></div></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Credit Markets</h2></div><div style="padding:20px 24px;"><div class="cards"><div class="card" style="border-top-color:#f59e0b;"><div class="label">HYG/LQD Ratio</div><div class="value warn">0.7217</div><div class="sub">Neutral</div></div></div><table><thead><tr><th>ETF</th><th>Price</th><th>1D Chg%</th></tr></thead><tbody><tr><td class="ticker">HYG</td><td class="num">80.69</td><td class="num neg">-0.20%</td></tr><tr><td class="ticker">LQD</td><td class="num">111.81</td><td class="num pos">0.08%</td></tr><tr><td class="ticker">JNK</td><td class="num">97.27</td><td class="num muted"><span class="muted">N/A</span></td></tr><tr><td class="ticker">EMB</td><td class="num">97.67</td><td class="num muted"><span class="muted">N/A</span></td></tr><tr><td class="ticker">AGG</td><td class="num">101.41</td><td class="num muted"><span class="muted">N/A</span></td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Sector Performance</h2><span style="font-size:0.85em;color:#888;">Sorted best to worst</span></div><div style="padding:20px 24px;"><table><thead><tr><th>Sector</th><th>1D Change %</th></tr></thead><tbody><tr><td>Real Estate</td><td class="num pos">1.58%</td></tr><tr><td>Healthcare</td><td class="num pos">1.34%</td></tr><tr><td>Basic Materials</td><td class="num pos">1.21%</td></tr><tr><td>Utilities</td><td class="num pos">1.15%</td></tr><tr><td>Communication Services</td><td class="num pos">1.09%</td></tr><tr><td>Consumer Defensive</td><td class="num pos">1.01%</td></tr><tr><td>Energy</td><td class="num pos">0.67%</td></tr><tr><td>Consumer Cyclical</td><td class="num pos">0.23%</td></tr><tr><td>Technology</td><td class="num pos">0.22%</td></tr><tr><td>Industrials</td><td class="num pos">0.15%</td></tr><tr><td>Financial Services</td><td class="num neg">-1.70%</td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Commodities</h2></div><div style="padding:20px 24px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;"><div><p class="pb-header">Futures</p><table><thead><tr><th>Commodity</th><th>Price</th><th>1D %</th></tr></thead><tbody><tr><td>Gold</td><td class="num">5251.00</td><td class="num pos">1.09%</td></tr><tr><td>Silver</td><td class="num">93.42</td><td class="num pos">6.66%</td></tr><tr><td>Crude Oil</td><td class="num">66.91</td><td class="num pos">2.28%</td></tr><tr><td>Natural Gas</td><td class="num">2.85</td><td class="num pos">0.99%</td></tr><tr><td>Copper</td><td class="num">6.04</td><td class="num pos">0.52%</td></tr></tbody></table></div><div><p class="pb-header">ETF Proxies</p><table><thead><tr><th>Symbol</th><th>Price</th><th>1D %</th></tr></thead><tbody><tr><td class="ticker">GLD</td><td class="num">481.68</td><td class="num pos">0.88%</td></tr><tr><td class="ticker">SLV</td><td class="num">84.23</td><td class="num pos">4.70%</td></tr><tr><td class="ticker">USO</td><td class="num">81.51</td><td class="num pos">2.18%</td></tr><tr><td class="ticker">UNG</td><td class="num">11.49</td><td class="num pos">0.97%</td></tr><tr><td class="ticker">DBC</td><td class="num">25.05</td><td class="num pos">1.17%</td></tr></tbody></table></div></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Indices</h2></div><div style="padding:20px 24px;"><div class="cards" style="margin-bottom:16px;"><div class="card"><div class="label">SPY vs 50MA</div><div class="value neg">Below</div><div class="sub">683.68 vs 687.68</div></div><div class="card"><div class="label">SPY vs 200MA</div><div class="value pos">Above</div><div class="sub">683.68 vs 653.67</div></div></div><table><thead><tr><th>Symbol</th><th>Price</th><th>1D %</th><th>50MA</th><th>200MA</th></tr></thead><tbody><tr><td class="ticker">^GSPC</td><td class="num">6851.95</td><td class="num neg">-0.82%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">^DJI</td><td class="num">48855.41</td><td class="num neg">-1.30%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">^IXIC</td><td class="num">22579.03</td><td class="num neg">-1.31%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">^RUT</td><td class="num">2619.59</td><td class="num neg">-2.16%</td><td><span class="trend-above">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">SPY</td><td class="num">683.68</td><td class="num neg">-0.82%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">QQQ</td><td class="num">604.98</td><td class="num neg">-0.70%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">IWM</td><td class="num">260.30</td><td class="num neg">-2.14%</td><td><span class="trend-above">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">DIA</td><td class="num">488.47</td><td class="num neg">-1.29%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Breadth (from sector_rotation_1y_data)</h2></div><div style="padding:20px 24px;"><div class="cards"><div class="card" style="border-top-color:#ef4444;"><div class="label">Breadth Regime</div><div class="value neg">Weak</div><div class="sub">505 ETFs tracked</div></div><div class="card"><div class="label">Above 200MA Proxy</div><div class="value neg">0.0%</div><div class="sub">Strong trend>5.5</div></div></div><table><thead><tr><th>Metric</th><th>Pct of Universe</th></tr></thead><tbody><tr><td>Above 200MA Proxy (trend_1w > 5.5)</td><td class="num neg">0.0%</td></tr><tr><td>Above 50MA Proxy (trend_1d > 5.5)</td><td class="num neg">0.0%</td></tr><tr><td>Above 20MA Proxy (mom_1d > 5.5)</td><td class="num neg">0.0%</td></tr><tr><td>Positive 5D Return</td><td class="num pos">79.2%</td></tr><tr><td>Bullish SecRot Score (>=60%)</td><td class="num neg">0.0%</td></tr></tbody></table></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-02-27 &mdash; For personal research only.</div>
+<script>
+
+function getGradientColor(score) {
+    var clamped = Math.max(0, Math.min(1, score));
+    var r, g, b;
+    if (clamped < 0.25) {
+        var t = clamped * 4;
+        r = Math.round(211 + (255 - 211) * t);
+        g = Math.round(47 + (152 - 47) * t);
+        b = Math.round(47 + (0 - 47) * t);
+    } else if (clamped < 0.5) {
+        var t = (clamped - 0.25) * 4;
+        r = 255;
+        g = Math.round(152 + (235 - 152) * t);
+        b = Math.round(0 + (59 - 0) * t);
+    } else if (clamped < 0.75) {
+        var t = (clamped - 0.5) * 4;
+        r = Math.round(255 + (139 - 255) * t);
+        g = Math.round(235 + (195 - 235) * t);
+        b = Math.round(59 + (74 - 59) * t);
+    } else {
+        var t = (clamped - 0.75) * 4;
+        r = Math.round(139 + (0 - 139) * t);
+        g = Math.round(195 + (200 - 195) * t);
+        b = Math.round(74 + (83 - 74) * t);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+</script>
+</body></html>
