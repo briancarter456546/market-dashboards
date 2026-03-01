@@ -909,6 +909,18 @@ EXTRA_CSS = """
     padding-bottom: 6px;
     margin-bottom: 4px;
 }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .filter-bar { padding: 10px 12px; gap: 10px; }
+    .filter-bar label { font-size: 0.78em; }
+    .filter-bar input[type=text] { width: 80px; font-size: 0.8em; }
+    .filter-bar input[type=range] { width: 70px; }
+    .mr-table-wrap { -webkit-overflow-scrolling: touch; }
+    .mr-table { font-size: 0.72em; }
+    .mr-table thead th { padding: 5px 3px; font-size: 0.68em; }
+    .mr-table tbody td { padding: 4px 3px; font-size: 0.82em; }
+}
 """
 
 # JS is a plain string - no .format() substitution needed

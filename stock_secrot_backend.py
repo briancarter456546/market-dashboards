@@ -87,6 +87,13 @@ EXTRA_CSS = """
 
 thead th.sorted-asc::after  { content: ' \\25B2'; font-size: 0.75em; }
 thead th.sorted-desc::after { content: ' \\25BC'; font-size: 0.75em; }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .score-high, .score-mid { font-size: 0.8em; padding: 3px 10px; min-width: 40px; }
+    .sector-pill { font-size: 0.75em; padding: 2px 8px; }
+    .metals-tag { font-size: 0.68em; padding: 2px 6px; }
+}
 """
 
 # =============================================================================

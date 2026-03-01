@@ -339,6 +339,20 @@ EXTRA_CSS = """
     left: 0; top: 0; bottom: 0;
     border-radius: 4px;
 }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .heatmap-wrap { -webkit-overflow-scrolling: touch; }
+    .heatmap-table td { width: 28px; min-width: 28px; height: 22px; font-size: 0.72em; }
+    .heatmap-table td.year-cell { width: 36px; min-width: 36px; font-size: 0.68em; }
+    .heatmap-table th { padding: 4px 5px; font-size: 0.68em; }
+    .heatmap-tab { padding: 8px 14px; font-size: 0.78em; }
+    .outcome-grid { grid-template-columns: 1fr; gap: 12px; }
+    .outcome-card table { font-size: 0.78em; }
+    .outcome-card thead th { padding: 6px 8px; }
+    .outcome-card tbody td { padding: 5px 8px; }
+    .score-bar { width: 60px; }
+}
 """
 
 # =============================================================================

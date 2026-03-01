@@ -1497,6 +1497,14 @@ EXTRA_CSS = """
 }
 .rp-from { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 .rp-to   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .alert-row { padding: 10px 12px; font-size: 0.85em; gap: 10px; }
+    .alert-icon { font-size: 1.1em; }
+    .alert-sev { font-size: 0.68em; padding: 2px 8px; }
+    .regime-pill { font-size: 0.78em; padding: 3px 10px; }
+}
 """
 
 EXTRA_JS = ""

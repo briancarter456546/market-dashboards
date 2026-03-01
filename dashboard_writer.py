@@ -391,6 +391,35 @@ tbody tr:hover { background: #fafbfd; }
     background: #fff;
     margin-top: 8px;
 }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    body { font-size: 15px; }
+    .stat-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-bar .stat { padding: 14px 16px; }
+    .stat .stat-value { font-size: 1.5em; }
+    .stat .stat-label { font-size: 0.72em; }
+    .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 6px; }
+    .page-header h1 { font-size: 1.2em; }
+    .page-nav { padding: 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .page-nav a { padding: 10px 14px; font-size: 0.82em; white-space: nowrap; }
+    .content { padding: 16px 12px; }
+    .regime-banner { flex-direction: column; padding: 14px 16px; gap: 12px; }
+    .regime-label { font-size: 1.2em; }
+    .regime-score { border-left: none; padding-left: 0; border-top: 1px solid #e2e4e8; padding-top: 10px; }
+    .cards { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 14px 16px; }
+    .card .value { font-size: 1.5em; }
+    .table-section { border-radius: 0; margin-left: -12px; margin-right: -12px; }
+    .table-section-header { padding: 12px 16px; }
+    table { font-size: 0.85em; }
+    thead th { padding: 8px 10px; font-size: 0.75em; }
+    tbody td { padding: 8px 10px; }
+    .badge { padding: 3px 10px; font-size: 0.82em; min-width: 44px; }
+    .qualifier { padding: 3px 9px; font-size: 0.75em; }
+    .pb-item { margin-left: 8px; padding-left: 10px; }
+    .dash-footer { padding: 16px 12px; font-size: 0.78em; }
+}
 """
 
 # Gradient color helper (JS) - red to green, matches Django guide
@@ -916,6 +945,18 @@ body {{
     font-size: 0.8em;
     color: #bbb;
     text-align: center;
+}}
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {{
+    .header {{ padding: 24px 16px 20px; }}
+    .header h1 {{ font-size: 1.35em; }}
+    .header-meta .gh-link {{ display: none; }}
+    .content {{ padding: 20px 12px 40px; }}
+    .grid {{ grid-template-columns: 1fr; gap: 12px; }}
+    .dash-card {{ padding: 16px 16px 14px; }}
+    .dash-card-title {{ font-size: 0.95em; }}
+    .dash-card-desc {{ font-size: 0.8em; }}
 }}
 </style>
 </head><body>

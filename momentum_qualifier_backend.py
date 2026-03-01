@@ -92,6 +92,14 @@ thead th.sorted-desc::after { content: " \\25BC"; }
 
 /* --- Score bar background shade --- */
 .score-cell { font-family:'IBM Plex Mono',monospace; font-size:0.92em; font-weight:600; }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .regime-trending, .regime-pullback, .regime-dip, .regime-breakdown { font-size: 0.75em; padding: 3px 10px; }
+    .safe-badge, .unsafe-badge { font-size: 0.75em; padding: 3px 10px; }
+    .score-cell { font-size: 0.82em; }
+    .n { font-size: 0.82em; }
+}
 """
 
 # =============================================================================

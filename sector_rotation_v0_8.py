@@ -562,6 +562,16 @@ th.sort-desc::after { content: ' ▼'; font-size: 0.7em; }
 
 /* pred sub-text (win%) */
 .pred-pct { display: block; font-size: 0.78em; color: #333; opacity: 0.75; }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    #secrot-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #secrot-table-wrap table { font-size: 0.72em; }
+    #secrot-table-wrap thead th { padding: 5px 4px; font-size: 0.68em; }
+    #secrot-table-wrap tbody td { padding: 4px 4px; font-size: 0.85em; }
+    .cell-name { max-width: 80px; }
+    .ha-bullish, .ha-bearish, .ha-mixed { font-size: 0.75em; padding: 2px 6px; }
+}
 """
 
 SORT_AND_RENDER_JS_TEMPLATE = """

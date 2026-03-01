@@ -106,6 +106,14 @@ EXTRA_CSS = """
 .price-table td:not(:first-child) {
     font-family: 'IBM Plex Mono', monospace;
 }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .fwd-card .value { font-size: 1.3em; }
+    .fwd-card .sub-row { font-size: 0.75em; }
+    .thresh-table td, .thresh-table th { padding: 7px 10px; font-size: 0.85em; }
+    .price-table td, .price-table th { padding: 8px 10px; }
+}
 """
 
 # =============================================================================

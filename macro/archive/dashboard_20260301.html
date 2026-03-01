@@ -334,6 +334,35 @@ tbody tr:hover { background: #fafbfd; }
     margin-top: 8px;
 }
 
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    body { font-size: 15px; }
+    .stat-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-bar .stat { padding: 14px 16px; }
+    .stat .stat-value { font-size: 1.5em; }
+    .stat .stat-label { font-size: 0.72em; }
+    .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 6px; }
+    .page-header h1 { font-size: 1.2em; }
+    .page-nav { padding: 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .page-nav a { padding: 10px 14px; font-size: 0.82em; white-space: nowrap; }
+    .content { padding: 16px 12px; }
+    .regime-banner { flex-direction: column; padding: 14px 16px; gap: 12px; }
+    .regime-label { font-size: 1.2em; }
+    .regime-score { border-left: none; padding-left: 0; border-top: 1px solid #e2e4e8; padding-top: 10px; }
+    .cards { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 14px 16px; }
+    .card .value { font-size: 1.5em; }
+    .table-section { border-radius: 0; margin-left: -12px; margin-right: -12px; }
+    .table-section-header { padding: 12px 16px; }
+    table { font-size: 0.85em; }
+    thead th { padding: 8px 10px; font-size: 0.75em; }
+    tbody td { padding: 8px 10px; }
+    .badge { padding: 3px 10px; font-size: 0.82em; min-width: 44px; }
+    .qualifier { padding: 3px 9px; font-size: 0.75em; }
+    .pb-item { margin-left: 8px; padding-left: 10px; }
+    .dash-footer { padding: 16px 12px; font-size: 0.78em; }
+}
+
 
 /* -- Alert rows -- */
 .alert-row {
@@ -377,13 +406,21 @@ tbody tr:hover { background: #fafbfd; }
 .rp-from { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 .rp-to   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .alert-row { padding: 10px 12px; font-size: 0.85em; gap: 10px; }
+    .alert-icon { font-size: 1.1em; }
+    .alert-sev { font-size: 0.68em; padding: 2px 8px; }
+    .regime-pill { font-size: 0.78em; padding: 3px 10px; }
+}
+
 </style>
 </head><body>
 <div class="stat-bar"><div class="stat"><div class="stat-label">Overall Regime</div><div class="stat-value warn">Neutral/Mixed</div></div><div class="stat"><div class="stat-label">VIX</div><div class="stat-value pos">19.9</div></div><div class="stat"><div class="stat-label">10Y-2Y Spread</div><div class="stat-value pos">0.590%</div></div><div class="stat"><div class="stat-label">HYG/LQD Ratio</div><div class="stat-value warn">0.7228</div></div><div class="stat"><div class="stat-label">Breadth %</div><div class="stat-value neg">0.0%</div></div></div>
 <div class="page-header">
   <h1>Macro Dashboard</h1>
   <div class="meta">
-    Generated 2026-03-01 15:12 &nbsp;|&nbsp;
+    Generated 2026-03-01 16:12 &nbsp;|&nbsp;
     <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
   </div>
 </div>
@@ -394,9 +431,9 @@ tbody tr:hover { background: #fafbfd; }
 </div>
 <div class="content">
 <div class="regime-banner" style="border-left-color:#f59e0b;"><div class="regime-label" style="color:#f59e0b;">NEUTRAL/MIXED</div><div class="regime-score">Net Score: 0.5 &nbsp;|&nbsp; Bullish: 1.5 &nbsp;|&nbsp; Bearish: 1<br>Confidence: Low</div></div>
-<div class="table-section"><div class="table-section-header"><h2>Regime Changes (3)</h2><span style="font-size:0.85em;color:#888;">vs yesterday</span></div><div style="padding:20px 24px;"><table><thead><tr><th>Indicator</th><th>From</th><th></th><th>To</th></tr></thead><tbody><tr><td class="ticker">VIX</td><td><span class="regime-pill rp-from">Unknown</span></td><td style="color:#888;font-size:1.2em;">&#8594;</td><td><span class="regime-pill rp-to">Normal</span></td></tr><tr><td class="ticker">Credit (HYG/LQD)</td><td><span class="regime-pill rp-from">Unknown</span></td><td style="color:#888;font-size:1.2em;">&#8594;</td><td><span class="regime-pill rp-to">Neutral</span></td></tr><tr><td class="ticker">Overall Market</td><td><span class="regime-pill rp-from">Bearish</span></td><td style="color:#888;font-size:1.2em;">&#8594;</td><td><span class="regime-pill rp-to">Neutral</span></td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Regime Changes (1)</h2><span style="font-size:0.85em;color:#888;">vs yesterday</span></div><div style="padding:20px 24px;"><table><thead><tr><th>Indicator</th><th>From</th><th></th><th>To</th></tr></thead><tbody><tr><td class="ticker">VIX</td><td><span class="regime-pill rp-from">Elevated</span></td><td style="color:#888;font-size:1.2em;">&#8594;</td><td><span class="regime-pill rp-to">Normal</span></td></tr></tbody></table></div></div>
 <div class="table-section"><div class="table-section-header"><h2>Alerts (2)</h2><span style="font-size:0.85em;color:#888;">Threshold breaches</span></div><div style="padding:20px 24px;"><div class="alert-row alert-medium"><span class="alert-icon">&#9675;</span><span class="alert-msg">VIX Elevated: 19.9</span><span class="alert-sev">MEDIUM</span></div><div class="alert-row alert-high"><span class="alert-icon">&#9888;</span><span class="alert-msg">Breadth Weak: 0.0% above 200MA</span><span class="alert-sev">HIGH</span></div></div></div>
-<div class="table-section"><div class="table-section-header"><h2>5-Day Trends</h2><span style="font-size:0.85em;color:#888;">Change from 5 days ago</span></div><div style="padding:20px 24px;"><div class="cards"><div class="card" style="border-top-color:#888888;"><div class="label">VIX Change (5d)</div><div class="value neg">&#9650; 9.01%</div><div class="sub">Down = good</div></div><div class="card" style="border-top-color:#888888;"><div class="label">Yield Curve Chg (5d)</div><div class="value pos">&#9654; 0.00bps</div><div class="sub">10Y-2Y, up = steeper</div></div><div class="card" style="border-top-color:#888888;"><div class="label">HYG/LQD Chg (5d)</div><div class="value pos">&#9660; 0.58%</div><div class="sub">Up = risk-on</div></div><div class="card" style="border-top-color:#f59e0b;"><div class="label">Breadth Chg (5d)</div><div class="value muted"> <span class="muted">N/A</span></div><div class="sub">% above 200MA proxy</div></div></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>5-Day Trends</h2><span style="font-size:0.85em;color:#888;">Change from 5 days ago</span></div><div style="padding:20px 24px;"><div class="cards"><div class="card" style="border-top-color:#888888;"><div class="label">VIX Change (5d)</div><div class="value pos">&#9660; 5.47%</div><div class="sub">Down = good</div></div><div class="card" style="border-top-color:#888888;"><div class="label">Yield Curve Chg (5d)</div><div class="value pos">&#9660; 1.00bps</div><div class="sub">10Y-2Y, up = steeper</div></div><div class="card" style="border-top-color:#888888;"><div class="label">HYG/LQD Chg (5d)</div><div class="value pos">&#9660; 0.15%</div><div class="sub">Up = risk-on</div></div><div class="card" style="border-top-color:#f59e0b;"><div class="label">Breadth Chg (5d)</div><div class="value muted"> <span class="muted">N/A</span></div><div class="sub">% above 200MA proxy</div></div></div></div></div>
 <div class="table-section"><div class="table-section-header"><h2>VIX and Volatility</h2></div><div style="padding:20px 24px;"><div class="cards"><div class="card" style="border-top-color:#22c55e;"><div class="label">VIX Level</div><div class="value pos">19.9</div><div class="sub">Normal</div></div><div class="card"><div class="label">VVIX</div><div class="value neutral">110.9</div><div class="sub">Vol of Vol</div></div></div><table><thead><tr><th>ETF Proxy</th><th>Price</th></tr></thead><tbody><tr><td class="ticker">VIXY</td><td class="num">27.86</td></tr><tr><td class="ticker">UVXY</td><td class="num">39.65</td></tr><tr><td class="ticker">VXX</td><td class="num">28.90</td></tr></tbody></table></div></div>
 <div class="table-section"><div class="table-section-header"><h2>Treasury Yield Curve</h2></div><div style="padding:20px 24px;"><div class="cards"><div class="card" style="border-top-color:#22c55e;"><div class="label">Curve Regime</div><div class="value pos">Normal</div><div class="sub">Date: 2026-02-27</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;"><div><p class="pb-header">Yield Rates</p><table><thead><tr><th>Tenor</th><th>Rate</th></tr></thead><tbody><tr><td class="ticker">1M</td><td class="num">3.740%</td></tr><tr><td class="ticker">2M</td><td class="num">3.730%</td></tr><tr><td class="ticker">3M</td><td class="num">3.670%</td></tr><tr><td class="ticker">6M</td><td class="num">3.600%</td></tr><tr><td class="ticker">1Y</td><td class="num">3.480%</td></tr><tr><td class="ticker">2Y</td><td class="num">3.380%</td></tr><tr><td class="ticker">3Y</td><td class="num">3.390%</td></tr><tr><td class="ticker">5Y</td><td class="num">3.510%</td></tr><tr><td class="ticker">7Y</td><td class="num">3.720%</td></tr><tr><td class="ticker">10Y</td><td class="num">3.970%</td></tr><tr><td class="ticker">20Y</td><td class="num">4.570%</td></tr><tr><td class="ticker">30Y</td><td class="num">4.640%</td></tr></tbody></table></div><div><p class="pb-header">Key Spreads</p><table><thead><tr><th>Spread</th><th>Value</th></tr></thead><tbody><tr><td>10Y - 2Y</td><td class="num pos">0.590%</td></tr><tr><td>10Y - 3M</td><td class="num pos">0.300%</td></tr><tr><td>30Y - 10Y</td><td class="num pos">0.670%</td></tr></tbody></table></div></div></div></div>
 <div class="table-section"><div class="table-section-header"><h2>Credit Markets</h2></div><div style="padding:20px 24px;"><div class="cards"><div class="card" style="border-top-color:#f59e0b;"><div class="label">HYG/LQD Ratio</div><div class="value warn">0.7228</div><div class="sub">Neutral</div></div></div><table><thead><tr><th>ETF</th><th>Price</th><th>1D Chg%</th></tr></thead><tbody><tr><td class="ticker">HYG</td><td class="num">80.72</td><td class="num neg">-0.16%</td></tr><tr><td class="ticker">LQD</td><td class="num">111.68</td><td class="num neg">-0.04%</td></tr><tr><td class="ticker">JNK</td><td class="num">97.25</td><td class="num muted"><span class="muted">N/A</span></td></tr><tr><td class="ticker">EMB</td><td class="num">97.73</td><td class="num muted"><span class="muted">N/A</span></td></tr><tr><td class="ticker">AGG</td><td class="num">101.40</td><td class="num muted"><span class="muted">N/A</span></td></tr></tbody></table></div></div>

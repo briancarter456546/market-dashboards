@@ -721,6 +721,19 @@ th.sort-desc::after { content: ' ▼'; font-size: 0.7em; }
 }
 .date-row:last-child { border-bottom: none; }
 .date-corr { color: #888; }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .sim-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .sim-table table { font-size: 0.72em; }
+    .sim-table thead th { padding: 5px 4px; font-size: 0.68em; }
+    .sim-table tbody td { padding: 4px 4px; }
+    .sim-table tbody td.col-name { font-size: 0.82em; }
+    .dates-panels { grid-template-columns: 1fr; gap: 10px; }
+    .dates-panel-header { padding: 8px 12px; font-size: 0.78em; }
+    .dates-panel-body { padding: 8px 12px; max-height: 200px; }
+    .date-row { font-size: 0.78em; }
+}
 """
 
 RENDER_JS_TEMPLATE = """

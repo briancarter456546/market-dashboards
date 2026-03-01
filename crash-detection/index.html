@@ -334,6 +334,35 @@ tbody tr:hover { background: #fafbfd; }
     margin-top: 8px;
 }
 
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    body { font-size: 15px; }
+    .stat-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-bar .stat { padding: 14px 16px; }
+    .stat .stat-value { font-size: 1.5em; }
+    .stat .stat-label { font-size: 0.72em; }
+    .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 6px; }
+    .page-header h1 { font-size: 1.2em; }
+    .page-nav { padding: 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .page-nav a { padding: 10px 14px; font-size: 0.82em; white-space: nowrap; }
+    .content { padding: 16px 12px; }
+    .regime-banner { flex-direction: column; padding: 14px 16px; gap: 12px; }
+    .regime-label { font-size: 1.2em; }
+    .regime-score { border-left: none; padding-left: 0; border-top: 1px solid #e2e4e8; padding-top: 10px; }
+    .cards { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 14px 16px; }
+    .card .value { font-size: 1.5em; }
+    .table-section { border-radius: 0; margin-left: -12px; margin-right: -12px; }
+    .table-section-header { padding: 12px 16px; }
+    table { font-size: 0.85em; }
+    thead th { padding: 8px 10px; font-size: 0.75em; }
+    tbody td { padding: 8px 10px; }
+    .badge { padding: 3px 10px; font-size: 0.82em; min-width: 44px; }
+    .qualifier { padding: 3px 9px; font-size: 0.75em; }
+    .pb-item { margin-left: 8px; padding-left: 10px; }
+    .dash-footer { padding: 16px 12px; font-size: 0.78em; }
+}
+
 
 .component-table td,
 .component-table th {
@@ -369,6 +398,13 @@ tbody tr:hover { background: #fafbfd; }
     display: inline-block;
 }
 
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .component-table td, .component-table th { padding: 8px 10px; }
+    .weight-bar-bg { width: 80px; }
+    .risk-pill { font-size: 0.75em; padding: 3px 10px; }
+}
+
 </style>
 </head><body>
 <div class="stat-bar"><div class="stat"><div class="stat-label">Date</div><div class="stat-value neutral">2026-03-01</div></div><div class="stat"><div class="stat-label">Composite Score</div><div class="stat-value warn">67/100</div></div><div class="stat"><div class="stat-label">RMT Status</div><div class="stat-value neg">CRITICAL</div></div><div class="stat"><div class="stat-label">Ising Status</div><div class="stat-value pos">NORMAL</div></div><div class="stat"><div class="stat-label">Overall Status</div><div class="stat-value warn">ELEVATED</div></div></div>
@@ -385,9 +421,9 @@ tbody tr:hover { background: #fafbfd; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<div class="regime-banner" style="border-left-color:#d97706;"><div class="regime-label" style="color:#d97706;">ELEVATED</div><div class="regime-score">Composite: 66.9/100 &nbsp;&bull;&nbsp; RMT &lambda;<sub>max</sub>: 479.64 (MP threshold: 2.05) &nbsp;&bull;&nbsp; Ising M: 0.541</div></div>
-<div class="cards"><div class="card" style="border-top-color:#dc2626;"><div class="label">RMT Lambda Max</div><div class="value" style="color:#dc2626;">479.64</div><div class="sub">vs MP threshold: 2.05 (ratio 234.47x)</div><div class="sub">Risk Level: <span class="risk-pill risk-CRITICAL">CRITICAL</span> &nbsp; Significant eigenvalues: 113</div><div class="sub">Assets analyzed: 1356</div></div><div class="card" style="border-top-color:#16a34a;"><div class="label">Ising Magnetization</div><div class="value" style="color:#16a34a;">0.541</div><div class="sub">Crash score: 35.2/100</div><div class="sub">Risk Level: <span class="risk-pill risk-NORMAL">NORMAL</span></div><div class="sub">Assets analyzed: 1356</div></div><div class="card" style="border-top-color:#d97706;"><div class="label">Composite Score</div><div class="value" style="color:#d97706;">66.9 / 100</div><div class="sub">Overall status: <span class="risk-pill risk-ELEVATED">ELEVATED</span></div><div class="sub">Weighted blend of 6 components</div></div></div>
-<div class="table-section"><div class="table-section-header"><h2>Component Breakdown</h2></div><div style="padding:20px 24px;"><table class="component-table"><thead><tr><th>Component</th><th>Raw Score (0-100)</th><th>Weight</th><th>Contribution</th></tr></thead><tbody><tr><td>RMT Lambda Max</td><td class="num neg">100.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:42px;"></span></span>35%</td><td class="num neg">35.00</td></tr><tr><td>Ising Magnetization</td><td class="num pos">31.3</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:24px;"></span></span>20%</td><td class="num pos">6.26</td></tr><tr><td>Market Breadth</td><td class="num neg">100.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:24px;"></span></span>20%</td><td class="num neg">20.00</td></tr><tr><td>VIX</td><td class="num pos">32.9</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:18px;"></span></span>15%</td><td class="num pos">4.93</td></tr><tr><td>Credit Spreads (HYG/LQD)</td><td class="num pos">14.4</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:6px;"></span></span>5%</td><td class="num pos">0.72</td></tr><tr><td>Breadth Momentum</td><td class="num pos">0.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:6px;"></span></span>5%</td><td class="num pos">0.00</td></tr></tbody></table><p style="margin-top:14px;font-size:0.9em;color:#555;">Total composite score: <strong class="warn">66.91 / 100</strong> &nbsp;&mdash;&nbsp; Status: <span class="risk-pill risk-ELEVATED">ELEVATED</span></p></div></div>
+<div class="regime-banner" style="border-left-color:#d97706;"><div class="regime-label" style="color:#d97706;">ELEVATED</div><div class="regime-score">Composite: 66.9/100 &nbsp;&bull;&nbsp; RMT &lambda;<sub>max</sub>: 481.28 (MP threshold: 2.04) &nbsp;&bull;&nbsp; Ising M: 0.541</div></div>
+<div class="cards"><div class="card" style="border-top-color:#dc2626;"><div class="label">RMT Lambda Max</div><div class="value" style="color:#dc2626;">481.28</div><div class="sub">vs MP threshold: 2.04 (ratio 235.38x)</div><div class="sub">Risk Level: <span class="risk-pill risk-CRITICAL">CRITICAL</span> &nbsp; Significant eigenvalues: 113</div><div class="sub">Assets analyzed: 1358</div></div><div class="card" style="border-top-color:#16a34a;"><div class="label">Ising Magnetization</div><div class="value" style="color:#16a34a;">0.541</div><div class="sub">Crash score: 35.4/100</div><div class="sub">Risk Level: <span class="risk-pill risk-NORMAL">NORMAL</span></div><div class="sub">Assets analyzed: 1358</div></div><div class="card" style="border-top-color:#d97706;"><div class="label">Composite Score</div><div class="value" style="color:#d97706;">66.9 / 100</div><div class="sub">Overall status: <span class="risk-pill risk-ELEVATED">ELEVATED</span></div><div class="sub">Weighted blend of 6 components</div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Component Breakdown</h2></div><div style="padding:20px 24px;"><table class="component-table"><thead><tr><th>Component</th><th>Raw Score (0-100)</th><th>Weight</th><th>Contribution</th></tr></thead><tbody><tr><td>RMT Lambda Max</td><td class="num neg">100.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:42px;"></span></span>35%</td><td class="num neg">35.00</td></tr><tr><td>Ising Magnetization</td><td class="num pos">31.4</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:24px;"></span></span>20%</td><td class="num pos">6.29</td></tr><tr><td>Market Breadth</td><td class="num neg">100.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:24px;"></span></span>20%</td><td class="num neg">20.00</td></tr><tr><td>VIX</td><td class="num pos">32.9</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:18px;"></span></span>15%</td><td class="num pos">4.93</td></tr><tr><td>Credit Spreads (HYG/LQD)</td><td class="num pos">14.4</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:6px;"></span></span>5%</td><td class="num pos">0.72</td></tr><tr><td>Breadth Momentum</td><td class="num pos">0.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:6px;"></span></span>5%</td><td class="num pos">0.00</td></tr></tbody></table><p style="margin-top:14px;font-size:0.9em;color:#555;">Total composite score: <strong class="warn">66.94 / 100</strong> &nbsp;&mdash;&nbsp; Status: <span class="risk-pill risk-ELEVATED">ELEVATED</span></p></div></div>
 </div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-03-01 &mdash; For personal research only.</div>
 <script>
 

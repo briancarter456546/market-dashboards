@@ -1335,6 +1335,11 @@ EXTRA_CSS = """
 .force-em      { background: #f59e0b; }
 .force-strong  { background: #0ea5e9; }
 .force-weak    { background: #f87171; }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .force-dot { width: 8px; height: 8px; margin-right: 4px; }
+}
 """
 
 # =============================================================================

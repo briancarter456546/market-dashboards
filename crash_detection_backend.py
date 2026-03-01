@@ -80,6 +80,13 @@ EXTRA_CSS = """
     background: #4f46e5;
     display: inline-block;
 }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .component-table td, .component-table th { padding: 8px 10px; }
+    .weight-bar-bg { width: 80px; }
+    .risk-pill { font-size: 0.75em; padding: 3px 10px; }
+}
 """
 
 # =============================================================================

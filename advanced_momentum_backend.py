@@ -572,6 +572,16 @@ thead th.sorted-desc::after { content: " \u25bc"; font-size:0.75em; }
 
 /* === Row striping for large table === */
 .all-assets-table tbody tr:nth-child(even) { background:#fafbfc; }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .all-assets-table { font-size: 0.78em; }
+    .all-assets-table thead th { padding: 6px 6px; font-size: 0.72em; }
+    .all-assets-table tbody td { padding: 5px 6px; }
+    .sig-strong-buy, .sig-buy, .sig-hold, .sig-sell-soon, .sig-sell { font-size: 0.72em; padding: 3px 8px; }
+    .stat-accel, .stat-stable, .stat-decel { font-size: 0.72em; padding: 2px 7px; }
+    .traj-v, .traj-fast, .traj-slow, .traj-curv { font-size: 0.72em; padding: 2px 7px; }
+}
 """
 
 # Column-sort JavaScript (click any <th> to sort its table ascending/descending)
