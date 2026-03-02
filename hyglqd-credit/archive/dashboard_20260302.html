@@ -454,6 +454,13 @@ tbody tr:hover { background: #fafbfd; }
 }
 
 
+/* --- Shared ownership checkbox (all dashboards) --- */
+.own-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #f59e0b; }
+.row-owned { background: #fff7ed !important; }
+.row-owned:hover { background: #ffedd5 !important; }
+th.own-th { width: 30px; text-align: center; cursor: default; }
+
+
 /* Forward-return cards: tighter sub-label spacing */
 .fwd-card .value {
     font-size: 1.7em;
@@ -534,9 +541,7 @@ tbody tr:hover { background: #fafbfd; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Monitors the HYG/LQD ratio as a credit spread proxy. Tracks the ratio's historical percentile, expected SPY forward returns at the current spread level, and directional win rates. Rising ratio = risk-on appetite, falling ratio = risk aversion.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div># HYG/LQD Credit Spread Analysis - March 2, 2026
-
-The HYG/LQD ratio stands at 0.7247, placing it at the 36.8th percentile of its historical range, indicating a relatively risk-averse positioning in credit markets. The ratio has ticked up 0.11 points over the past five days, suggesting a modest shift toward risk-on appetite, though it remains below its median historical level. Looking forward, SPY shows increasingly positive expected returns as the timeframe extends: 5-day forward returns average 0.38% with a 63% win rate, while 20-day forward returns improve to 1.46% average with a 72.2% win rate, suggesting that historically, this spread level has preceded stronger equity performance over longer periods. The market is currently in a Neutral regime, reflecting the intermediate positioning between risk-on and risk-off extremes. Overall, the data suggests cautious optimism with room for improvement in risk sentiment before reaching truly bullish spread levels.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Monitors the HYG/LQD ratio as a credit spread proxy. Tracks the ratio's historical percentile, expected SPY forward returns at the current spread level, and directional win rates. Rising ratio = risk-on appetite, falling ratio = risk aversion.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div>The HYG/LQD ratio stands at 0.7247 today, placing it at the 36th percentile historically—indicating below-average risk appetite in credit markets. The ratio has risen 0.11 points over the past five days, suggesting a modest shift toward risk-on positioning, though it remains in neutral territory rather than showing strong directional conviction. Looking forward, SPY shows increasingly positive expected returns as the forecast window extends: the 5-day average is +0.38%, the 10-day average jumps to +0.74%, and the 20-day average reaches +1.46%, with corresponding win rates improving from 63% to 72.2%. This pattern suggests that while current credit spreads are not at extreme levels, the forward return expectations improve meaningfully over medium-term horizons, supported by improving win rates in the 20-day forecast window.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
 <div class="regime-banner" style="border-left-color:#f59e0b;"><div class="regime-label" style="color:#f59e0b;">NEUTRAL</div><div class="regime-score">Ratio: 0.7247 &nbsp;|&nbsp; Percentile: 36.8th &nbsp;|&nbsp; 5D Change: +0.11%<br>Balanced risk appetite</div></div>
 <div class="cards">
 <div class="card fwd-card" style="border-top-color:#22c55e;"><div class="label">SPY 5-Day Forward</div><div class="value pos">+0.38%</div><div class="sub-row">  <span>Median: +0.42%</span>  <span>Win Rate: 63.0%</span>  <span>n=1346</span></div></div>
@@ -547,6 +552,57 @@ The HYG/LQD ratio stands at 0.7247, placing it at the 36.8th percentile of its h
 <div class="table-section"><div class="table-section-header"><h2>Regime Thresholds</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="thresh-table"><thead><tr><th title="Threshold level or current ratio reading">Level</th><th title="HYG/LQD price ratio value at this level">Ratio Value</th><th title="What this ratio level means for risk appetite">Interpretation</th></tr></thead><tbody><tr><td>Risk-On Threshold</td><td>0.7400</td><td>Ratio at or above this level = risk appetite strong</td></tr><tr class="thresh-row-current"><td>Current Ratio</td><td>0.7247</td><td>Between thresholds (neutral zone)</td></tr><tr><td>Risk-Off Threshold</td><td>0.7100</td><td>Ratio below this level = flight to quality</td></tr></tbody></table></div></div>
 </div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-03-02 &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
+
+/* --- Shared ownership state (localStorage, cross-dashboard) --- */
+window._owned = (function() {
+    var KEY = 'dashboard_owned_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+
+    /* Migration: copy old momentum-ranker-only key if it exists */
+    var OLD_KEY = 'mr_owned_tickers_v1';
+    try {
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+            var oldArr = JSON.parse(old);
+            if (oldArr && oldArr.length) {
+                oldArr.forEach(function(t) { _set.add(t); });
+                localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            }
+            localStorage.removeItem(OLD_KEY);
+        }
+    } catch(e) {}
+
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.own-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._owned.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-owned');
+        }
+    });
+});
+
+/* Shared toggle helper for Python-rendered tables */
+window._ownToggle = function(ticker, cb) {
+    window._owned.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-owned');
+};
+
 
 function getGradientColor(score) {
     var clamped = Math.max(0, Math.min(1, score));

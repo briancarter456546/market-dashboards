@@ -818,6 +818,7 @@ def _build_agreement_table(rows, mode='full'):
         header = (
             '<table class="sortable-table data-table">'
             '<thead><tr>'
+            '<th class="own-th" title="Mark tickers you own">Own</th>'
             '<th title="Ticker symbol">Ticker</th>'
             '<th title="Top correlated sector/ETF pole from ranker">Pole</th>'
             '<th title="Short-term momentum rank (1d-1y returns). Green if top 50">Ranker S/T</th>'
@@ -832,6 +833,7 @@ def _build_agreement_table(rows, mode='full'):
         header = (
             '<table class="sortable-table data-table">'
             '<thead><tr>'
+            '<th class="own-th" title="Mark tickers you own">Own</th>'
             '<th title="Ticker symbol">Ticker</th>'
             '<th title="Top correlated sector/ETF pole from ranker">Pole</th>'
             '<th title="Short-term momentum rank (1d-1y returns). Green if top 50">Ranker S/T</th>'
@@ -893,6 +895,8 @@ def _build_agreement_table(rows, mode='full'):
         if trusted:
             body_rows.append(
                 '<tr>'
+                '<td><input type="checkbox" class="own-cb" data-ticker="{ticker}"'
+                ' onclick="window._ownToggle(\'{ticker}\', this)" title="Mark as owned"></td>'
                 '<td class="ticker-cell" data-sort="{ticker}">{ticker}</td>'
                 '<td>{pole}</td>'
                 '<td class="{ranker_css}" data-sort="{ranker_sort}">{ranker_val}</td>'
@@ -950,6 +954,8 @@ def _build_agreement_table(rows, mode='full'):
 
             body_rows.append(
                 '<tr>'
+                '<td><input type="checkbox" class="own-cb" data-ticker="{ticker}"'
+                ' onclick="window._ownToggle(\'{ticker}\', this)" title="Mark as owned"></td>'
                 '<td class="ticker-cell" data-sort="{ticker}">{ticker}</td>'
                 '<td>{pole}</td>'
                 '<td class="{ranker_css}" data-sort="{ranker_sort}">{ranker_val}</td>'

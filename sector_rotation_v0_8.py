@@ -660,6 +660,7 @@ SORT_AND_RENDER_JS_TEMPLATE = """
         const etf = DATA[tk];
         if (!etf) return -999;
         switch(col) {{
+            case 'owned':        return window._owned.has(tk) ? 1 : 0;
             case 'ticker':       return tk;
             case 'name':         return etf.name || '';
             case 'ret_5d':       return etf.ret_5d ?? -999;
@@ -697,7 +698,7 @@ SORT_AND_RENDER_JS_TEMPLATE = """
         let html = '<table><thead>';
         // Group row
         html += '<tr class="grp-row">';
-        html += '<th colspan="5" class="grp-blank"></th>';
+        html += '<th colspan="6" class="grp-blank"></th>';
         html += '<th colspan="4" class="grp-momentum">Momentum (z-score)</th>';
         html += '<th colspan="3" class="grp-25y">Pred (25Y)</th>';
         html += '<th colspan="3" class="grp-5y">Pred (5Y)</th>';
@@ -705,6 +706,7 @@ SORT_AND_RENDER_JS_TEMPLATE = """
         html += '</tr>';
         // Column row
         html += '<tr>';
+        html += th('owned',      'Own',        'Mark as owned', 'own-th');
         html += th('ticker',     'ETF',        'Ticker symbol');
         html += th('name',       'Name',       'ETF name');
         html += th('sr_score',   'Score ▼',    'SecRot score 0-9');
@@ -744,7 +746,9 @@ SORT_AND_RENDER_JS_TEMPLATE = """
                          : ha === 'mixed'   ? `<span class="ha-mixed">MIX</span>`
                          : '<span style="color:#bbb">--</span>';
 
-            html += '<tr>';
+            const _isOwned = window._owned.has(tk);
+            html += `<tr class="${{_isOwned ? 'row-owned' : ''}}">`;
+            html += `<td><input type="checkbox" class="own-cb" ${{_isOwned ? 'checked' : ''}} onclick="window._secrot_toggleOwned('${{tk}}')" title="Mark as owned"></td>`;
             html += `<td class="cell-ticker">${{tk}}</td>`;
             html += `<td class="cell-name" title="${{etf.name}}">${{etf.name}}</td>`;
             html += `<td class="cell-score" style="background:${{scoreBg}};color:${{scoreFg}};">${{score}}/${{total}}</td>`;
@@ -787,6 +791,11 @@ SORT_AND_RENDER_JS_TEMPLATE = """
     window._secrot_sort = function(col) {{
         currentSort.dir = (currentSort.col === col && currentSort.dir === 'desc') ? 'asc' : 'desc';
         currentSort.col = col;
+        render();
+    }};
+
+    window._secrot_toggleOwned = function(tk) {{
+        window._owned.toggle(tk);
         render();
     }};
 

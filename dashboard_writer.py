@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# dashboard_writer.py - v1.2
+# dashboard_writer.py - v1.3
 # Last updated: 2026-03-02
 # =============================================================================
+# v1.3:
+#   - Added shared ownership system (OWNERSHIP_CSS + OWNERSHIP_JS)
+#   - Cross-dashboard "I Own This" checkbox via single localStorage key
+#   - Migration from old mr_owned_tickers_v1 key on first load
+#   - Auto-init + toggle helpers for Python-rendered tables
 # v1.2:
 #   - Added DASHBOARD_DESCRIPTIONS dict (static per-dashboard descriptions)
 #   - Added llm_block() method for injecting description + LLM interpretation
@@ -550,6 +555,71 @@ function getGradientColor(score) {
 
 
 # =============================================================================
+# SHARED OWNERSHIP SYSTEM (cross-dashboard "I Own This" checkbox)
+# =============================================================================
+
+OWNERSHIP_CSS = """
+/* --- Shared ownership checkbox (all dashboards) --- */
+.own-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #f59e0b; }
+.row-owned { background: #fff7ed !important; }
+.row-owned:hover { background: #ffedd5 !important; }
+th.own-th { width: 30px; text-align: center; cursor: default; }
+"""
+
+OWNERSHIP_JS = """
+/* --- Shared ownership state (localStorage, cross-dashboard) --- */
+window._owned = (function() {
+    var KEY = 'dashboard_owned_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+
+    /* Migration: copy old momentum-ranker-only key if it exists */
+    var OLD_KEY = 'mr_owned_tickers_v1';
+    try {
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+            var oldArr = JSON.parse(old);
+            if (oldArr && oldArr.length) {
+                oldArr.forEach(function(t) { _set.add(t); });
+                localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            }
+            localStorage.removeItem(OLD_KEY);
+        }
+    } catch(e) {}
+
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.own-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._owned.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-owned');
+        }
+    });
+});
+
+/* Shared toggle helper for Python-rendered tables */
+window._ownToggle = function(ticker, cb) {
+    window._owned.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-owned');
+};
+"""
+
+
+# =============================================================================
 # DASHBOARD DESCRIPTIONS (static, per-dashboard)
 # =============================================================================
 
@@ -856,12 +926,14 @@ class DashboardWriter(object):
         parts.append(SHARED_FONT_LINK)
         parts.append('<style>')
         parts.append(SHARED_CSS)
+        parts.append(OWNERSHIP_CSS)
         if extra_css:
             parts.append(extra_css)
         parts.append('</style>')
         parts.append('</head><body>')
         parts.append(body_html)
         parts.append('<script>')
+        parts.append(OWNERSHIP_JS)
         parts.append(GRADIENT_JS)
         if extra_js:
             parts.append(extra_js)

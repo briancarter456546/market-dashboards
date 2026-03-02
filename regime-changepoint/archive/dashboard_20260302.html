@@ -454,6 +454,13 @@ tbody tr:hover { background: #fafbfd; }
 }
 
 
+/* --- Shared ownership checkbox (all dashboards) --- */
+.own-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #f59e0b; }
+.row-owned { background: #fff7ed !important; }
+.row-owned:hover { background: #ffedd5 !important; }
+th.own-th { width: 30px; text-align: center; cursor: default; }
+
+
 /* D3 chart containers */
 #chart-container, #sim-chart-container, #pole-chart-container {
     padding: 20px 24px;
@@ -573,7 +580,7 @@ tbody tr:hover { background: #fafbfd; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Measures cosine distance between consecutive regime fingerprints and uses CUSUM changepoint detection to identify regime transitions. Tracks drift rate, pole flip analysis, and similarity to known historical macro windows (e.g. 2008 crisis, 2020 COVID).</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div>Today's regime-changepoint dashboard shows elevated market drift at 2.56 (normalized), indicating the market structure is shifting noticeably from its recent patterns. The strongest match is to a tariff_shock regime at 45.5% similarity—reflecting stagflation concerns likely tied to trade policy uncertainty—which substantially outweighs the next closest historical parallel (COVID's 20.5% similarity). This suggests current market dynamics are increasingly distinct from recent recovery patterns and more aligned with periods of supply-side pressure and policy-driven volatility. The low similarity scores to the AI bull regime (2.9%) and post-GFC ZIRP era (9.3%) further confirm that the risk-on momentum that dominated recent years has weakened considerably. The elevated drift tier combined with tariff_shock dominance points to a meaningful transition in market regime rather than noise within an existing structure.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Measures cosine distance between consecutive regime fingerprints and uses CUSUM changepoint detection to identify regime transitions. Tracks drift rate, pole flip analysis, and similarity to known historical macro windows (e.g. 2008 crisis, 2020 COVID).</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div>Today's regime analysis shows the market has shifted into an ELEVATED drift state with a normalized drift score of 2.56, indicating material structural change in price behavior and volatility patterns. The strongest match is to a "tariff_shock" regime at 45.5% similarity—reflecting stagflation concerns likely tied to recent trade policy developments—which is notably more pronounced than the next closest historical parallel (COVID at 20.5%). This elevated drift combined with dominant tariff-shock fingerprinting suggests markets are repricing under new policy assumptions rather than following familiar post-2008 or AI-bull playbooks (which scored only 2.9%). The CUSUM changepoint detection has flagged this as a genuine regime transition worth monitoring, though the 45.5% similarity indicates this is not a perfect historical repeat and may have unique characteristics.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
 <div class="stat-bar"><div class="stat"><div class="stat-label">Changepoints</div><div class="stat-value warn">32</div></div><div class="stat"><div class="stat-label">Distance Max</div><div class="stat-value neutral">0.0115</div></div><div class="stat"><div class="stat-label">Distance Mean</div><div class="stat-value neutral">0.0021</div></div><div class="stat"><div class="stat-label">CUSUM Threshold</div><div class="stat-value warn">0.01</div></div><div class="stat"><div class="stat-label">Macro Windows</div><div class="stat-value neutral">10</div></div><div class="stat"><div class="stat-label">Feature Dims</div><div class="stat-value neutral">123</div></div><div class="stat"><div class="stat-label">Drift Rate (ELEVATED)</div><div class="stat-value warn">2.56x</div></div><div class="stat"><div class="stat-label">Most Similar</div><div class="stat-value neutral">tariff_shock</div></div><div class="stat"><div class="stat-label">Similarity</div><div class="stat-value pos">45.5%</div></div></div>
 <div class="alert-banner"><span class="al-label">NOV 2025 - FEB 2026:</span>1 changepoint(s) detected between Nov 2025 and Feb 2026</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
@@ -616,6 +623,57 @@ tbody tr:hover { background: #fafbfd; }
 <div class="cp-tooltip" id="cp-tooltip"></div>
 </div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-03-02 &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
+
+/* --- Shared ownership state (localStorage, cross-dashboard) --- */
+window._owned = (function() {
+    var KEY = 'dashboard_owned_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+
+    /* Migration: copy old momentum-ranker-only key if it exists */
+    var OLD_KEY = 'mr_owned_tickers_v1';
+    try {
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+            var oldArr = JSON.parse(old);
+            if (oldArr && oldArr.length) {
+                oldArr.forEach(function(t) { _set.add(t); });
+                localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            }
+            localStorage.removeItem(OLD_KEY);
+        }
+    } catch(e) {}
+
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.own-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._owned.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-owned');
+        }
+    });
+});
+
+/* Shared toggle helper for Python-rendered tables */
+window._ownToggle = function(ticker, cb) {
+    window._owned.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-owned');
+};
+
 
 function getGradientColor(score) {
     var clamped = Math.max(0, Math.min(1, score));

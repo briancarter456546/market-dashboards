@@ -777,21 +777,7 @@ EXTRA_CSS = """
     font-family: 'IBM Plex Mono', monospace;
 }
 
-/* Owned checkbox column */
-.own-cb {
-    width: 14px;
-    height: 14px;
-    cursor: pointer;
-    accent-color: #f59e0b;
-    display: block;
-    margin: 0 auto;
-}
-.mr-table tbody tr.row-owned {
-    background: #fffbeb !important;
-}
-.mr-table tbody tr.row-owned:hover {
-    background: #fef3c7 !important;
-}
+/* Owned checkbox: .own-cb and .row-owned now in shared OWNERSHIP_CSS */
 .grp-blank   { background: #f8f9fb !important; color: transparent; border-bottom: 1px solid #e2e4e8; }
 .grp-returns { background: #1e293b !important; color: #94a3b8; }
 .grp-vs-spy  { background: #14532d !important; color: #86efac; }
@@ -988,7 +974,7 @@ RENDER_JS_TAIL = """;
         if (col === 'ticker')   return row.ticker || '';
         if (col === 'top_pole') return row.top_pole || '';
         if (col === 'sma_all')  return row.sma_all ? 1 : 0;
-        if (col === 'owned')    return ownedTickers.has(row.ticker) ? 1 : 0;
+        if (col === 'owned')    return window._owned.has(row.ticker) ? 1 : 0;
         if (col === 'ol_score') return (_overlapMap[row.ticker] || {}).maxSim || 0;
         return row[col] != null ? Number(row[col]) : -9999;
     }
@@ -997,35 +983,18 @@ RENDER_JS_TAIL = """;
         if (filterSma === 'above' && !row.sma_all) return false;
         if (filterSma === 'below' && row.sma_all) return false;
         if ((row.score || 0) < filterMinScore) return false;
-        if (filterOwned === 'owned' && !ownedTickers.has(row.ticker)) return false;
+        if (filterOwned === 'owned' && !window._owned.has(row.ticker)) return false;
         return true;
     }
 
     // -------------------------------------------------------------------------
-    // OWNED STATE (localStorage persistence)
+    // OWNED STATE (shared cross-dashboard API via window._owned)
     // -------------------------------------------------------------------------
-    const OWNED_KEY = 'mr_owned_tickers_v1';
-
-    function loadOwned() {
-        try {
-            return new Set(JSON.parse(localStorage.getItem(OWNED_KEY) || '[]'));
-        } catch(e) { return new Set(); }
-    }
-    function saveOwned(ownedSet) {
-        try {
-            localStorage.setItem(OWNED_KEY, JSON.stringify([...ownedSet]));
-        } catch(e) {}
-    }
-
-    let ownedTickers = loadOwned();
+    // window._owned is injected by dashboard_writer.py (OWNERSHIP_JS)
+    // provides: .has(t), .toggle(t), .all(), .count()
 
     function toggleOwned(ticker) {
-        if (ownedTickers.has(ticker)) {
-            ownedTickers.delete(ticker);
-        } else {
-            ownedTickers.add(ticker);
-        }
-        saveOwned(ownedTickers);
+        window._owned.toggle(ticker);
         renderTable();
     }
     const tooltip = document.createElement('div');
@@ -1072,7 +1041,7 @@ RENDER_JS_TAIL = """;
         // Theme overlap section
         const olData = _overlapMap[row.ticker] || { overlaps: [] };
         html += `<div class="tt-section">Theme Overlap (OL)</div>`;
-        if (ownedTickers.size === 0) {
+        if (window._owned.count() === 0) {
             html += `<div class="tt-row"><span style="color:#94a3b8;">No owned tickers set</span></div>`;
         } else if (olData.overlaps.length === 0) {
             html += `<div class="tt-row"><span style="color:#16a34a;">No overlap detected</span></div>`;
@@ -1311,7 +1280,7 @@ RENDER_JS_TAIL = """;
                 ? `<td title="Top pole: ${tp} (corr ${tpCorr}, pole 21d z: ${tpZ != null ? tpZ.toFixed(2) : '--'})" style="background:${tpBg};color:#fff;font-weight:700;font-size:0.75em;text-align:center;white-space:nowrap;">${tp} ${tpCorr != null ? tpCorr.toFixed(2) : ''}</td>`
                 : `<td style="color:#ccc;text-align:center;">&#8212;</td>`;
 
-            const isOwned = ownedTickers.has(row.ticker);
+            const isOwned = window._owned.has(row.ticker);
             const ownedClass = isOwned ? ' row-owned' : '';
             const ownedTd = `<td><input type="checkbox" class="own-cb" ${isOwned ? 'checked' : ''} onclick="window._mrToggleOwned('${row.ticker}')" title="Mark as owned"></td>`;
 
@@ -1355,7 +1324,7 @@ RENDER_JS_TAIL = """;
     function updatePoleCorrRow() {
         const owned = [];
         for (const r of DATA.data) {
-            if (ownedTickers.has(r.ticker) && r.corr_vec) owned.push(r.corr_vec);
+            if (window._owned.has(r.ticker) && r.corr_vec) owned.push(r.corr_vec);
         }
 
         // Pass 1: compute avg corr and raw alignment per pole
@@ -1482,12 +1451,12 @@ RENDER_JS_TAIL = """;
     // Recomputed whenever owned set or threshold changes
     function buildOverlapMap(rows) {
         const overlapMap = {};
-        if (ownedTickers.size === 0) return overlapMap;
+        if (window._owned.count() === 0) return overlapMap;
 
         // Gather owned row vectors
         const ownedVecs = {};
         rows.forEach(r => {
-            if (ownedTickers.has(r.ticker) && r.corr_vec) {
+            if (window._owned.has(r.ticker) && r.corr_vec) {
                 ownedVecs[r.ticker] = r.corr_vec;
             }
         });

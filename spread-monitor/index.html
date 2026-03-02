@@ -454,6 +454,13 @@ tbody tr:hover { background: #fafbfd; }
 }
 
 
+/* --- Shared ownership checkbox (all dashboards) --- */
+.own-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #f59e0b; }
+.row-owned { background: #fff7ed !important; }
+.row-owned:hover { background: #ffedd5 !important; }
+th.own-th { width: 30px; text-align: center; cursor: default; }
+
+
 .force-dot {
     display: inline-block;
     width: 10px;
@@ -489,7 +496,7 @@ tbody tr:hover { background: #fafbfd; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Tracks 18+ cross-asset spread ratios across rates, credit, equity risk, and commodities. Each spread is scored on trend, distance from mean, and momentum to produce a composite signal. Forces are grouped into four market levels (Rates, Earnings, Liquidity, Sentiment) for regime scoring.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div>Today's spread data shows a market in transition toward risk-off positioning, with mixed signals across asset classes. The SPY/TLT ratio at 7.69 (below its 50-day average of 7.83) confirms flight-to-safety into bonds, while the ARKK/QQQ ratio has fallen 2.53% below its trend, indicating investors are rotating away from speculative growth toward quality names. However, this risk-off bias is contradicted by strong emerging market and small-cap signals: EEM/SPY surged 5.4% in 20 days and IWM/SPY is 1.56% above its mean, both marked CONFIRMED, suggesting pockets of risk appetite remain intact. Credit stress is holding steady (HYG/LQD at 0.725, essentially flat), suggesting the shift is more about valuation and sentiment than fundamental credit concerns. Overall, the dashboard reflects a selective deleveraging where investors are pruning speculative positions while maintaining conviction in small-cap and emerging market exposure.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Tracks 18+ cross-asset spread ratios across rates, credit, equity risk, and commodities. Each spread is scored on trend, distance from mean, and momentum to produce a composite signal. Forces are grouped into four market levels (Rates, Earnings, Liquidity, Sentiment) for regime scoring.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div>Today's dashboard reveals a mixed but tilted risk-off posture across markets. The SPY/TLT ratio at 7.69 is falling below its 50-day average (7.83), signaling flight-to-safety into bonds with a confirmed risk-off trend. Conversely, small-cap confidence is rising—IWM/SPY at 0.384 sits 1.56% above its moving average with positive 5-day and 20-day momentum, suggesting some investors are broadening equity exposure rather than retreating entirely. Emerging markets show the strongest conviction signal with EEM/SPY at 0.090, up 5.63% from its average and displaying +5.40% 20-day momentum, indicating genuine global risk appetite. However, speculative positioning is cooling noticeably—ARKK/QQQ has fallen 2.53% below average and continues declining, suggesting investors are rotating away from high-growth tech into more stable quality names.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
 <div class="regime-banner" style="border-left-color:#d97706;"><div class="regime-label" style="color:#d97706;">MIXED / TRANSITIONING</div><div class="regime-score">Score: 0 / 36 &nbsp;&bull;&nbsp; Normalized: +0.00<br>+1.0 = full risk-on &nbsp;&bull;&nbsp; -1.0 = full risk-off</div></div>
 <div class="cards"><div class="card" style="border-top-color:#8b5cf6"><div class="label">I: Rates / Duration</div><div class="value pos">+0.12</div><div class="sub">Leaning Bullish</div></div><div class="card" style="border-top-color:#f59e0b"><div class="label">II: Earnings / Fundamentals</div><div class="value pos">+0.62</div><div class="sub">Bullish</div></div><div class="card" style="border-top-color:#0ea5e9"><div class="label">III: Liquidity / Structure</div><div class="value pos">+0.25</div><div class="sub">Leaning Bullish</div></div><div class="card" style="border-top-color:#f87171"><div class="label">IV: Sentiment / Positioning</div><div class="value neg">-0.17</div><div class="sub">Leaning Bearish</div></div></div>
 <div class="table-section"><div class="table-section-header"><h2>All Spreads</h2><span style="font-size:0.85em;color:#888;">Click any column to sort</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="sortable-table"><thead><tr><th title="Force category: Rates, Earnings, Liquidity, or Sentiment">Market Level</th><th title="Specific spread classification within the force level">Category</th><th title="Ratio name (e.g. HYG/LQD, XLY/XLP)">Spread</th><th title="Current trend direction and qualifier">Trend</th><th title="Distance from mean as percentage (z-score proxy)">Dist %</th><th title="10-day regression slope of the spread">Slope</th><th title="5-day momentum (rate of change)">5d Mom</th><th title="20-day momentum (rate of change)">20d Mom</th><th title="Composite signal score, positive=bullish, negative=bearish">Score &#9660;</th><th title="Interpretation of current spread regime">Status / Meaning</th><th title="Suggested positioning based on spread signal">Playbook</th></tr></thead><tbody><tr><td data-sort="3"><span class="force-dot force-strong"></span><span style="font-size:0.88em;color:#555;">III: Liquidity / Structure</span></td><td data-sort="Breadth / Small-Cap Confidence" style="color:#555;">Breadth / Small-Cap Confidence</td><td data-sort="IWM/SPY"><span class="ticker">IWM/SPY</span><br><svg width="80" height="24" viewBox="0 0 80 24" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="0.0,17.4 1.6,17.9 3.3,18.1 4.9,16.7 6.5,19.7 8.2,20.0 9.8,21.5 11.4,22.2 13.1,24.0 14.7,24.0 16.3,21.5 18.0,18.9 19.6,16.8 21.2,16.5 22.9,13.3 24.5,13.1 26.1,12.1 27.8,11.7 29.4,8.1 31.0,6.3 32.7,5.8 34.3,3.2 35.9,0.7 37.6,0.0 39.2,5.8 40.8,8.2 42.4,8.6 44.1,10.2 45.7,9.5 47.3,12.8 49.0,11.4 50.6,8.2 52.2,9.3 53.9,11.0 55.5,6.1 57.1,5.5 58.8,5.5 60.4,6.8 62.0,8.3 63.7,4.6 65.3,5.0 66.9,5.4 68.6,3.9 70.2,6.1 71.8,7.7 73.5,6.6 75.1,7.7 76.7,4.5 78.4,8.2 80.0,6.2" /></svg></td><td data-sort="1"><span class="trend-above">ABOVE</span></td><td data-sort="1.56" class="pos num">+1.56%</td><td data-sort="RISING" class="pos">RISING <span class="num" style="font-size:0.85em;color:#aaa;">(+0.793%)</span></td><td data-sort="0.14" class="pos num">+0.1%</td><td data-sort="1.75" class="pos num">+1.8%</td><td data-sort="2"><span class="badge badge-2">+2</span></td><td data-sort="CONFIRMED"><span class="qualifier q-confirmed">CONFIRMED</span><br><span style="font-size:0.88em;color:#555;">Small-cap confidence, broad risk-on, market breadth expanding</span></td><td data-sort="Broaden equity exposure into small/mid caps. IWM longs, sell large-cap premium." style="font-size:0.88em;color:#4f46e5;max-width:240px;">Broaden equity exposure into small/mid caps. IWM longs, sell large-cap premium.</td></tr>
@@ -560,6 +567,57 @@ v XLY/XLP [-2] CONFIRMED: Recession fears, defensive rotation into staples
 v IWF/IWD [-2] CONFIRMED: Value outperforming growth, rate-hiking regime, late-cycle or mean-reversion</div></div></div>
 </div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-03-02 &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
+
+/* --- Shared ownership state (localStorage, cross-dashboard) --- */
+window._owned = (function() {
+    var KEY = 'dashboard_owned_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+
+    /* Migration: copy old momentum-ranker-only key if it exists */
+    var OLD_KEY = 'mr_owned_tickers_v1';
+    try {
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+            var oldArr = JSON.parse(old);
+            if (oldArr && oldArr.length) {
+                oldArr.forEach(function(t) { _set.add(t); });
+                localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            }
+            localStorage.removeItem(OLD_KEY);
+        }
+    } catch(e) {}
+
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.own-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._owned.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-owned');
+        }
+    });
+});
+
+/* Shared toggle helper for Python-rendered tables */
+window._ownToggle = function(ticker, cb) {
+    window._owned.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-owned');
+};
+
 
 function getGradientColor(score) {
     var clamped = Math.max(0, Math.min(1, score));

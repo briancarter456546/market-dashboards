@@ -649,11 +649,12 @@ def _fmt_conf(val):
 
 
 TABLE_HEADERS = [
-    "Symbol", "Price", "1M%", "3M%", "12M%",
+    "Own", "Symbol", "Price", "1M%", "3M%", "12M%",
     "Sortino 1M", "Status", "Trajectory", "Signal", "Confidence",
 ]
 
 HEADER_TIPS = {
+    "Own":        "Mark tickers you own",
     "Symbol":     "Ticker symbol",
     "Price":      "Current price",
     "1M%":        "1-month return percentage",
@@ -672,9 +673,13 @@ def _build_table_row(r):
     sig_cls  = _SIGNAL_CLASS.get(r["signal"], "sig-hold")
     stat_cls = _STATUS_CLASS.get(r["status"], "stat-stable")
     traj_cls = _TRAJ_CLASS.get(r["trajectory"], "traj-curv")
+    sym = r["symbol"]
 
     cells = []
-    cells.append('<td class="ticker" data-val="{s}">{s}</td>'.format(s=r["symbol"]))
+    cells.append(
+        '<td><input type="checkbox" class="own-cb" data-ticker="{s}"'
+        ' onclick="window._ownToggle(\'{s}\', this)" title="Mark as owned"></td>'.format(s=sym))
+    cells.append('<td class="ticker" data-val="{s}">{s}</td>'.format(s=sym))
     cells.append(_fmt_price(r["current_price"]))
     cells.append(_fmt_ret(r.get("return_1m")))
     cells.append(_fmt_ret(r.get("return_3m")))
@@ -694,7 +699,8 @@ def _build_table(rows, table_id=""):
     """Wrap rows in a full <table> with sortable headers."""
     id_attr = ' id="{}"'.format(table_id) if table_id else ""
     header_cells = "".join(
-        '<th title="{}">{}</th>'.format(HEADER_TIPS.get(h, ''), h)
+        '<th class="{cls}" title="{tip}">{h}</th>'.format(
+            cls='own-th' if h == 'Own' else '', tip=HEADER_TIPS.get(h, ''), h=h)
         for h in TABLE_HEADERS)
     body_rows = "\n".join(_build_table_row(r) for r in rows)
     return (

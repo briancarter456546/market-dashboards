@@ -454,6 +454,13 @@ tbody tr:hover { background: #fafbfd; }
 }
 
 
+/* --- Shared ownership checkbox (all dashboards) --- */
+.own-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #f59e0b; }
+.row-owned { background: #fff7ed !important; }
+.row-owned:hover { background: #ffedd5 !important; }
+th.own-th { width: 30px; text-align: center; cursor: default; }
+
+
 /* Sector rotation table - compact for wide data */
 #secrot-table-wrap table {
     border-collapse: collapse;
@@ -535,11 +542,64 @@ th.sort-desc::after { content: ' ▼'; font-size: 0.7em; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Momentum z-scores and forward predictions for 500+ ETFs across 25-year, 5-year, and 1-year windows. Historical pattern matching produces predicted 5-day and 10-day returns with win rates. Sector rotation scores combine trend strength, agreement across timeframes, and pattern confidence.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div>Today's data shows a broadly bullish consensus across these international and diversified ETFs, with all nine tickers displaying bullish historical agreement patterns. The strongest performers over three months are AIA (up 23.04%) and AIRR (up 21.90%), both showing solid three-month momentum readings around 0.9-1.6, while AFK (Africa) also posted significant three-month gains of 21.22% despite mixed short-term results. In contrast, AGG (Aggregate Bond) stands out as a laggard with negative three-month momentum (-0.87) and minimal forward-looking returns across all timeframes, suggesting weakness in the bond space. Most notably, all prediction columns (pred_3d through pred_10d) are showing NaN values across the board, indicating that the historical pattern-matching models have not yet generated forward return predictions or win rates for today's data.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Momentum z-scores and forward predictions for 500+ ETFs across 25-year, 5-year, and 1-year windows. Historical pattern matching produces predicted 5-day and 10-day returns with win rates. Sector rotation scores combine trend strength, agreement across timeframes, and pattern confidence.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div># Market Analysis: Sector Rotation Dashboard
+
+Today's data reveals a broadly bullish consensus across these 500+ ETFs, with all nine displayed tickers showing bullish historical agreement despite mixed near-term performance. The most striking pattern is the divergence between short-term weakness and medium-term strength: most ETFs are down 1-2% over three days, yet show solid gains over 1-3 months (AIA and AIRR leading with 23% and 21.9% three-month returns respectively). AIA stands out as the top performer with a sector rotation score of 4.0, posting a 5-day return of 2.17% and a robust 23% three-month gain, suggesting sustained momentum. Conversely, AGG (Aggregate Bond) appears as a notable laggard with a 3.0 score and negative momentum across most timeframes, indicating weakness in the fixed income space. The data suggests a market in transition where recent pullbacks may be temporary within a broader uptrend, though the absence of prediction data (all showing NaN values) limits confidence in forward-looking signals.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
 <div class="table-section"><div class="table-section-header"><h2>How to Read</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div style="font-size:0.88em;color:#555;line-height:1.9;"><strong>Score 0-9:</strong> Win rate (0-2) + Return magnitude (0-2) + 5Y confirms (0-2) + 25Y confirms (0-2) + Horizon agreement (0-1)<br><strong>Agree:</strong> All 3 history windows predict same 10d direction &nbsp;|&nbsp; <strong>Momentum:</strong> z-score vs history &nbsp;|&nbsp; <strong>Cell colors:</strong> per-column gradient, 5th-95th percentile range &nbsp;|&nbsp; <strong>Pred cells:</strong> avg return (top) + win% (bottom) &nbsp;|&nbsp; <span style="color:#86efac;background:#14532d;padding:1px 6px;border-radius:3px;">25Y</span> <span style="color:#93c5fd;background:#1e3a5f;padding:1px 6px;border-radius:3px;">5Y</span> <span style="color:#c4b5fd;background:#3b1f5e;padding:1px 6px;border-radius:3px;">1Y</span></div></div></div>
 <div class="table-section"><div class="table-section-header"><h2>SecRot Deep Dive &mdash; Pattern Matching</h2><span style="font-size:0.85em;color:#888;">Click any column header to sort</span></div><div style="overflow-x:auto;padding:0;"><div id="secrot-table-wrap" style="padding:0;"></div></div></div>
 </div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-03-02 &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
+
+/* --- Shared ownership state (localStorage, cross-dashboard) --- */
+window._owned = (function() {
+    var KEY = 'dashboard_owned_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+
+    /* Migration: copy old momentum-ranker-only key if it exists */
+    var OLD_KEY = 'mr_owned_tickers_v1';
+    try {
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+            var oldArr = JSON.parse(old);
+            if (oldArr && oldArr.length) {
+                oldArr.forEach(function(t) { _set.add(t); });
+                localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            }
+            localStorage.removeItem(OLD_KEY);
+        }
+    } catch(e) {}
+
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.own-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._owned.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-owned');
+        }
+    });
+});
+
+/* Shared toggle helper for Python-rendered tables */
+window._ownToggle = function(ticker, cb) {
+    window._owned.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-owned');
+};
+
 
 function getGradientColor(score) {
     var clamped = Math.max(0, Math.min(1, score));
@@ -654,6 +714,7 @@ function getGradientColor(score) {
         const etf = DATA[tk];
         if (!etf) return -999;
         switch(col) {
+            case 'owned':        return window._owned.has(tk) ? 1 : 0;
             case 'ticker':       return tk;
             case 'name':         return etf.name || '';
             case 'ret_5d':       return etf.ret_5d ?? -999;
@@ -691,7 +752,7 @@ function getGradientColor(score) {
         let html = '<table><thead>';
         // Group row
         html += '<tr class="grp-row">';
-        html += '<th colspan="5" class="grp-blank"></th>';
+        html += '<th colspan="6" class="grp-blank"></th>';
         html += '<th colspan="4" class="grp-momentum">Momentum (z-score)</th>';
         html += '<th colspan="3" class="grp-25y">Pred (25Y)</th>';
         html += '<th colspan="3" class="grp-5y">Pred (5Y)</th>';
@@ -699,6 +760,7 @@ function getGradientColor(score) {
         html += '</tr>';
         // Column row
         html += '<tr>';
+        html += th('owned',      'Own',        'Mark as owned', 'own-th');
         html += th('ticker',     'ETF',        'Ticker symbol');
         html += th('name',       'Name',       'ETF name');
         html += th('sr_score',   'Score ▼',    'SecRot score 0-9');
@@ -738,7 +800,9 @@ function getGradientColor(score) {
                          : ha === 'mixed'   ? `<span class="ha-mixed">MIX</span>`
                          : '<span style="color:#bbb">--</span>';
 
-            html += '<tr>';
+            const _isOwned = window._owned.has(tk);
+            html += `<tr class="${_isOwned ? 'row-owned' : ''}">`;
+            html += `<td><input type="checkbox" class="own-cb" ${_isOwned ? 'checked' : ''} onclick="window._secrot_toggleOwned('${tk}')" title="Mark as owned"></td>`;
             html += `<td class="cell-ticker">${tk}</td>`;
             html += `<td class="cell-name" title="${etf.name}">${etf.name}</td>`;
             html += `<td class="cell-score" style="background:${scoreBg};color:${scoreFg};">${score}/${total}</td>`;
@@ -781,6 +845,11 @@ function getGradientColor(score) {
     window._secrot_sort = function(col) {
         currentSort.dir = (currentSort.col === col && currentSort.dir === 'desc') ? 'asc' : 'desc';
         currentSort.col = col;
+        render();
+    };
+
+    window._secrot_toggleOwned = function(tk) {
+        window._owned.toggle(tk);
         render();
     };
 

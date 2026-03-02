@@ -454,6 +454,13 @@ tbody tr:hover { background: #fafbfd; }
 }
 
 
+/* --- Shared ownership checkbox (all dashboards) --- */
+.own-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #f59e0b; }
+.row-owned { background: #fff7ed !important; }
+.row-owned:hover { background: #ffedd5 !important; }
+th.own-th { width: 30px; text-align: center; cursor: default; }
+
+
 .component-table td,
 .component-table th {
     padding: 11px 16px;
@@ -499,7 +506,7 @@ tbody tr:hover { background: #fafbfd; }
 
 </style>
 </head><body>
-<div class="stat-bar"><div class="stat"><div class="stat-label">Date</div><div class="stat-value neutral">2026-03-02</div></div><div class="stat"><div class="stat-label">Composite Score</div><div class="stat-value warn">67/100</div></div><div class="stat"><div class="stat-label">RMT Status</div><div class="stat-value neg">CRITICAL</div></div><div class="stat"><div class="stat-label">Ising Status</div><div class="stat-value pos">NORMAL</div></div><div class="stat"><div class="stat-label">Overall Status</div><div class="stat-value warn">ELEVATED</div></div></div>
+<div class="stat-bar"><div class="stat"><div class="stat-label">Date</div><div class="stat-value neutral">2026-03-02</div></div><div class="stat"><div class="stat-label">Composite Score</div><div class="stat-value warn">68/100</div></div><div class="stat"><div class="stat-label">RMT Status</div><div class="stat-value neg">CRITICAL</div></div><div class="stat"><div class="stat-label">Ising Status</div><div class="stat-value pos">NORMAL</div></div><div class="stat"><div class="stat-label">Overall Status</div><div class="stat-value warn">ELEVATED</div></div></div>
 <div class="page-header">
   <h1>Crash Detection (RMT + Ising)</h1>
   <div class="meta">
@@ -513,14 +520,65 @@ tbody tr:hover { background: #fafbfd; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Combines Random Matrix Theory eigenvalue analysis with Ising model magnetization to detect herding behavior. Lambda max tracks correlation clustering; magnetization tracks directional consensus. Composite score is probability-weighted across components.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div># Crash-Detection Dashboard Analysis - March 2, 2026
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Combines Random Matrix Theory eigenvalue analysis with Ising model magnetization to detect herding behavior. Lambda max tracks correlation clustering; magnetization tracks directional consensus. Composite score is probability-weighted across components.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div># Market Analysis: March 2, 2026
 
-Today's data shows elevated systemic risk with a composite score of 67.1, driven primarily by extreme correlation clustering detected through Random Matrix Theory. The lambda max eigenvalue of 480.4 is exceptionally high, indicating that 113 out of 1,358 assets are moving in highly synchronized patterns—a textbook signal of strong herding behavior. The magnetization reading of 0.54 suggests moderate directional consensus among market participants, though this is outweighed by the RMT risk component which is flagged as CRITICAL. The rmt_ratio of 234.9 shows that actual correlations far exceed what would be expected by chance, meaning this coordinated movement is not random but reflects genuine consensus-driven trading. While VIX and credit scores remain relatively contained, the combination of extreme eigenvalue concentration and significant synchronized asset movement warrants heightened monitoring for potential volatility clustering.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
-<div class="regime-banner" style="border-left-color:#d97706;"><div class="regime-label" style="color:#d97706;">ELEVATED</div><div class="regime-score">Composite: 67.1/100 &nbsp;&bull;&nbsp; RMT &lambda;<sub>max</sub>: 480.36 (MP threshold: 2.04) &nbsp;&bull;&nbsp; Ising M: 0.541</div></div>
-<div class="cards"><div class="card" style="border-top-color:#dc2626;"><div class="label">RMT Lambda Max</div><div class="value" style="color:#dc2626;">480.36</div><div class="sub">vs MP threshold: 2.04 (ratio 234.93x)</div><div class="sub">Risk Level: <span class="risk-pill risk-CRITICAL">CRITICAL</span> &nbsp; Significant eigenvalues: 113</div><div class="sub">Assets analyzed: 1358</div></div><div class="card" style="border-top-color:#16a34a;"><div class="label">Ising Magnetization</div><div class="value" style="color:#16a34a;">0.541</div><div class="sub">Crash score: 35.2/100</div><div class="sub">Risk Level: <span class="risk-pill risk-NORMAL">NORMAL</span></div><div class="sub">Assets analyzed: 1358</div></div><div class="card" style="border-top-color:#d97706;"><div class="label">Composite Score</div><div class="value" style="color:#d97706;">67.1 / 100</div><div class="sub">Overall status: <span class="risk-pill risk-ELEVATED">ELEVATED</span></div><div class="sub">Weighted blend of 6 components</div></div></div>
-<div class="table-section"><div class="table-section-header"><h2>Component Breakdown</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="component-table"><thead><tr><th title="RMT or Ising model component name">Component</th><th title="Individual component score, 0=safe to 100=critical">Raw Score (0-100)</th><th title="Relative weight of this component in composite score">Weight</th><th title="Weighted contribution to final crash probability">Contribution</th></tr></thead><tbody><tr><td>RMT Lambda Max</td><td class="num neg">100.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:35.0%;"></span></span>35%</td><td class="num neg">35.00</td></tr><tr><td>Ising Magnetization</td><td class="num pos">31.3</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:20.0%;"></span></span>20%</td><td class="num pos">6.26</td></tr><tr><td>Market Breadth</td><td class="num neg">100.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:20.0%;"></span></span>20%</td><td class="num neg">20.00</td></tr><tr><td>VIX</td><td class="num pos">35.4</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:15.0%;"></span></span>15%</td><td class="num pos">5.31</td></tr><tr><td>Credit Spreads (HYG/LQD)</td><td class="num pos">11.2</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:5.0%;"></span></span>5%</td><td class="num pos">0.56</td></tr><tr><td>Breadth Momentum</td><td class="num pos">0.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:5.0%;"></span></span>5%</td><td class="num pos">0.00</td></tr></tbody></table><p style="margin-top:14px;font-size:0.9em;color:#555;">Total composite score: <strong class="warn">67.13 / 100</strong> &nbsp;&mdash;&nbsp; Status: <span class="risk-pill risk-ELEVATED">ELEVATED</span></p></div></div>
+Today's crash-detection dashboard shows elevated systemic risk with a composite score of 67.6, driven primarily by extreme correlation clustering. The Random Matrix Theory analysis is flashing critical warnings, with lambda_max at 480.4 and an RMT ratio of 234.9 - both extraordinarily high values indicating that 113 out of 1,358 assets are moving in lockstep rather than independently. The magnetization reading of 0.54 suggests moderate directional consensus among market participants, though this is less extreme than the correlation signal. The breadth score and RMT score are both at maximum (100.0), while the VIX-based component (38.1) and credit conditions (12.4) suggest some stress but not panic levels, implying that the detected herding is not yet reflected in volatility or credit spreads. This pattern typically precedes sharp market moves when investors suddenly recognize they've crowded into the same positions.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
+<div class="regime-banner" style="border-left-color:#d97706;"><div class="regime-label" style="color:#d97706;">ELEVATED</div><div class="regime-score">Composite: 67.6/100 &nbsp;&bull;&nbsp; RMT &lambda;<sub>max</sub>: 480.36 (MP threshold: 2.04) &nbsp;&bull;&nbsp; Ising M: 0.541</div></div>
+<div class="cards"><div class="card" style="border-top-color:#dc2626;"><div class="label">RMT Lambda Max</div><div class="value" style="color:#dc2626;">480.36</div><div class="sub">vs MP threshold: 2.04 (ratio 234.93x)</div><div class="sub">Risk Level: <span class="risk-pill risk-CRITICAL">CRITICAL</span> &nbsp; Significant eigenvalues: 113</div><div class="sub">Assets analyzed: 1358</div></div><div class="card" style="border-top-color:#16a34a;"><div class="label">Ising Magnetization</div><div class="value" style="color:#16a34a;">0.541</div><div class="sub">Crash score: 35.2/100</div><div class="sub">Risk Level: <span class="risk-pill risk-NORMAL">NORMAL</span></div><div class="sub">Assets analyzed: 1358</div></div><div class="card" style="border-top-color:#d97706;"><div class="label">Composite Score</div><div class="value" style="color:#d97706;">67.6 / 100</div><div class="sub">Overall status: <span class="risk-pill risk-ELEVATED">ELEVATED</span></div><div class="sub">Weighted blend of 6 components</div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Component Breakdown</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="component-table"><thead><tr><th title="RMT or Ising model component name">Component</th><th title="Individual component score, 0=safe to 100=critical">Raw Score (0-100)</th><th title="Relative weight of this component in composite score">Weight</th><th title="Weighted contribution to final crash probability">Contribution</th></tr></thead><tbody><tr><td>RMT Lambda Max</td><td class="num neg">100.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:35.0%;"></span></span>35%</td><td class="num neg">35.00</td></tr><tr><td>Ising Magnetization</td><td class="num pos">31.3</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:20.0%;"></span></span>20%</td><td class="num pos">6.26</td></tr><tr><td>Market Breadth</td><td class="num neg">100.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:20.0%;"></span></span>20%</td><td class="num neg">20.00</td></tr><tr><td>VIX</td><td class="num pos">38.1</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:15.0%;"></span></span>15%</td><td class="num pos">5.72</td></tr><tr><td>Credit Spreads (HYG/LQD)</td><td class="num pos">12.4</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:5.0%;"></span></span>5%</td><td class="num pos">0.62</td></tr><tr><td>Breadth Momentum</td><td class="num pos">0.0</td><td class="num"><span class="weight-bar-bg"><span class="weight-bar-fill" style="width:5.0%;"></span></span>5%</td><td class="num pos">0.00</td></tr></tbody></table><p style="margin-top:14px;font-size:0.9em;color:#555;">Total composite score: <strong class="warn">67.60 / 100</strong> &nbsp;&mdash;&nbsp; Status: <span class="risk-pill risk-ELEVATED">ELEVATED</span></p></div></div>
 </div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-03-02 &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
+
+/* --- Shared ownership state (localStorage, cross-dashboard) --- */
+window._owned = (function() {
+    var KEY = 'dashboard_owned_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+
+    /* Migration: copy old momentum-ranker-only key if it exists */
+    var OLD_KEY = 'mr_owned_tickers_v1';
+    try {
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+            var oldArr = JSON.parse(old);
+            if (oldArr && oldArr.length) {
+                oldArr.forEach(function(t) { _set.add(t); });
+                localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            }
+            localStorage.removeItem(OLD_KEY);
+        }
+    } catch(e) {}
+
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.own-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._owned.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-owned');
+        }
+    });
+});
+
+/* Shared toggle helper for Python-rendered tables */
+window._ownToggle = function(ticker, cb) {
+    window._owned.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-owned');
+};
+
 
 function getGradientColor(score) {
     var clamped = Math.max(0, Math.min(1, score));
