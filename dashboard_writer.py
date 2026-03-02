@@ -438,7 +438,7 @@ tbody tr:hover { background: #fafbfd; }
     .dash-footer { padding: 16px 12px; font-size: 0.78em; }
 }
 
-/* --- LLM description block --- */
+/* --- LLM description block (collapsible) --- */
 .llm-block {
     background: #fff;
     border: 1px solid #e2e4e8;
@@ -446,41 +446,72 @@ tbody tr:hover { background: #fafbfd; }
     margin-bottom: 22px;
     overflow: hidden;
 }
-.llm-block-header {
-    padding: 12px 22px;
+.llm-block summary {
+    padding: 10px 20px;
     background: #fafafa;
     border-bottom: 1px solid #e2e4e8;
-    font-size: 0.82em;
-    font-weight: 700;
-    color: #555;
+    font-size: 0.80em;
+    font-weight: 600;
+    color: #666;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+.llm-block summary::-webkit-details-marker { display: none; }
+.llm-block summary::before {
+    content: '\\25B6';
+    font-size: 0.7em;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.llm-block[open] summary::before {
+    transform: rotate(90deg);
+}
+.llm-block summary:hover {
+    background: #f0f1f4;
 }
 .llm-block-body {
-    padding: 18px 22px;
+    padding: 16px 20px 14px;
+}
+.llm-section-label {
+    font-size: 0.70em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
 }
 .llm-static {
-    font-size: 0.92em;
-    color: #333;
-    line-height: 1.7;
-    margin-bottom: 14px;
+    font-size: 0.88em;
+    color: #444;
+    line-height: 1.65;
+    margin-bottom: 16px;
 }
 .llm-dynamic {
-    font-size: 0.92em;
+    font-size: 0.88em;
     color: #1a1a2e;
-    line-height: 1.7;
-    padding: 14px 18px;
-    background: #f8f9fb;
-    border-left: 4px solid #4f46e5;
+    line-height: 1.65;
+    padding: 12px 16px;
+    background: #f5f6fa;
+    border-left: 3px solid #4f46e5;
     border-radius: 4px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
+}
+.llm-dynamic .llm-section-label {
+    color: #4f46e5;
 }
 .llm-disclaimer {
-    font-size: 0.78em;
-    color: #999;
+    font-size: 0.72em;
+    color: #aaa;
     font-style: italic;
     border-top: 1px solid #f0f0f0;
-    padding-top: 10px;
+    padding-top: 8px;
+    margin-top: 2px;
 }
 """
 
@@ -794,14 +825,18 @@ class DashboardWriter(object):
                 pass
 
         parts = []
-        parts.append('<div class="llm-block">')
-        parts.append('<div class="llm-block-header">About This Dashboard</div>')
+        parts.append('<details class="llm-block">')
+        parts.append('<summary>About This Dashboard</summary>')
         parts.append('<div class="llm-block-body">')
+        parts.append('<div class="llm-section-label">What It Does</div>')
         parts.append('<div class="llm-static">{}</div>'.format(static_desc))
         if dynamic_interp:
-            parts.append('<div class="llm-dynamic">{}</div>'.format(dynamic_interp))
+            parts.append('<div class="llm-dynamic">')
+            parts.append('<div class="llm-section-label">Today\'s Reading</div>')
+            parts.append(dynamic_interp)
+            parts.append('</div>')
         parts.append('<div class="llm-disclaimer">{}</div>'.format(_LLM_DISCLAIMER))
-        parts.append('</div></div>')
+        parts.append('</div></details>')
         return '\n'.join(parts)
 
     # ------------------------------------------------------------------

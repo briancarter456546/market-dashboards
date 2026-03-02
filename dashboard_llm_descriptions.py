@@ -15,6 +15,7 @@ import os
 import sys
 import json
 import glob
+import re
 import datetime
 import traceback
 
@@ -314,9 +315,13 @@ def inject_llm_blocks():
         with open(index_path, 'r', encoding='utf-8') as f:
             html = f.read()
 
-        # Skip if already injected
-        if 'llm-block' in html:
-            continue
+        # Strip any existing llm-block (so we can re-inject fresh)
+        html = re.sub(
+            r'\n?<details class="llm-block">.*?</details>',
+            '', html, count=1, flags=re.DOTALL)
+        html = re.sub(
+            r'\n?<div class="llm-block">.*?</div>\s*</div>\s*</div>',
+            '', html, count=1, flags=re.DOTALL)
 
         static_desc = DASHBOARD_DESCRIPTIONS.get(slug, '')
         if not static_desc:
@@ -326,16 +331,22 @@ def inject_llm_blocks():
         dynamic = ''
         entry = cache.get(slug, {})
         if entry.get('dynamic'):
-            dynamic = '<div class="llm-dynamic">{}</div>'.format(entry['dynamic'])
+            dynamic = (
+                '<div class="llm-dynamic">'
+                '<div class="llm-section-label">Today\'s Reading</div>'
+                '{}'
+                '</div>'
+            ).format(entry['dynamic'])
 
         block = (
-            '<div class="llm-block">'
-            '<div class="llm-block-header">About This Dashboard</div>'
+            '<details class="llm-block">'
+            '<summary>About This Dashboard</summary>'
             '<div class="llm-block-body">'
+            '<div class="llm-section-label">What It Does</div>'
             '<div class="llm-static">{static}</div>'
             '{dynamic}'
             '<div class="llm-disclaimer">{disclaimer}</div>'
-            '</div></div>'
+            '</div></details>'
         ).format(static=static_desc, dynamic=dynamic, disclaimer=_LLM_DISCLAIMER)
 
         # Inject after <div class="content"> (the main content area)

@@ -374,7 +374,7 @@ tbody tr:hover { background: #fafbfd; }
     .dash-footer { padding: 16px 12px; font-size: 0.78em; }
 }
 
-/* --- LLM description block --- */
+/* --- LLM description block (collapsible) --- */
 .llm-block {
     background: #fff;
     border: 1px solid #e2e4e8;
@@ -382,41 +382,72 @@ tbody tr:hover { background: #fafbfd; }
     margin-bottom: 22px;
     overflow: hidden;
 }
-.llm-block-header {
-    padding: 12px 22px;
+.llm-block summary {
+    padding: 10px 20px;
     background: #fafafa;
     border-bottom: 1px solid #e2e4e8;
-    font-size: 0.82em;
-    font-weight: 700;
-    color: #555;
+    font-size: 0.80em;
+    font-weight: 600;
+    color: #666;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+.llm-block summary::-webkit-details-marker { display: none; }
+.llm-block summary::before {
+    content: '\25B6';
+    font-size: 0.7em;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.llm-block[open] summary::before {
+    transform: rotate(90deg);
+}
+.llm-block summary:hover {
+    background: #f0f1f4;
 }
 .llm-block-body {
-    padding: 18px 22px;
+    padding: 16px 20px 14px;
+}
+.llm-section-label {
+    font-size: 0.70em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
 }
 .llm-static {
-    font-size: 0.92em;
-    color: #333;
-    line-height: 1.7;
-    margin-bottom: 14px;
+    font-size: 0.88em;
+    color: #444;
+    line-height: 1.65;
+    margin-bottom: 16px;
 }
 .llm-dynamic {
-    font-size: 0.92em;
+    font-size: 0.88em;
     color: #1a1a2e;
-    line-height: 1.7;
-    padding: 14px 18px;
-    background: #f8f9fb;
-    border-left: 4px solid #4f46e5;
+    line-height: 1.65;
+    padding: 12px 16px;
+    background: #f5f6fa;
+    border-left: 3px solid #4f46e5;
     border-radius: 4px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
+}
+.llm-dynamic .llm-section-label {
+    color: #4f46e5;
 }
 .llm-disclaimer {
-    font-size: 0.78em;
-    color: #999;
+    font-size: 0.72em;
+    color: #aaa;
     font-style: italic;
     border-top: 1px solid #f0f0f0;
-    padding-top: 10px;
+    padding-top: 8px;
+    margin-top: 2px;
 }
 
 
@@ -651,6 +682,7 @@ tbody tr:hover { background: #fafbfd; }
 
 </style>
 </head><body>
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Cross-dashboard agreement matrix combining 6 independent ticker-level sources (Ranker S/T, Ranker L/T, Advanced, Qualifier, SecRot, Stock SR). Includes regime-gated routing, intermarket force analysis, pattern context, and risk flags synthesized from all backends.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div>Today's data shows a strong consensus among the top-ranked positions, with AU and MTSI leading at ranks 2.0 and 8.0 respectively, both scoring above 92 on the ranker scale and displaying bullish support. The Basic Materials sector dominates the top tier, with AU, SCCO, and REMX all clustered around scores of 82-93.6, suggesting concentrated strength in commodity-linked equities. A notable divergence appears in spread support: AU, MTSI, and SCCO show bullish readings, while positions ranked 15 and below (CW, RBC, EWY, REMX) show none, indicating a potential quality cliff below rank 8. SII is an outlier among the higher-ranked names, showing no spread support despite a 90.3 ranker score and secrot confirmation with a score of 5.0. The data also reveals significant data gaps, with Advanced, Qualifier, and SecRot columns mostly empty across the board, suggesting either incomplete source integration or a filtering threshold that most tickers fail to meet today.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
 <div class="stat-bar"><div class="stat"><div class="stat-label">VIX</div><div class="stat-value neg">21.82</div></div>
 <div class="stat"><div class="stat-label">Breadth %</div><div class="stat-value neg">0.0%</div></div>
 <div class="stat"><div class="stat-label">HYG/LQD</div><div class="stat-value neutral">0.7233</div></div>
