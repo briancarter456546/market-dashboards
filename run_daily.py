@@ -318,6 +318,31 @@ def main():
                             log("  +- {}".format(line), 'WARN')
             except Exception as e:
                 log("Knowledge Base: {} (non-critical)".format(e), 'WARN')
+
+    # Check reminders
+    reminders_file = os.path.join(ROOT_DIR, 'reminders.json')
+    if os.path.exists(reminders_file):
+        try:
+            import json as _json
+            with open(reminders_file, 'r', encoding='utf-8') as _f:
+                reminders = _json.load(_f)
+            today = datetime.now().strftime('%Y-%m-%d')
+            remaining = []
+            for r in reminders:
+                if r.get('date', '') <= today:
+                    print()
+                    print("!" * 70)
+                    print("REMINDER ({})".format(r.get('date', '')))
+                    print(r.get('message', ''))
+                    print("!" * 70)
+                    print()
+                else:
+                    remaining.append(r)
+            if len(remaining) < len(reminders):
+                with open(reminders_file, 'w', encoding='utf-8') as _f:
+                    _json.dump(remaining, _f, indent=2)
+        except Exception:
+            pass
     print()
 
     # Push to GitHub Pages (replaces copy_to_django)
