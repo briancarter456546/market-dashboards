@@ -1179,7 +1179,7 @@ def build_section3_heatmap(years, period_labels, comp_grid, mom_grid, spr_grid):
     spr_table  = build_heatmap_table(years, period_labels, spr_grid,  'heatmap-spreads')
 
     legend_html = (
-        '<div style="display:flex;align-items:center;gap:12px;margin-top:14px;'
+        '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px;'
         'font-size:0.82em;color:#888;">'
         '<span>Low similarity</span>'
         '<div style="background:linear-gradient(to right,rgb(211,47,47),rgb(255,235,59),'

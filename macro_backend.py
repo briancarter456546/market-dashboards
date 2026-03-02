@@ -1157,7 +1157,7 @@ def build_treasury_section(writer, treas_data):
         '<div class="sub">Date: {date}</div>'
         '</div>'
         '</div>'
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">'
+        '<div class="macro-two-col">'
         '<div>'
         '<p class="pb-header">Yield Rates</p>'
         '<table><thead><tr><th>Tenor</th><th>Rate</th></tr></thead>'
@@ -1294,7 +1294,7 @@ def build_commodity_section(writer, commodity_data):
     )
 
     content = (
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">'
+        '<div class="macro-two-col">'
         '<div>'
         '<p class="pb-header">Futures</p>'
         '<table><thead><tr><th>Commodity</th><th>Price</th><th>1D %</th></tr></thead>'
@@ -1498,12 +1498,20 @@ EXTRA_CSS = """
 .rp-from { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 .rp-to   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
+/* Two-column grid layout */
+.macro-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
 /* ── Mobile responsive ── */
 @media (max-width: 768px) {
     .alert-row { padding: 10px 12px; font-size: 0.85em; gap: 10px; }
     .alert-icon { font-size: 1.1em; }
     .alert-sev { font-size: 0.68em; padding: 2px 8px; }
     .regime-pill { font-size: 0.78em; padding: 3px 10px; }
+    .macro-two-col { grid-template-columns: 1fr !important; }
 }
 """
 

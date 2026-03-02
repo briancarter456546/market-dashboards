@@ -73,6 +73,8 @@ EXTRA_CSS = """
     display: inline-block;
     vertical-align: middle;
     margin-right: 8px;
+    overflow: hidden;
+    position: relative;
 }
 .weight-bar-fill {
     height: 8px;
@@ -508,11 +510,10 @@ def _status_color(status):
 def _weight_bar(score_0_100, width_px=120):
     """Inline progress bar representing a 0-100 score."""
     pct = max(0.0, min(100.0, float(score_0_100)))
-    fill_px = int(width_px * pct / 100.0)
     return (
         '<span class="weight-bar-bg">'
-        '<span class="weight-bar-fill" style="width:{fill}px;"></span>'
-        '</span>'.format(fill=fill_px)
+        '<span class="weight-bar-fill" style="width:{pct:.1f}%;"></span>'
+        '</span>'.format(pct=pct)
     )
 
 

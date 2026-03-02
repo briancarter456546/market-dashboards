@@ -551,7 +551,7 @@ class DashboardWriter(object):
             '<h2>{}</h2>'.format(title) +
             hint_html +
             '</div>'
-            '<div style="padding:20px 24px;">' +
+            '<div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;">' +
             content_html +
             '</div>'
             '</div>'

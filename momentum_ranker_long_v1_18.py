@@ -1193,19 +1193,48 @@ RENDER_JS_TAIL = """;
     }
 
     function attachTooltipListeners() {
+        var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         document.querySelectorAll('[data-mr-row]').forEach(el => {
             const idx = parseInt(el.getAttribute('data-mr-row'), 10);
-            el.addEventListener('mouseenter', function(e) {
-                const tt = document.getElementById('mr-tooltip');
-                tt.innerHTML = buildTooltipHTML(window._mrRows[idx]);
-                tt.style.display = 'block';
-                positionTooltip(e);
-            });
-            el.addEventListener('mousemove', positionTooltip);
-            el.addEventListener('mouseleave', function() {
-                document.getElementById('mr-tooltip').style.display = 'none';
-            });
+            if (isTouchDevice) {
+                el.addEventListener('click', function(e) {
+                    const tt = document.getElementById('mr-tooltip');
+                    if (tt.style.display === 'block' && tt._activeIdx === idx) {
+                        tt.style.display = 'none';
+                        tt._activeIdx = -1;
+                        return;
+                    }
+                    tt.innerHTML = buildTooltipHTML(window._mrRows[idx]);
+                    tt.style.display = 'block';
+                    tt._activeIdx = idx;
+                    var rect = el.getBoundingClientRect();
+                    tt.style.left = '8px';
+                    tt.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+                    tt.style.position = 'absolute';
+                    tt.style.width = Math.min(360, window.innerWidth - 16) + 'px';
+                    tt.style.maxWidth = (window.innerWidth - 16) + 'px';
+                    e.stopPropagation();
+                });
+            } else {
+                el.addEventListener('mouseenter', function(e) {
+                    const tt = document.getElementById('mr-tooltip');
+                    tt.innerHTML = buildTooltipHTML(window._mrRows[idx]);
+                    tt.style.display = 'block';
+                    positionTooltip(e);
+                });
+                el.addEventListener('mousemove', positionTooltip);
+                el.addEventListener('mouseleave', function() {
+                    document.getElementById('mr-tooltip').style.display = 'none';
+                });
+            }
         });
+        if (isTouchDevice) {
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('[data-mr-row]') && !e.target.closest('.mr-tooltip')) {
+                    document.getElementById('mr-tooltip').style.display = 'none';
+                }
+            });
+        }
     }
 
     // -------------------------------------------------------------------------

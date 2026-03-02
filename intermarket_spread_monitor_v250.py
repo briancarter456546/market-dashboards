@@ -999,7 +999,7 @@ def generate_social_summary(regime_label, regime_score, regime_max, rows):
 # =============================================================================
 
 
-def sparkline_svg(data, width=120, height=30, color="#4CAF50"):
+def sparkline_svg(data, width=80, height=24, color="#4CAF50"):
     if not data or len(data) < 2:
         return ""
     mn, mx = min(data), max(data)
