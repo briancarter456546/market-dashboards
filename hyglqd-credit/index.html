@@ -374,6 +374,85 @@ tbody tr:hover { background: #fafbfd; }
     .dash-footer { padding: 16px 12px; font-size: 0.78em; }
 }
 
+/* --- LLM description block (collapsible, matches table-section) --- */
+.llm-block {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    margin-bottom: 22px;
+    overflow: hidden;
+}
+.llm-block summary {
+    padding: 16px 22px;
+    background: #fafafa;
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+}
+.llm-block summary::-webkit-details-marker { display: none; }
+.llm-block summary::after {
+    content: '\25B8';
+    font-size: 0.8em;
+    color: #888;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.llm-block[open] summary::after {
+    transform: rotate(90deg);
+}
+.llm-block[open] summary {
+    border-bottom: 1px solid #e2e4e8;
+}
+.llm-block summary:hover {
+    background: #f0f2f5;
+}
+.llm-block-body {
+    padding: 18px 22px 16px;
+}
+.llm-section-label {
+    font-size: 0.82em;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+}
+.llm-static {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+.llm-dynamic {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 14px 18px;
+    background: #f8f9fb;
+    border-left: 4px solid #4f46e5;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 18px;
+}
+.llm-dynamic .llm-section-label {
+    color: #4f46e5;
+}
+.llm-disclaimer {
+    font-size: 0.78em;
+    color: #999;
+    font-style: italic;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 10px;
+}
+
 
 /* Forward-return cards: tighter sub-label spacing */
 .fwd-card .value {
@@ -441,7 +520,7 @@ tbody tr:hover { background: #fafbfd; }
 
 </style>
 </head><body>
-<div class="stat-bar"><div class="stat"><div class="stat-label">Date</div><div class="stat-value neutral">2026-03-02</div></div><div class="stat"><div class="stat-label">HYG/LQD Ratio</div><div class="stat-value neutral">0.7236</div></div><div class="stat"><div class="stat-label">5D Change</div><div class="stat-value neg">-0.05%</div></div><div class="stat"><div class="stat-label">Percentile</div><div class="stat-value neutral">35.7th</div></div><div class="stat"><div class="stat-label">Regime</div><div class="stat-value warn">Neutral</div></div></div>
+<div class="stat-bar"><div class="stat"><div class="stat-label">Date</div><div class="stat-value neutral">2026-03-02</div></div><div class="stat"><div class="stat-label">HYG/LQD Ratio</div><div class="stat-value neutral">0.7247</div></div><div class="stat"><div class="stat-label">5D Change</div><div class="stat-value pos">+0.11%</div></div><div class="stat"><div class="stat-label">Percentile</div><div class="stat-value neutral">36.8th</div></div><div class="stat"><div class="stat-label">Regime</div><div class="stat-value warn">Neutral</div></div></div>
 <div class="page-header">
   <h1>HYG/LQD Credit Spread Analysis</h1>
   <div class="meta">
@@ -455,15 +534,17 @@ tbody tr:hover { background: #fafbfd; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Monitors the HYG/LQD ratio as a credit spread proxy. Tracks the ratio's historical percentile, expected SPY forward returns at the current spread level, and directional win rates. Rising ratio = risk-on appetite, falling ratio = risk aversion.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div>The HYG/LQD ratio stands at 0.724 today, placing it at the 36th percentile—a below-average credit spread that suggests moderate risk aversion rather than risk-on appetite. Over the past 5 days, the ratio has declined 0.05 points, reinforcing a shift toward defensive positioning as investors favor investment-grade bonds (LQD) over high-yield bonds (HYG). Looking forward, SPY shows modest positive expected returns across all timeframes, with the 20-day forward return averaging 1.51% and posting a 72.7% win rate—the strongest statistical edge of the three horizons measured. The current "Neutral" regime reflects this mixed positioning: not deeply risk-averse, but not aggressively risk-on either. With the ratio in the lower-middle range and recent downward momentum, markets appear to be in a cautious consolidation phase where near-term SPY gains are more likely than not, but without the conviction typically seen in stronger risk-on environments.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
-<div class="regime-banner" style="border-left-color:#f59e0b;"><div class="regime-label" style="color:#f59e0b;">NEUTRAL</div><div class="regime-score">Ratio: 0.7236 &nbsp;|&nbsp; Percentile: 35.7th &nbsp;|&nbsp; 5D Change: -0.05%<br>Balanced risk appetite</div></div>
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Monitors the HYG/LQD ratio as a credit spread proxy. Tracks the ratio's historical percentile, expected SPY forward returns at the current spread level, and directional win rates. Rising ratio = risk-on appetite, falling ratio = risk aversion.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div># HYG/LQD Credit Spread Analysis - March 2, 2026
+
+The HYG/LQD ratio stands at 0.7247, placing it at the 36.8th percentile of its historical range, indicating a relatively risk-averse positioning in credit markets. The ratio has ticked up 0.11 points over the past five days, suggesting a modest shift toward risk-on appetite, though it remains below its median historical level. Looking forward, SPY shows increasingly positive expected returns as the timeframe extends: 5-day forward returns average 0.38% with a 63% win rate, while 20-day forward returns improve to 1.46% average with a 72.2% win rate, suggesting that historically, this spread level has preceded stronger equity performance over longer periods. The market is currently in a Neutral regime, reflecting the intermediate positioning between risk-on and risk-off extremes. Overall, the data suggests cautious optimism with room for improvement in risk sentiment before reaching truly bullish spread levels.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
+<div class="regime-banner" style="border-left-color:#f59e0b;"><div class="regime-label" style="color:#f59e0b;">NEUTRAL</div><div class="regime-score">Ratio: 0.7247 &nbsp;|&nbsp; Percentile: 36.8th &nbsp;|&nbsp; 5D Change: +0.11%<br>Balanced risk appetite</div></div>
 <div class="cards">
-<div class="card fwd-card" style="border-top-color:#22c55e;"><div class="label">SPY 5-Day Forward</div><div class="value pos">+0.38%</div><div class="sub-row">  <span>Median: +0.45%</span>  <span>Win Rate: 63.3%</span>  <span>n=1326</span></div></div>
-<div class="card fwd-card" style="border-top-color:#22c55e;"><div class="label">SPY 10-Day Forward</div><div class="value pos">+0.75%</div><div class="sub-row">  <span>Median: +0.91%</span>  <span>Win Rate: 68.1%</span>  <span>n=1321</span></div></div>
-<div class="card fwd-card" style="border-top-color:#22c55e;"><div class="label">SPY 20-Day Forward</div><div class="value pos">+1.51%</div><div class="sub-row">  <span>Median: +1.77%</span>  <span>Win Rate: 72.7%</span>  <span>n=1311</span></div></div>
+<div class="card fwd-card" style="border-top-color:#22c55e;"><div class="label">SPY 5-Day Forward</div><div class="value pos">+0.38%</div><div class="sub-row">  <span>Median: +0.42%</span>  <span>Win Rate: 63.0%</span>  <span>n=1346</span></div></div>
+<div class="card fwd-card" style="border-top-color:#22c55e;"><div class="label">SPY 10-Day Forward</div><div class="value pos">+0.74%</div><div class="sub-row">  <span>Median: +0.87%</span>  <span>Win Rate: 68.1%</span>  <span>n=1341</span></div></div>
+<div class="card fwd-card" style="border-top-color:#22c55e;"><div class="label">SPY 20-Day Forward</div><div class="value pos">+1.46%</div><div class="sub-row">  <span>Median: +1.76%</span>  <span>Win Rate: 72.2%</span>  <span>n=1331</span></div></div>
 </div>
-<div class="table-section"><div class="table-section-header"><h2>Current Prices</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="price-table"><thead><tr><th>Ticker</th><th>Close</th><th>Description</th></tr></thead><tbody><tr><td class="ticker">HYG</td><td class="num">$80.16</td><td>iShares iBoxx High Yield Corporate Bond ETF</td></tr><tr><td class="ticker">LQD</td><td class="num">$110.78</td><td>iShares iBoxx Investment Grade Corporate Bond ETF</td></tr><tr><td class="ticker">SPY</td><td class="num">$683.70</td><td>SPDR S&amp;P 500 ETF Trust</td></tr></tbody></table><p style="margin-top:10px;font-size:0.82em;color:#aaa;">As of 2026-03-02</p></div></div>
-<div class="table-section"><div class="table-section-header"><h2>Regime Thresholds</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="thresh-table"><thead><tr><th>Level</th><th>Ratio Value</th><th>Interpretation</th></tr></thead><tbody><tr><td>Risk-On Threshold</td><td>0.7400</td><td>Ratio at or above this level = risk appetite strong</td></tr><tr class="thresh-row-current"><td>Current Ratio</td><td>0.7236</td><td>Between thresholds (neutral zone)</td></tr><tr><td>Risk-Off Threshold</td><td>0.7100</td><td>Ratio below this level = flight to quality</td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Current Prices</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="price-table"><thead><tr><th title="ETF ticker symbol">Ticker</th><th title="Most recent closing price in USD">Close</th><th title="Full name of the ETF fund">Description</th></tr></thead><tbody><tr><td class="ticker">HYG</td><td class="num">$80.41</td><td>iShares iBoxx High Yield Corporate Bond ETF</td></tr><tr><td class="ticker">LQD</td><td class="num">$110.94</td><td>iShares iBoxx Investment Grade Corporate Bond ETF</td></tr><tr><td class="ticker">SPY</td><td class="num">$688.19</td><td>SPDR S&amp;P 500 ETF Trust</td></tr></tbody></table><p style="margin-top:10px;font-size:0.82em;color:#aaa;">As of 2026-03-02</p></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Regime Thresholds</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="thresh-table"><thead><tr><th title="Threshold level or current ratio reading">Level</th><th title="HYG/LQD price ratio value at this level">Ratio Value</th><th title="What this ratio level means for risk appetite">Interpretation</th></tr></thead><tbody><tr><td>Risk-On Threshold</td><td>0.7400</td><td>Ratio at or above this level = risk appetite strong</td></tr><tr class="thresh-row-current"><td>Current Ratio</td><td>0.7247</td><td>Between thresholds (neutral zone)</td></tr><tr><td>Risk-Off Threshold</td><td>0.7100</td><td>Ratio below this level = flight to quality</td></tr></tbody></table></div></div>
 </div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-03-02 &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
 
