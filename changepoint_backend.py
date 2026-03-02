@@ -1029,6 +1029,8 @@ def prepare_results(feat_matrix, spy_prices, fingerprints, dist_smooth,
         'drift_label':      drift_label,
         'drift_str':        drift_str,
         'drift_css':        drift_css,
+        'drift_tier':       drift_tier if not np.isnan(curr_norm_drift) else 'UNKNOWN',
+        'curr_norm_drift':  curr_norm_drift,
         'top_regime':       top_regime,
         'top_sim':          top_sim,
         'recent_summary':   recent_summary,
@@ -1154,6 +1156,23 @@ def main():
     if sim_rows:
         pd.DataFrame(sim_rows).to_csv(csv_path, index=False, encoding='utf-8')
         print('CSV: {}'.format(csv_path))
+
+    # Write summary JSON for meta-dashboard consumption
+    summary = {
+        'generated_at': datetime.datetime.now().isoformat(),
+        'drift_tier': results['drift_tier'],
+        'norm_drift': float(results['curr_norm_drift']) if not np.isnan(results['curr_norm_drift']) else None,
+        'top_regime': results['top_regime'],
+        'top_sim': float(regime_similarity[0]['sim']) if regime_similarity else 0.0,
+        'regime_similarity': [
+            {'name': r['name'], 'desc': r.get('desc', ''), 'sim': r['sim']}
+            for r in (regime_similarity or [])[:5]
+        ],
+    }
+    summary_path = os.path.join(_SCRIPT_DIR, 'changepoint_summary.json')
+    with open(summary_path, 'w', encoding='utf-8') as f:
+        json.dump(summary, f, indent=2)
+    print('Summary JSON: {}'.format(summary_path))
 
     print('\n[DONE] Changepoint dashboard written.')
 

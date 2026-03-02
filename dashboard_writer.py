@@ -762,6 +762,15 @@ DASHBOARD_REGISTRY = [
         "color":       "#059669",
         "tag":         "Scanner",
     },
+    {
+        "slug":        "meta-dashboard",
+        "title":       "Meta Dashboard",
+        "description": "Cross-dashboard agreement matrix, regime-gated routing, intermarket force analysis, "
+                       "and risk flags. Combines 11 validated backends into a single decision-support view.",
+        "icon":        "🧭",
+        "color":       "#1e40af",
+        "tag":         "Meta",
+    },
 ]
 
 

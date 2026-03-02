@@ -124,6 +124,12 @@ BACKENDS = [
         'slow': True,
         'required': False,
     },
+    {
+        'script': 'meta_dashboard_backend.py',
+        'name': 'Meta Dashboard',
+        'slow': False,
+        'required': False,
+    },
 ]
 
 # ==============================================================================
