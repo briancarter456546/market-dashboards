@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 # ============================================================================
-# meta_dashboard_backend.py - v1.1
+# meta_dashboard_backend.py - v1.2
 # Last updated: 2026-03-02
 # ============================================================================
+# v1.2: Fix empty Stock SR + Spread columns
+#   - Spread: added POLE_TO_SECTOR map (ETF poles -> sector names for spread lookup)
+#   - Stock SR: read full source CSV (995 stocks), score>=5 counts as source,
+#     show score for all tickers in the matrix as supplemental info
 # v1.1: Added Trusted Only toggle
 #   - Toggle between All Sources (5 ticker-level) and Trusted Only (3)
 #   - Trusted excludes: Advanced Momentum, Conservative Qualifier, Macro
@@ -146,6 +150,29 @@ for spread_name, sectors in SPREAD_SECTOR_MAP.items():
     for sec in sectors:
         SECTOR_SPREAD_MAP.setdefault(sec, []).append(spread_name)
 
+# Ranker poles are ETF tickers -- map them to sector names for spread lookup
+POLE_TO_SECTOR = {
+    'XLB':  'Basic Materials',
+    'XLK':  'Technology',
+    'QQQ':  'Technology',
+    'XLI':  'Industrials',
+    'XLE':  'Energy',
+    'XLV':  'Healthcare',
+    'XLU':  'Utilities',
+    'XLP':  'Consumer Defensive',
+    'XLY':  'Consumer Cyclical',
+    'XLC':  'Communication Services',
+    'XLRE': 'Real Estate',
+    'XLF':  'Financial Services',
+    'TLT':  'Rates',
+    'IAU':  'Commodities',
+    'VGK':  'International',
+    'VXUS': 'International',
+    'EEM':  'Emerging Markets',
+    'IWM':  'Small Cap',
+    'SMH':  'Technology',
+}
+
 
 # ============================================================================
 # DATA LOADERS
@@ -193,9 +220,9 @@ def load_all_sources():
     sources['similar'], _ = _load_latest_csv(
         os.path.join(_SCRIPT_DIR, 'similar_days_data_*.csv'))
 
-    print('  Loading stock secrot CSV...')
+    print('  Loading stock secrot scores CSV...')
     sources['stock_secrot'], _ = _load_latest_csv(
-        os.path.join(_SCRIPT_DIR, 'stock_secrot_data_*.csv'))
+        os.path.join(_DATA_DIR, 'stock_secrot_scores_*.csv'))
 
     # --- Routing JSON ---
     print('  Loading secrot routing JSON...')
@@ -336,12 +363,14 @@ def build_agreement_matrix(sources, exclude=None):
                 t = row['ticker']
                 tickers.setdefault(t, {})['secrot'] = row.to_dict()
 
-    # 5. Stock SecRot: total_score >= 7
+    # 5. Stock SecRot: total_score >= 5 counts as a source
     stock_sr = sources.get('stock_secrot')
+    stock_sr_lookup = {}  # symbol -> row dict (full universe for display)
     if stock_sr is not None:
         for _, row in stock_sr.iterrows():
-            if row.get('total_score', 0) >= 7:
-                t = row['symbol']
+            t = row['symbol']
+            stock_sr_lookup[t] = row.to_dict()
+            if row.get('total_score', 0) >= 5:
                 tickers.setdefault(t, {})['stock_secrot'] = row.to_dict()
 
     # Filter to 2+ sources
@@ -371,10 +400,11 @@ def build_agreement_matrix(sources, exclude=None):
     # Build rows
     rows = []
     for ticker, src_dict in sorted_tickers:
-        # Determine sector from stock_secrot or top_pole from ranker
+        # Determine sector from stock_secrot (full lookup) or top_pole from ranker
         sector = None
-        if 'stock_secrot' in src_dict:
-            sector = src_dict['stock_secrot'].get('sector')
+        sr_data = src_dict.get('stock_secrot') or stock_sr_lookup.get(ticker)
+        if sr_data:
+            sector = sr_data.get('sector')
         pole = None
         if 'ranker' in src_dict:
             pole = src_dict['ranker'].get('top_pole')
@@ -393,7 +423,7 @@ def build_agreement_matrix(sources, exclude=None):
             'qualifier_regime': src_dict['qualifier'].get('regime') if 'qualifier' in src_dict else None,
             'secrot_pred5d': src_dict['secrot'].get('pred_5d_avg') if 'secrot' in src_dict else None,
             'secrot_score': src_dict['secrot'].get('sr_score') if 'secrot' in src_dict else None,
-            'stock_sr_score': src_dict['stock_secrot'].get('total_score') if 'stock_secrot' in src_dict else None,
+            'stock_sr_score': sr_data.get('total_score') if sr_data else None,
             'spread_support': spread_support,
             'source_count': len(src_dict),
             'sources': list(src_dict.keys()),
@@ -409,12 +439,15 @@ def _check_spread_support(sector, pole, spread_signals):
     if not sector and not pole:
         return 'none'
 
-    # Check both sector and pole
+    # Convert pole ETF ticker to sector name
+    pole_sector = POLE_TO_SECTOR.get(pole) if pole else None
+
+    # Check sector, pole-mapped-sector
     relevant_spreads = set()
     if sector and sector in SECTOR_SPREAD_MAP:
         relevant_spreads.update(SECTOR_SPREAD_MAP[sector])
-    if pole and pole in SECTOR_SPREAD_MAP:
-        relevant_spreads.update(SECTOR_SPREAD_MAP[pole])
+    if pole_sector and pole_sector in SECTOR_SPREAD_MAP:
+        relevant_spreads.update(SECTOR_SPREAD_MAP[pole_sector])
 
     if not relevant_spreads:
         return 'none'
