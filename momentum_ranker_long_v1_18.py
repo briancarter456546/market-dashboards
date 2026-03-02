@@ -90,7 +90,7 @@ BASE_DIR        = Path(__file__).resolve().parent
 DATA_DIR        = BASE_DIR.parent / 'perplexity-user-data'
 PRICE_CACHE_DIR = DATA_DIR / 'price_cache'
 OUTPUT_JSON     = BASE_DIR / 'momentum_ranker_long_data.json'
-OUTPUT_CSV      = BASE_DIR / 'momentum_ranker_long_data.csv'
+OUTPUT_CSV      = BASE_DIR / 'momentum_ranker_long_data_{}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M'))
 
 BENCHMARKS = ['SPY', 'QQQ', 'IAU']
 

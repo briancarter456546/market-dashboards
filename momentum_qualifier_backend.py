@@ -796,7 +796,7 @@ def main():
     writer.write("\n".join(parts), extra_css=EXTRA_CSS, extra_js=SORT_JS)
 
     # Write CSV
-    csv_path = os.path.join(_SCRIPT_DIR, 'conservative_momentum_data.csv')
+    csv_path = os.path.join(_SCRIPT_DIR, 'conservative_momentum_data_{}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M')))
     csv_rows = []
     for a in qualified_assets:
         q = a['qualification']

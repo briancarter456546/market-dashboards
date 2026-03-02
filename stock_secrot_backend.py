@@ -389,7 +389,7 @@ def main():
     writer.write(body, extra_css=EXTRA_CSS, extra_js=SORT_JS)
 
     # Write CSV (high scorers)
-    csv_path = os.path.join(_SCRIPT_DIR, 'stock_secrot_data.csv')
+    csv_path = os.path.join(_SCRIPT_DIR, 'stock_secrot_data_{}.csv'.format(datetime.datetime.now().strftime('%Y%m%d_%H%M')))
     high_scorers.to_csv(csv_path, index=False, encoding='utf-8')
     print("CSV: {}".format(csv_path))
 

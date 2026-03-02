@@ -502,7 +502,7 @@ def main():
         writer.write(body, extra_css=EXTRA_CSS, extra_js='')
 
         # Write CSV
-        csv_path = os.path.join(_SCRIPT_DIR, 'hyglqd_data.csv')
+        csv_path = os.path.join(_SCRIPT_DIR, 'hyglqd_data_{}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M')))
         csv_row = {
             'date': latest_date,
             'hyg_price': current_hyg,

@@ -1,0 +1,2 @@
+date,hyg_price,lqd_price,spy_price,hyglqd_ratio,percentile,change_5d,regime,fwd_5d_avg,fwd_5d_median,fwd_5d_winrate,fwd_5d_n,fwd_10d_avg,fwd_10d_median,fwd_10d_winrate,fwd_10d_n,fwd_20d_avg,fwd_20d_median,fwd_20d_winrate,fwd_20d_n
+2026-02-27,80.72,111.825,683.78,0.7218421640956852,34.34343434343434,-0.56,Neutral,0.38,0.46,63.5,1314,0.76,0.95,68.1,1309,1.51,1.79,72.1,1299

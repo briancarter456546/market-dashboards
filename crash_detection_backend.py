@@ -796,7 +796,7 @@ def main():
     writer.write(body, extra_css=EXTRA_CSS, extra_js="")
 
     # Write CSV
-    csv_path = os.path.join(_SCRIPT_DIR, 'crash_detection_data.csv')
+    csv_path = os.path.join(_SCRIPT_DIR, 'crash_detection_data_{}.csv'.format(datetime.datetime.now().strftime('%Y%m%d_%H%M')))
     comp_scores = cmp_res.get('component_scores', {})
     csv_row = {
         'date': datetime.date.today().strftime('%Y-%m-%d'),

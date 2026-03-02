@@ -864,7 +864,7 @@ def main():
     writer.write("\n".join(parts), extra_css=EXTRA_CSS, extra_js=SORT_JS)
 
     # 7. Write CSV
-    csv_path = os.path.join(_SCRIPT_DIR, 'advanced_momentum_data.csv')
+    csv_path = os.path.join(_SCRIPT_DIR, 'advanced_momentum_data_{}.csv'.format(datetime.datetime.now().strftime('%Y%m%d_%H%M')))
     csv_df = pd.DataFrame(results)
     csv_df.to_csv(csv_path, index=False, encoding='utf-8')
     print("[CSV] {}".format(csv_path))

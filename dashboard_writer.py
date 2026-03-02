@@ -744,6 +744,24 @@ DASHBOARD_REGISTRY = [
         "color":       "#7c3aed",
         "tag":         "Macro",
     },
+    {
+        "slug":        "regime-changepoint",
+        "title":       "Regime Changepoint Detector",
+        "description": "Cosine distance between consecutive regime fingerprints + CUSUM changepoint detection. "
+                       "Drift rate, pole flip analysis, similarity to historical macro windows, and multi-window pole fingerprints.",
+        "icon":        "🔬",
+        "color":       "#dc2626",
+        "tag":         "Regime",
+    },
+    {
+        "slug":        "smart-scanner",
+        "title":       "Smart Scanner",
+        "description": "Regime-aware method selection across ETF momentum, pole rotation, and stock screening. "
+                       "Auto-picks Method A/B/C based on drift tier with top picks and conviction scores.",
+        "icon":        "🎯",
+        "color":       "#059669",
+        "tag":         "Scanner",
+    },
 ]
 
 

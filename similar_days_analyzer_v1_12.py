@@ -1243,7 +1243,7 @@ if __name__ == '__main__':
     writer.write(body, extra_css=EXTRA_CSS, extra_js=extra_js)
 
     # Write CSV - similar dates per window
-    csv_path = os.path.join(_SCRIPT_DIR, 'similar_days_data.csv')
+    csv_path = os.path.join(_SCRIPT_DIR, 'similar_days_data_{}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M')))
     csv_rows = []
     windows = output.get('windows', {})
     for window_key in ['25Y', '5Y', '1Y']:

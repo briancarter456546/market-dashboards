@@ -914,7 +914,7 @@ if __name__ == '__main__':
     writer.write(body, extra_css=EXTRA_CSS, extra_js=extra_js)
 
     # Write CSV
-    csv_path = os.path.join(_SCRIPT_DIR, 'sector_rotation_data.csv')
+    csv_path = os.path.join(_SCRIPT_DIR, 'sector_rotation_data_{}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M')))
     csv_rows = []
     for ticker, etf in dashboard.items():
         row = {

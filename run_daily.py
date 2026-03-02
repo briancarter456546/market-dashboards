@@ -111,6 +111,19 @@ BACKENDS = [
         'slow': False,
         'required': True,
     },
+    {
+        'script': 'changepoint_backend.py',
+        'name': 'Regime Changepoint Detector',
+        'slow': False,
+        'required': False,
+    },
+    {
+        'script': 'smart_scanner_v1_0.py',
+        'name': 'Smart Scanner',
+        'location': 'root',
+        'slow': True,
+        'required': False,
+    },
 ]
 
 # ==============================================================================

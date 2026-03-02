@@ -1355,7 +1355,7 @@ def main():
     writer.write('\n'.join(parts), extra_css=EXTRA_CSS, extra_js=EXTRA_JS)
 
     # Write CSV - top analogs
-    csv_path = os.path.join(_SCRIPT_DIR, 'mirror_data.csv')
+    csv_path = os.path.join(_SCRIPT_DIR, 'mirror_data_{}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M')))
     csv_df = pd.DataFrame(top_analogs)
     csv_df.to_csv(csv_path, index=False, encoding='utf-8')
     print('CSV: {0}'.format(csv_path))
