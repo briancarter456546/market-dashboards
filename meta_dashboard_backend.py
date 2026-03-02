@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 # ============================================================================
-# meta_dashboard_backend.py - v1.0
+# meta_dashboard_backend.py - v1.1
 # Last updated: 2026-03-02
 # ============================================================================
+# v1.1: Added Trusted Only toggle
+#   - Toggle between All Sources (5 ticker-level) and Trusted Only (3)
+#   - Trusted excludes: Advanced Momentum, Conservative Qualifier, Macro
+#   - Both views pre-computed; JS toggles visibility
 # v1.0: Initial release
 #   - Cross-dashboard agreement matrix from 5 ticker-level sources
 #   - Regime context stat bar + routing banner
@@ -289,32 +293,40 @@ def build_regime_context(sources):
 # SECTION 2: AGREEMENT MATRIX
 # ============================================================================
 
-def build_agreement_matrix(sources):
-    """Build cross-dashboard agreement matrix from 5 ticker-level sources."""
+def build_agreement_matrix(sources, exclude=None):
+    """Build cross-dashboard agreement matrix from ticker-level sources.
+
+    *exclude* is an optional set of source keys to skip
+    (e.g. {'advanced', 'qualifier'} for trusted-only mode).
+    """
+    exclude = exclude or set()
     tickers = {}  # ticker -> {source_name: data}
 
     # 1. Momentum Ranker: rank <= 150
-    ranker = sources.get('ranker')
-    if ranker and 'data' in ranker:
-        for item in ranker['data']:
-            if item.get('rank', 9999) <= 150:
-                t = item['ticker']
-                tickers.setdefault(t, {})['ranker'] = item
+    if 'ranker' not in exclude:
+        ranker = sources.get('ranker')
+        if ranker and 'data' in ranker:
+            for item in ranker['data']:
+                if item.get('rank', 9999) <= 150:
+                    t = item['ticker']
+                    tickers.setdefault(t, {})['ranker'] = item
 
     # 2. Advanced Momentum: signal in (STRONG_BUY, BUY)
-    advanced = sources.get('advanced')
-    if advanced and 'results' in advanced:
-        for item in advanced['results']:
-            if item.get('signal') in ('STRONG_BUY', 'BUY'):
-                t = item['symbol']
-                tickers.setdefault(t, {})['advanced'] = item
+    if 'advanced' not in exclude:
+        advanced = sources.get('advanced')
+        if advanced and 'results' in advanced:
+            for item in advanced['results']:
+                if item.get('signal') in ('STRONG_BUY', 'BUY'):
+                    t = item['symbol']
+                    tickers.setdefault(t, {})['advanced'] = item
 
     # 3. Momentum Qualifier: all present
-    qualifier = sources.get('qualifier')
-    if qualifier is not None:
-        for _, row in qualifier.iterrows():
-            t = row['ticker']
-            tickers.setdefault(t, {})['qualifier'] = row.to_dict()
+    if 'qualifier' not in exclude:
+        qualifier = sources.get('qualifier')
+        if qualifier is not None:
+            for _, row in qualifier.iterrows():
+                t = row['ticker']
+                tickers.setdefault(t, {})['qualifier'] = row.to_dict()
 
     # 4. Sector Rotation: sr_score > 0 (mostly ETFs)
     secrot = sources.get('secrot')
@@ -580,48 +592,57 @@ def build_pattern_context(sources):
 # SECTION 5: RISK FLAGS
 # ============================================================================
 
-def build_risk_flags(sources, agreement_rows):
-    """Build risk flags table sorted by severity."""
+def build_risk_flags(sources, agreement_rows, trusted_only=False):
+    """Build risk flags table sorted by severity.
+
+    When *trusted_only* is True, skip flags sourced from Advanced Momentum,
+    Momentum Qualifier, and Macro Dashboard composites.
+    """
     flags = []
 
     # 1. Parabolic tickers (qualifier: recency_ratio > 3.0)
-    qualifier = sources.get('qualifier')
-    if qualifier is not None:
-        parabolic = qualifier[qualifier['recency_ratio'] > 3.0] if 'recency_ratio' in qualifier.columns else pd.DataFrame()
-        for _, row in parabolic.iterrows():
-            flags.append({
-                'flag': 'Parabolic: {}'.format(row['ticker']),
-                'source': 'Momentum Qualifier',
-                'detail': 'Recency ratio: {:.1f}'.format(row['recency_ratio']),
-                'severity': 'high',
-            })
+    if not trusted_only:
+        qualifier = sources.get('qualifier')
+        if qualifier is not None:
+            parabolic = qualifier[qualifier['recency_ratio'] > 3.0] if 'recency_ratio' in qualifier.columns else pd.DataFrame()
+            for _, row in parabolic.iterrows():
+                flags.append({
+                    'flag': 'Parabolic: {}'.format(row['ticker']),
+                    'source': 'Momentum Qualifier',
+                    'detail': 'Recency ratio: {:.1f}'.format(row['recency_ratio']),
+                    'severity': 'high',
+                })
 
     # 2. Overextended tickers (qualifier: extension > 0.15 = 15%)
-    if qualifier is not None and 'extension_from_sma29_pct' in qualifier.columns:
-        overext = qualifier[qualifier['extension_from_sma29_pct'] > 0.15]
-        for _, row in overext.head(10).iterrows():
-            flags.append({
-                'flag': 'Overextended: {}'.format(row['ticker']),
-                'source': 'Momentum Qualifier',
-                'detail': 'Extension: {:.1f}%'.format(row['extension_from_sma29_pct'] * 100),
-                'severity': 'medium',
-            })
+    if not trusted_only:
+        qualifier = sources.get('qualifier')
+        if qualifier is not None and 'extension_from_sma29_pct' in qualifier.columns:
+            overext = qualifier[qualifier['extension_from_sma29_pct'] > 0.15]
+            for _, row in overext.head(10).iterrows():
+                flags.append({
+                    'flag': 'Overextended: {}'.format(row['ticker']),
+                    'source': 'Momentum Qualifier',
+                    'detail': 'Extension: {:.1f}%'.format(row['extension_from_sma29_pct'] * 100),
+                    'severity': 'medium',
+                })
 
     # 3. OBV divergence (advanced: has_divergence=True)
-    advanced = sources.get('advanced')
-    if advanced and 'results' in advanced:
-        divs = [r for r in advanced['results']
-                if r.get('has_divergence') and r.get('signal') in ('STRONG_BUY', 'BUY', 'HOLD')]
-        for item in divs[:10]:
-            flags.append({
-                'flag': 'OBV Divergence: {}'.format(item['symbol']),
-                'source': 'Advanced Momentum',
-                'detail': 'Signal: {} | Type: {}'.format(
-                    item.get('signal', ''), item.get('divergence_type', '')),
-                'severity': 'medium',
-            })
+    if not trusted_only:
+        advanced = sources.get('advanced')
+        if advanced and 'results' in advanced:
+            divs = [r for r in advanced['results']
+                    if r.get('has_divergence') and r.get('signal') in ('STRONG_BUY', 'BUY', 'HOLD')]
+            for item in divs[:10]:
+                flags.append({
+                    'flag': 'OBV Divergence: {}'.format(item['symbol']),
+                    'source': 'Advanced Momentum',
+                    'detail': 'Signal: {} | Type: {}'.format(
+                        item.get('signal', ''), item.get('divergence_type', '')),
+                    'severity': 'medium',
+                })
 
-    # 4. Credit/equity divergence
+    # 4. Credit/equity divergence -- uses raw HYG/LQD ratio (trusted)
+    # but SPY trend from macro; keep in trusted since it's a raw data check
     macro = sources.get('macro') or {}
     spy_trend = macro.get('indices', {}).get('spy_trend', {})
     hyg_lqd = macro.get('credit', {}).get('hyg_lqd_ratio')
@@ -633,12 +654,12 @@ def build_risk_flags(sources, agreement_rows):
             'severity': 'high',
         })
 
-    # 5. Breadth deterioration
+    # 5. Breadth deterioration -- raw breadth count, keep in trusted
     breadth_pct = macro.get('breadth', {}).get('pct_above_200ma')
     if breadth_pct is not None and breadth_pct < 30:
         flags.append({
             'flag': 'Breadth Deterioration',
-            'source': 'Macro Dashboard',
+            'source': 'Macro (raw)',
             'detail': '{:.1f}% above 200MA (< 30% threshold)'.format(breadth_pct),
             'severity': 'medium',
         })
@@ -656,23 +677,21 @@ def build_risk_flags(sources, agreement_rows):
             })
 
     # 7. Conflicting signals in agreement matrix
-    for row in agreement_rows:
-        has_buy = row.get('advanced_signal') in ('STRONG_BUY', 'BUY')
-        has_safe = row.get('qualifier_safe') is True
-        # Check if any source is bearish while others are bullish
-        sources_list = row.get('sources', [])
-        if len(sources_list) >= 3:
-            # If qualifier says not safe but ranker and advanced are bullish
-            if ('ranker' in sources_list and 'advanced' in sources_list
-                    and 'qualifier' in sources_list
-                    and has_buy and row.get('qualifier_safe') is False):
-                flags.append({
-                    'flag': 'Conflicting: {}'.format(row['ticker']),
-                    'source': 'Cross-Dashboard',
-                    'detail': 'BUY signal but qualifier says NOT SAFE (regime: {})'.format(
-                        row.get('qualifier_regime', '')),
-                    'severity': 'medium',
-                })
+    if not trusted_only:
+        for row in agreement_rows:
+            has_buy = row.get('advanced_signal') in ('STRONG_BUY', 'BUY')
+            sources_list = row.get('sources', [])
+            if len(sources_list) >= 3:
+                if ('ranker' in sources_list and 'advanced' in sources_list
+                        and 'qualifier' in sources_list
+                        and has_buy and row.get('qualifier_safe') is False):
+                    flags.append({
+                        'flag': 'Conflicting: {}'.format(row['ticker']),
+                        'source': 'Cross-Dashboard',
+                        'detail': 'BUY signal but qualifier says NOT SAFE (regime: {})'.format(
+                            row.get('qualifier_regime', '')),
+                        'severity': 'medium',
+                    })
 
     # Sort by severity
     severity_order = {'high': 0, 'medium': 1, 'low': 2}
@@ -731,25 +750,46 @@ def _build_routing_banner(regime):
              drift=drift_str, perf=perf_html)
 
 
-def _build_agreement_table(rows):
-    """Build the agreement matrix table."""
-    if not rows:
-        return '<div class="card"><p>No tickers appear in 2+ sources.</p></div>'
+def _build_agreement_table(rows, mode='full'):
+    """Build the agreement matrix table.
 
-    header = (
-        '<table class="sortable-table data-table">'
-        '<thead><tr>'
-        '<th>Ticker</th>'
-        '<th>Pole</th>'
-        '<th>Ranker</th>'
-        '<th>Advanced</th>'
-        '<th>Qualifier</th>'
-        '<th>SecRot</th>'
-        '<th>Stock SR</th>'
-        '<th>Spread</th>'
-        '<th>#</th>'
-        '</tr></thead><tbody>'
-    )
+    *mode* = 'full' -> 5 ticker-level columns (Ranker, Advanced, Qualifier, SecRot, Stock SR)
+    *mode* = 'trusted' -> 3 ticker-level columns (Ranker, SecRot, Stock SR)
+    """
+    if not rows:
+        return '<p>No tickers appear in 2+ sources.</p>'
+
+    trusted = (mode == 'trusted')
+    n_sources = 3 if trusted else 5
+
+    if trusted:
+        header = (
+            '<table class="sortable-table data-table">'
+            '<thead><tr>'
+            '<th>Ticker</th>'
+            '<th>Pole</th>'
+            '<th>Ranker</th>'
+            '<th>SecRot</th>'
+            '<th>Stock SR</th>'
+            '<th>Spread</th>'
+            '<th>#</th>'
+            '</tr></thead><tbody>'
+        )
+    else:
+        header = (
+            '<table class="sortable-table data-table">'
+            '<thead><tr>'
+            '<th>Ticker</th>'
+            '<th>Pole</th>'
+            '<th>Ranker</th>'
+            '<th>Advanced</th>'
+            '<th>Qualifier</th>'
+            '<th>SecRot</th>'
+            '<th>Stock SR</th>'
+            '<th>Spread</th>'
+            '<th>#</th>'
+            '</tr></thead><tbody>'
+        )
 
     body_rows = []
     for r in rows:
@@ -760,35 +800,6 @@ def _build_agreement_table(rows):
         else:
             ranker_css = 'agree-none'
             ranker_val = '--'
-
-        # Advanced cell
-        if r['advanced_signal']:
-            if r['advanced_signal'] == 'STRONG_BUY':
-                adv_css = 'agree-bull'
-            elif r['advanced_signal'] == 'BUY':
-                adv_css = 'agree-bull'
-            else:
-                adv_css = 'agree-present'
-            adv_val = r['advanced_signal']
-            if r['advanced_confidence']:
-                adv_val += ' ({}%)'.format(r['advanced_confidence'])
-        else:
-            adv_css = 'agree-none'
-            adv_val = '--'
-
-        # Qualifier cell
-        if r['qualifier_safe'] is not None:
-            if r['qualifier_safe'] is True or r['qualifier_safe'] == 'True' or r['qualifier_safe'] == True:
-                qual_css = 'agree-bull'
-                qual_val = 'SAFE'
-            else:
-                qual_css = 'agree-warn'
-                qual_val = 'NOT SAFE'
-            if r['qualifier_regime']:
-                qual_val += ' ({})'.format(r['qualifier_regime'])
-        else:
-            qual_css = 'agree-none'
-            qual_val = '--'
 
         # SecRot cell
         if r['secrot_score'] is not None:
@@ -815,56 +826,102 @@ def _build_agreement_table(rows):
 
         # Count
         count = r['source_count']
-        count_css = 'badge-high' if count >= 4 else ('badge-mid' if count >= 3 else 'badge-low')
+        count_css = 'badge-high' if count >= n_sources - 1 else ('badge-mid' if count >= 2 else 'badge-low')
 
-        body_rows.append(
-            '<tr>'
-            '<td class="ticker-cell" data-sort="{ticker}">{ticker}</td>'
-            '<td>{pole}</td>'
-            '<td class="{ranker_css}" data-sort="{ranker_sort}">{ranker_val}</td>'
-            '<td class="{adv_css}">{adv_val}</td>'
-            '<td class="{qual_css}">{qual_val}</td>'
-            '<td class="{secrot_css}" data-sort="{secrot_sort}">{secrot_val}</td>'
-            '<td class="{ssr_css}" data-sort="{ssr_sort}">{ssr_val}</td>'
-            '<td class="{sp_css}">{sp_icon}</td>'
-            '<td><span class="count-badge {count_css}">{count}/5</span></td>'
-            '</tr>'.format(
-                ticker=r['ticker'],
-                pole=r['pole'],
-                ranker_css=ranker_css,
-                ranker_sort=r['ranker_rank'] if r['ranker_rank'] else 9999,
-                ranker_val=ranker_val,
-                adv_css=adv_css,
-                adv_val=adv_val,
-                qual_css=qual_css,
-                qual_val=qual_val,
-                secrot_css=secrot_css,
-                secrot_sort=r['secrot_score'] if r['secrot_score'] else 0,
-                secrot_val=secrot_val,
-                ssr_css=ssr_css,
-                ssr_sort=r['stock_sr_score'] if r['stock_sr_score'] else 0,
-                ssr_val=ssr_val,
-                sp_css=sp_css,
-                sp_icon=sp_icon,
-                count=count,
-                count_css=count_css,
+        if trusted:
+            body_rows.append(
+                '<tr>'
+                '<td class="ticker-cell" data-sort="{ticker}">{ticker}</td>'
+                '<td>{pole}</td>'
+                '<td class="{ranker_css}" data-sort="{ranker_sort}">{ranker_val}</td>'
+                '<td class="{secrot_css}" data-sort="{secrot_sort}">{secrot_val}</td>'
+                '<td class="{ssr_css}" data-sort="{ssr_sort}">{ssr_val}</td>'
+                '<td class="{sp_css}">{sp_icon}</td>'
+                '<td><span class="count-badge {count_css}">{count}/{n_src}</span></td>'
+                '</tr>'.format(
+                    ticker=r['ticker'],
+                    pole=r['pole'],
+                    ranker_css=ranker_css,
+                    ranker_sort=r['ranker_rank'] if r['ranker_rank'] else 9999,
+                    ranker_val=ranker_val,
+                    secrot_css=secrot_css,
+                    secrot_sort=r['secrot_score'] if r['secrot_score'] else 0,
+                    secrot_val=secrot_val,
+                    ssr_css=ssr_css,
+                    ssr_sort=r['stock_sr_score'] if r['stock_sr_score'] else 0,
+                    ssr_val=ssr_val,
+                    sp_css=sp_css,
+                    sp_icon=sp_icon,
+                    count=count,
+                    count_css=count_css,
+                    n_src=n_sources,
+                )
             )
-        )
+        else:
+            # Advanced cell
+            if r['advanced_signal']:
+                adv_css = 'agree-bull' if r['advanced_signal'] in ('STRONG_BUY', 'BUY') else 'agree-present'
+                adv_val = r['advanced_signal']
+                if r['advanced_confidence']:
+                    adv_val += ' ({}%)'.format(r['advanced_confidence'])
+            else:
+                adv_css = 'agree-none'
+                adv_val = '--'
+
+            # Qualifier cell
+            if r['qualifier_safe'] is not None:
+                if r['qualifier_safe'] is True or r['qualifier_safe'] == 'True':
+                    qual_css = 'agree-bull'
+                    qual_val = 'SAFE'
+                else:
+                    qual_css = 'agree-warn'
+                    qual_val = 'NOT SAFE'
+                if r['qualifier_regime']:
+                    qual_val += ' ({})'.format(r['qualifier_regime'])
+            else:
+                qual_css = 'agree-none'
+                qual_val = '--'
+
+            body_rows.append(
+                '<tr>'
+                '<td class="ticker-cell" data-sort="{ticker}">{ticker}</td>'
+                '<td>{pole}</td>'
+                '<td class="{ranker_css}" data-sort="{ranker_sort}">{ranker_val}</td>'
+                '<td class="{adv_css}">{adv_val}</td>'
+                '<td class="{qual_css}">{qual_val}</td>'
+                '<td class="{secrot_css}" data-sort="{secrot_sort}">{secrot_val}</td>'
+                '<td class="{ssr_css}" data-sort="{ssr_sort}">{ssr_val}</td>'
+                '<td class="{sp_css}">{sp_icon}</td>'
+                '<td><span class="count-badge {count_css}">{count}/{n_src}</span></td>'
+                '</tr>'.format(
+                    ticker=r['ticker'],
+                    pole=r['pole'],
+                    ranker_css=ranker_css,
+                    ranker_sort=r['ranker_rank'] if r['ranker_rank'] else 9999,
+                    ranker_val=ranker_val,
+                    adv_css=adv_css,
+                    adv_val=adv_val,
+                    qual_css=qual_css,
+                    qual_val=qual_val,
+                    secrot_css=secrot_css,
+                    secrot_sort=r['secrot_score'] if r['secrot_score'] else 0,
+                    secrot_val=secrot_val,
+                    ssr_css=ssr_css,
+                    ssr_sort=r['stock_sr_score'] if r['stock_sr_score'] else 0,
+                    ssr_val=ssr_val,
+                    sp_css=sp_css,
+                    sp_icon=sp_icon,
+                    count=count,
+                    count_css=count_css,
+                    n_src=n_sources,
+                )
+            )
 
     return (
-        '<div class="card">'
-        '<div class="card-header">'
-        '<h2>Cross-Dashboard Agreement Matrix</h2>'
-        '<span class="card-subtitle">{} tickers in 2+ sources</span>'
-        '</div>'
-        '<div class="filter-row">'
-        '<input type="text" id="agreeFilter" placeholder="Filter by ticker..." '
-        'class="text-filter" onkeyup="filterAgreementTable()">'
-        '</div>'
         '{header}'
         '{rows}'
-        '</tbody></table></div>'
-    ).format(len(rows), header=header, rows='\n'.join(body_rows))
+        '</tbody></table>'
+    ).format(header=header, rows='\n'.join(body_rows))
 
 
 def _build_intermarket_section(intermarket):
@@ -1044,16 +1101,64 @@ def _build_risk_flags(flags):
 # BODY + JS + CSS
 # ============================================================================
 
-def build_body(regime, agreement_rows, intermarket, pattern, risk_flags):
-    """Assemble the full HTML body."""
+def build_body(regime, agreement_full, agreement_trusted,
+               intermarket, pattern, risk_flags_full, risk_flags_trusted):
+    """Assemble the full HTML body with toggle between All / Trusted views."""
+
+    # Toggle bar
+    toggle_html = (
+        '<div class="mode-toggle">'
+        '<button class="toggle-btn active" id="btnTrusted" onclick="setMode(\'trusted\')">'
+        'Trusted Only (10)</button>'
+        '<button class="toggle-btn" id="btnFull" onclick="setMode(\'full\')">'
+        'All Sources (12)</button>'
+        '</div>'
+    )
+
+    # Agreement section -- both tables, toggled by JS
+    agree_section = (
+        '<div class="card">'
+        '<div class="card-header">'
+        '<h2>Cross-Dashboard Agreement Matrix</h2>'
+        '<span class="card-subtitle" id="agreeSubFull" style="display:none;">'
+        '{n_full} tickers in 2+ of 5 sources</span>'
+        '<span class="card-subtitle" id="agreeSubTrusted">'
+        '{n_trusted} tickers in 2+ of 3 trusted sources</span>'
+        '</div>'
+        '<div class="filter-row">'
+        '<input type="text" id="agreeFilter" placeholder="Filter by ticker..." '
+        'class="text-filter" onkeyup="filterAgreementTable()">'
+        '</div>'
+        '<div id="agreeTableFull" class="view-full" style="display:none;">{table_full}</div>'
+        '<div id="agreeTableTrusted" class="view-trusted">{table_trusted}</div>'
+        '</div>'
+    ).format(
+        n_full=len(agreement_full),
+        n_trusted=len(agreement_trusted),
+        table_full=_build_agreement_table(agreement_full, mode='full'),
+        table_trusted=_build_agreement_table(agreement_trusted, mode='trusted'),
+    )
+
+    # Risk flags -- both versions, toggled
+    flags_section = (
+        '<div id="flagsFull" class="view-full" style="display:none;">'
+        '{flags_full}</div>'
+        '<div id="flagsTrusted" class="view-trusted">'
+        '{flags_trusted}</div>'
+    ).format(
+        flags_full=_build_risk_flags(risk_flags_full),
+        flags_trusted=_build_risk_flags(risk_flags_trusted),
+    )
+
     parts = [
         _build_stat_bar(regime),
         _build_routing_banner(regime),
         '<div class="container">',
-        _build_agreement_table(agreement_rows),
+        toggle_html,
+        agree_section,
         _build_intermarket_section(intermarket),
         _build_pattern_section(pattern),
-        _build_risk_flags(risk_flags),
+        flags_section,
         '</div>',
     ]
     return '\n'.join(parts)
@@ -1259,10 +1364,65 @@ EXTRA_CSS = """
     color: #6b7280;
     margin-left: 12px;
 }
+
+/* --- Mode toggle --- */
+.mode-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #d1d5db;
+    width: fit-content;
+}
+.toggle-btn {
+    padding: 10px 22px;
+    border: none;
+    background: #f9fafb;
+    color: #6b7280;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.toggle-btn:hover {
+    background: #f3f4f6;
+}
+.toggle-btn.active {
+    background: #1e40af;
+    color: #fff;
+}
 """
 
 
 EXTRA_JS = """
+// Mode toggle: Trusted Only vs All Sources
+function setMode(mode) {
+    var fullEls = document.querySelectorAll('.view-full');
+    var trustedEls = document.querySelectorAll('.view-trusted');
+    var btnFull = document.getElementById('btnFull');
+    var btnTrusted = document.getElementById('btnTrusted');
+    var subFull = document.getElementById('agreeSubFull');
+    var subTrusted = document.getElementById('agreeSubTrusted');
+
+    if (mode === 'full') {
+        fullEls.forEach(function(el) { el.style.display = ''; });
+        trustedEls.forEach(function(el) { el.style.display = 'none'; });
+        btnFull.classList.add('active');
+        btnTrusted.classList.remove('active');
+        if (subFull) subFull.style.display = '';
+        if (subTrusted) subTrusted.style.display = 'none';
+    } else {
+        fullEls.forEach(function(el) { el.style.display = 'none'; });
+        trustedEls.forEach(function(el) { el.style.display = ''; });
+        btnTrusted.classList.add('active');
+        btnFull.classList.remove('active');
+        if (subFull) subFull.style.display = 'none';
+        if (subTrusted) subTrusted.style.display = '';
+    }
+}
+
 // Sortable table headers
 document.querySelectorAll('.sortable-table thead th').forEach(function(th, idx) {
     th.addEventListener('click', function() {
@@ -1288,17 +1448,18 @@ document.querySelectorAll('.sortable-table thead th').forEach(function(th, idx) 
     });
 });
 
-// Text filter for agreement matrix
+// Text filter for agreement matrix (filters both tables)
 function filterAgreementTable() {
     var input = document.getElementById('agreeFilter');
     if (!input) return;
     var filter = input.value.toUpperCase();
-    var table = input.closest('.card').querySelector('table');
-    if (!table) return;
-    var rows = table.querySelectorAll('tbody tr');
-    rows.forEach(function(row) {
-        var ticker = row.cells[0].textContent.toUpperCase();
-        row.style.display = ticker.indexOf(filter) > -1 ? '' : 'none';
+    var tables = input.closest('.card').querySelectorAll('table');
+    tables.forEach(function(table) {
+        var rows = table.querySelectorAll('tbody tr');
+        rows.forEach(function(row) {
+            var ticker = row.cells[0].textContent.toUpperCase();
+            row.style.display = ticker.indexOf(filter) > -1 ? '' : 'none';
+        });
     });
 }
 """
@@ -1310,57 +1471,63 @@ function filterAgreementTable() {
 
 def main():
     print('=' * 68)
-    print('META DASHBOARD BACKEND v1.0')
+    print('META DASHBOARD BACKEND v1.1')
     print('=' * 68)
 
     # 1. Load all sources
-    print('\n[1/6] Loading data sources...')
+    print('\n[1/7] Loading data sources...')
     sources = load_all_sources()
 
     # 2. Regime context
-    print('\n[2/6] Building regime context...')
+    print('\n[2/7] Building regime context...')
     regime = build_regime_context(sources)
     print('  Drift tier: {} | Method: {}'.format(
         regime['drift_tier'], regime['active_method']))
 
-    # 3. Agreement matrix
-    print('\n[3/6] Building agreement matrix...')
-    agreement_rows = build_agreement_matrix(sources)
-    print('  {} tickers in 2+ sources'.format(len(agreement_rows)))
+    # 3. Agreement matrices (full + trusted)
+    print('\n[3/7] Building agreement matrices...')
+    agreement_full = build_agreement_matrix(sources)
+    agreement_trusted = build_agreement_matrix(
+        sources, exclude={'advanced', 'qualifier'})
+    print('  Full: {} tickers | Trusted: {} tickers'.format(
+        len(agreement_full), len(agreement_trusted)))
 
     # 4. Intermarket context
-    print('\n[4/6] Building intermarket context...')
+    print('\n[4/7] Building intermarket context...')
     intermarket = build_intermarket_context(sources)
     print('  {} force categories'.format(len(intermarket['forces'])))
 
     # 5. Pattern context
-    print('\n[5/6] Building pattern context...')
+    print('\n[5/7] Building pattern context...')
     pattern = build_pattern_context(sources)
 
-    # 6. Risk flags
-    print('\n[6/6] Building risk flags...')
-    risk_flags = build_risk_flags(sources, agreement_rows)
-    print('  {} flags detected'.format(len(risk_flags)))
+    # 6. Risk flags (full + trusted)
+    print('\n[6/7] Building risk flags...')
+    risk_flags_full = build_risk_flags(sources, agreement_full, trusted_only=False)
+    risk_flags_trusted = build_risk_flags(sources, agreement_trusted, trusted_only=True)
+    print('  Full: {} flags | Trusted: {} flags'.format(
+        len(risk_flags_full), len(risk_flags_trusted)))
 
-    # Build dashboard
-    print('\nWriting dashboard...')
-    body = build_body(regime, agreement_rows, intermarket, pattern, risk_flags)
+    # 7. Build dashboard
+    print('\n[7/7] Writing dashboard...')
+    body = build_body(regime, agreement_full, agreement_trusted,
+                      intermarket, pattern, risk_flags_full, risk_flags_trusted)
     writer = DashboardWriter('meta-dashboard', 'Meta Dashboard')
     writer.write(body, extra_css=EXTRA_CSS, extra_js=EXTRA_JS)
 
-    # Save summary CSV for downstream consumption
-    if agreement_rows:
+    # Save summary CSV (trusted view as default)
+    if agreement_trusted:
         csv_path = os.path.join(
             _SCRIPT_DIR,
             'meta_dashboard_data_{}.csv'.format(
                 datetime.datetime.now().strftime('%Y%m%d_%H%M')
             )
         )
-        df = pd.DataFrame(agreement_rows)
+        df = pd.DataFrame(agreement_trusted)
         df.to_csv(csv_path, index=False, encoding='utf-8')
         print('CSV: {}'.format(csv_path))
 
-    print('\n[DONE] Meta dashboard written.')
+    print('\n[DONE] Meta dashboard v1.1 written.')
 
 
 if __name__ == '__main__':
