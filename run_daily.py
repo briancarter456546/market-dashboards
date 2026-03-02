@@ -279,6 +279,34 @@ def main():
         total_time += elapsed
         print()
 
+    # Reseed knowledge base with fresh data
+    kb_script = os.path.join(ROOT_DIR, 'knowledge_base_v1_0.py')
+    if os.path.exists(kb_script):
+        if dry_run:
+            log("Would reseed knowledge base", 'INFO')
+        else:
+            log("Knowledge Base: Reseeding...", 'START')
+            kb_start = time.time()
+            try:
+                kb_result = subprocess.run(
+                    [sys.executable, kb_script, 'seed', '--force'],
+                    cwd=ROOT_DIR,
+                    capture_output=True, text=True,
+                    encoding='utf-8', errors='replace',
+                    timeout=120
+                )
+                kb_elapsed = time.time() - kb_start
+                if kb_result.returncode == 0:
+                    log("Knowledge Base: Reseeded in {:.1f}s".format(kb_elapsed), 'INFO')
+                else:
+                    log("Knowledge Base: Seed failed (non-critical)", 'WARN')
+                    if kb_result.stderr:
+                        for line in kb_result.stderr.strip().split('\n')[-3:]:
+                            log("  +- {}".format(line), 'WARN')
+            except Exception as e:
+                log("Knowledge Base: {} (non-critical)".format(e), 'WARN')
+    print()
+
     # Push to GitHub Pages (replaces copy_to_django)
     copy_to_github(dry_run=dry_run)
     print()
