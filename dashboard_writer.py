@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# dashboard_writer.py - v1.1
-# Last updated: 2026-02-18
+# dashboard_writer.py - v1.2
+# Last updated: 2026-03-02
 # =============================================================================
+# v1.2:
+#   - Added DASHBOARD_DESCRIPTIONS dict (static per-dashboard descriptions)
+#   - Added llm_block() method for injecting description + LLM interpretation
+#   - Added LLM_BLOCK_CSS for description block styling
+# v1.1:
+#   - Light theme redesign (IBM Plex Sans/Mono, larger fonts, high contrast)
 # v1.0:
 #   - Shared writer module for all static HTML dashboards
 #   - Replaces Django JSON -> API -> template pipeline
@@ -431,6 +437,51 @@ tbody tr:hover { background: #fafbfd; }
     .pb-item { margin-left: 8px; padding-left: 10px; }
     .dash-footer { padding: 16px 12px; font-size: 0.78em; }
 }
+
+/* --- LLM description block --- */
+.llm-block {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    margin-bottom: 22px;
+    overflow: hidden;
+}
+.llm-block-header {
+    padding: 12px 22px;
+    background: #fafafa;
+    border-bottom: 1px solid #e2e4e8;
+    font-size: 0.82em;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+.llm-block-body {
+    padding: 18px 22px;
+}
+.llm-static {
+    font-size: 0.92em;
+    color: #333;
+    line-height: 1.7;
+    margin-bottom: 14px;
+}
+.llm-dynamic {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.7;
+    padding: 14px 18px;
+    background: #f8f9fb;
+    border-left: 4px solid #4f46e5;
+    border-radius: 4px;
+    margin-bottom: 14px;
+}
+.llm-disclaimer {
+    font-size: 0.78em;
+    color: #999;
+    font-style: italic;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 10px;
+}
 """
 
 # Gradient color helper (JS) - red to green, matches Django guide
@@ -462,6 +513,108 @@ function getGradientColor(score) {
     return 'rgb(' + r + ',' + g + ',' + b + ')';
 }
 """
+
+
+# =============================================================================
+# DASHBOARD DESCRIPTIONS (static, per-dashboard)
+# =============================================================================
+
+DASHBOARD_DESCRIPTIONS = {
+    "spread-monitor": (
+        "Tracks 18+ cross-asset spread ratios across rates, credit, equity risk, "
+        "and commodities. Each spread is scored on trend, distance from mean, and "
+        "momentum to produce a composite signal. Forces are grouped into four "
+        "market levels (Rates, Earnings, Liquidity, Sentiment) for regime scoring."
+    ),
+    "sector-rotation": (
+        "Momentum z-scores and forward predictions for 500+ ETFs across 25-year, "
+        "5-year, and 1-year windows. Historical pattern matching produces predicted "
+        "5-day and 10-day returns with win rates. Sector rotation scores combine "
+        "trend strength, agreement across timeframes, and pattern confidence."
+    ),
+    "momentum-ranker": (
+        "Short-term momentum ranker scoring 700+ tickers on returns (1d to 1y), "
+        "SMA gate (above 30/50/100/200 day), ratio consistency across timeframes, "
+        "and resilience on bad SPY days. Higher composite scores indicate stronger, "
+        "more consistent short-term momentum."
+    ),
+    "momentum-ranker-long": (
+        "Long-term momentum ranker scoring 700+ tickers on returns from 1 month "
+        "to 10 years, with relative performance vs SPY over 1y/5y/10y. Same "
+        "scoring engine as the short-term ranker but optimized for longer "
+        "investment horizons and secular trends."
+    ),
+    "similar-days": (
+        "Pattern-matches today's momentum profile against 25 years of history "
+        "across three analysis windows (25Y, 5Y, 1Y). Shows the most similar "
+        "historical days by correlation, with before/after analysis for sectors, "
+        "indexes, style factors, and risk regimes."
+    ),
+    "historical-mirror": (
+        "Compares today's market fingerprint (momentum + spread state) against "
+        "every historical bi-weekly period over 25 years. Produces a similarity "
+        "heatmap, top analog periods, and forward return distributions with "
+        "percentile bands."
+    ),
+    "stock-secrot": (
+        "Scores individual stocks across 9 sector rotation and momentum patterns "
+        "including RSI, ADX, relative strength vs sector ETF, and volume "
+        "characteristics. High scorers (7/9+) suggest strong sector alignment "
+        "and trend confirmation."
+    ),
+    "hyglqd-credit": (
+        "Monitors the HYG/LQD ratio as a credit spread proxy. Tracks the ratio's "
+        "historical percentile, expected SPY forward returns at the current spread "
+        "level, and directional win rates. Rising ratio = risk-on appetite, "
+        "falling ratio = risk aversion."
+    ),
+    "crash-detection": (
+        "Combines Random Matrix Theory eigenvalue analysis with Ising model "
+        "magnetization to detect herding behavior. Lambda max tracks correlation "
+        "clustering; magnetization tracks directional consensus. Composite score "
+        "is probability-weighted across components."
+    ),
+    "advanced-momentum": (
+        "Analyzes 700+ assets using OBV divergence detection, Sortino ratios, "
+        "slope acceleration, and trajectory classification. Produces signals from "
+        "STRONG_BUY to SELL with confidence scores. OBV divergence flags "
+        "price-volume disagreements as early warning signals."
+    ),
+    "conservative-momentum": (
+        "Pattern-based momentum qualification with strict safety filters: "
+        "12-month returns (40-300%), recency ratio (parabolic detection), "
+        "sustainability scoring, and SMA extension limits. Designed to filter "
+        "out lottery tickets and blow-off tops."
+    ),
+    "macro": (
+        "Broad macro overview: VIX, treasury yield curve and spreads, credit "
+        "indicators, sector heatmap, commodities, currencies, and market breadth. "
+        "Overall regime classification with 5-day trend indicators and threshold "
+        "alerts for key risk metrics."
+    ),
+    "regime-changepoint": (
+        "Measures cosine distance between consecutive regime fingerprints and "
+        "uses CUSUM changepoint detection to identify regime transitions. Tracks "
+        "drift rate, pole flip analysis, and similarity to known historical "
+        "macro windows (e.g. 2008 crisis, 2020 COVID)."
+    ),
+    "smart-scanner": (
+        "Regime-aware method selection across ETF momentum, pole rotation, and "
+        "stock screening. Automatically picks Method A/B/C based on drift tier "
+        "from changepoint analysis, with top picks and conviction scores."
+    ),
+    "meta-dashboard": (
+        "Cross-dashboard agreement matrix combining 6 independent ticker-level "
+        "sources (Ranker S/T, Ranker L/T, Advanced, Qualifier, SecRot, Stock SR). "
+        "Includes regime-gated routing, intermarket force analysis, pattern "
+        "context, and risk flags synthesized from all backends."
+    ),
+}
+
+_LLM_DISCLAIMER = (
+    "For educational and informational purposes only. Not financial advice. "
+    "Past performance does not guarantee future results."
+)
 
 
 # =============================================================================
@@ -615,6 +768,42 @@ class DashboardWriter(object):
             '</div>'.format(base=GITHUB_PAGES_BASE, date=self.date_str)
         )
 
+    def llm_block(self):
+        """Return HTML block with static description + dynamic interpretation + disclaimer.
+
+        Reads static description from DASHBOARD_DESCRIPTIONS dict.
+        Reads dynamic interpretation from llm_descriptions.json (if it exists).
+        Returns HTML string to prepend to the dashboard body.
+        """
+        import json as _json
+
+        static_desc = DASHBOARD_DESCRIPTIONS.get(self.slug, '')
+        if not static_desc:
+            return ''
+
+        # Try to load dynamic interpretation from cached JSON
+        dynamic_interp = ''
+        llm_json_path = os.path.join(REPO_ROOT, 'llm_descriptions.json')
+        if os.path.exists(llm_json_path):
+            try:
+                with open(llm_json_path, 'r', encoding='utf-8') as f:
+                    llm_data = _json.load(f)
+                entry = llm_data.get(self.slug, {})
+                dynamic_interp = entry.get('dynamic', '')
+            except Exception:
+                pass
+
+        parts = []
+        parts.append('<div class="llm-block">')
+        parts.append('<div class="llm-block-header">About This Dashboard</div>')
+        parts.append('<div class="llm-block-body">')
+        parts.append('<div class="llm-static">{}</div>'.format(static_desc))
+        if dynamic_interp:
+            parts.append('<div class="llm-dynamic">{}</div>'.format(dynamic_interp))
+        parts.append('<div class="llm-disclaimer">{}</div>'.format(_LLM_DISCLAIMER))
+        parts.append('</div></div>')
+        return '\n'.join(parts)
+
     # ------------------------------------------------------------------
     # Private helpers
     # ------------------------------------------------------------------
@@ -686,6 +875,15 @@ DASHBOARD_REGISTRY = [
                        "and bad-SPY-day resilience. Live filter and sort.",
         "icon":        "📈",
         "color":       "#10b981",
+        "tag":         "Momentum",
+    },
+    {
+        "slug":        "momentum-ranker-long",
+        "title":       "Momentum Ranker (Long)",
+        "description": "Long timeframe momentum ranker. Returns: 1m, 3m, 6m, 1y, 5y, 10y. "
+                       "vs SPY: 1y, 5y, 10y. Same scoring engine, longer horizon.",
+        "icon":        "📈",
+        "color":       "#059669",
         "tag":         "Momentum",
     },
     {
@@ -1119,7 +1317,7 @@ def push_to_github(commit_message=None):
 # =============================================================================
 
 if __name__ == "__main__":
-    print("dashboard_writer.py v1.0")
+    print("dashboard_writer.py v1.2")
     print("REPO_ROOT: {}".format(REPO_ROOT))
     print("DOCS_DIR:  {}".format(DOCS_DIR))
     print("PAGES URL: {}".format(GITHUB_PAGES_BASE))

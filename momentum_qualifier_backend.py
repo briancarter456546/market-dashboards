@@ -84,6 +84,7 @@ EXTRA_CSS = """
                 background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1; }
 
 /* --- Sortable table helpers --- */
+thead th[title] { cursor: help; }
 thead th.sorted-asc::after  { content: " \\25B2"; }
 thead th.sorted-desc::after { content: " \\25BC"; }
 
@@ -436,6 +437,32 @@ def compute_scores(asset):
 # HTML RENDERING HELPERS
 # =============================================================================
 
+# =============================================================================
+# HEADER TOOLTIPS
+# =============================================================================
+
+HEADER_TIPS = {
+    'Rank':           'Rank by composite score within this table',
+    'Ticker':         'Ticker symbol',
+    'Score':          'Composite score (0.25*returns + 0.30*momentum + 0.35*sustainability + 0.10*extension)',
+    'Safe':           'Passes all safe-filter thresholds (recency, extension, 12M range, sustainability)',
+    '12M Ret':        '12-month return percentage (safe range: 40-300%)',
+    '3M Ret':         '3-month return percentage',
+    '1M Ret':         '1-month return percentage',
+    '1W Ret':         '1-week return percentage',
+    'Recency Ratio':  'Recency ratio: 1M rate vs 11M avg rate. >3.0 = parabolic warning',
+    'Recency':        'Recency ratio: 1M rate vs 11M avg rate. >3.0 = parabolic warning',
+    'Sust':           'Sustainability score: gain consistency. Higher = steadier gains (safe >= 0.75)',
+    'Ext':            'Extension score: distance above SMA29. Higher = less extended (safe >= 0.80)',
+    '%>SMA9':         'Percentage of last-year trading days closing above 9-day SMA (min 60%)',
+    'Pos Mo':         'Positive months out of last 12 (min 6 to qualify)',
+    'Regime':         'Current price regime: TRENDING / PULLBACK / DIP / BREAKDOWN',
+    'Days':           'Consecutive trading days in current regime',
+    'Longest Run':    'Longest consecutive run of days above SMA9 in the past year',
+    'Dist SMA9':      'Current distance from 9-day SMA as percentage',
+}
+
+
 def _regime_badge(regime):
     cls_map = {
         'TRENDING':  'regime-trending',
@@ -485,7 +512,8 @@ def _build_table(assets, table_id, columns):
     row_fn receives the asset dict and returns an HTML string for that cell.
     """
     thead_cells = ''.join(
-        '<th>{}</th>'.format(h) for h, _ in columns
+        '<th title="{}">{}</th>'.format(HEADER_TIPS.get(h, ''), h)
+        for h, _ in columns
     )
     rows = []
     for asset in assets:

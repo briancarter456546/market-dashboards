@@ -653,6 +653,19 @@ TABLE_HEADERS = [
     "Sortino 1M", "Status", "Trajectory", "Signal", "Confidence",
 ]
 
+HEADER_TIPS = {
+    "Symbol":     "Ticker symbol",
+    "Price":      "Current price",
+    "1M%":        "1-month return percentage",
+    "3M%":        "3-month return percentage",
+    "12M%":       "12-month return percentage",
+    "Sortino 1M": "1-month Sortino ratio: return per unit downside risk",
+    "Status":     "Current momentum status (confirmed, fading, etc.)",
+    "Trajectory": "Momentum slope direction (accelerating, decelerating, etc.)",
+    "Signal":     "Trading signal: STRONG_BUY / BUY / HOLD / SELL",
+    "Confidence": "Signal confidence percentage",
+}
+
 
 def _build_table_row(r):
     """Build a <tr> for one result dict."""
@@ -681,7 +694,8 @@ def _build_table(rows, table_id=""):
     """Wrap rows in a full <table> with sortable headers."""
     id_attr = ' id="{}"'.format(table_id) if table_id else ""
     header_cells = "".join(
-        "<th>{}</th>".format(h) for h in TABLE_HEADERS)
+        '<th title="{}">{}</th>'.format(HEADER_TIPS.get(h, ''), h)
+        for h in TABLE_HEADERS)
     body_rows = "\n".join(_build_table_row(r) for r in rows)
     return (
         '<table{id}>'

@@ -311,7 +311,9 @@ def build_prices_table(current_hyg, current_lqd, current_spy, latest_date):
     table_html = (
         '<table class="price-table">'
         '<thead><tr>'
-        '<th>Ticker</th><th>Close</th><th>Description</th>'
+        '<th title="ETF ticker symbol">Ticker</th>'
+        '<th title="Most recent closing price in USD">Close</th>'
+        '<th title="Full name of the ETF fund">Description</th>'
         '</tr></thead>'
         '<tbody>{rows}</tbody>'
         '</table>'
@@ -355,7 +357,9 @@ def build_thresholds_table(current_ratio, regime_key):
     table_html = (
         '<table class="thresh-table">'
         '<thead><tr>'
-        '<th>Level</th><th>Ratio Value</th><th>Interpretation</th>'
+        '<th title="Threshold level or current ratio reading">Level</th>'
+        '<th title="HYG/LQD price ratio value at this level">Ratio Value</th>'
+        '<th title="What this ratio level means for risk appetite">Interpretation</th>'
         '</tr></thead>'
         '<tbody>{rows}</tbody>'
         '</table>'

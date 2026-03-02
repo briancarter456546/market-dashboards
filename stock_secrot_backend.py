@@ -327,18 +327,18 @@ def build_body_html(df, high_scorers, scan_date, csv_path, writer):
     table_html = (
         '<table class="sortable-table">'
         "<thead><tr>"
-        "<th>Rank</th>"
-        "<th>Symbol</th>"
-        "<th>Company</th>"
-        "<th>Sector</th>"
-        "<th>Score &#9660;</th>"
-        "<th>5D Ret%</th>"
-        "<th>20D Ret%</th>"
-        "<th>60D Ret%</th>"
-        "<th>RSI</th>"
-        "<th>ADX</th>"
-        "<th>RS vs ETF</th>"
-        "<th>Vol Increase%</th>"
+        '<th title="Overall rank by composite score">Rank</th>'
+        '<th title="Ticker symbol">Symbol</th>'
+        '<th title="Company name">Company</th>'
+        '<th title="GICS sector classification">Sector</th>'
+        '<th title="Composite sector rotation score out of 9 pattern tests">Score &#9660;</th>'
+        '<th title="5-trading-day return percentage">5D Ret%</th>'
+        '<th title="20-trading-day (1 month) return percentage">20D Ret%</th>'
+        '<th title="60-trading-day (3 month) return percentage">60D Ret%</th>'
+        '<th title="Relative Strength Index, 14-day. Overbought >70, oversold <30">RSI</th>'
+        '<th title="Average Directional Index. Strong trend >25, weak <20">ADX</th>'
+        '<th title="Relative strength vs sector ETF (positive = outperforming)">RS vs ETF</th>'
+        '<th title="Volume increase vs 20-day average (higher = more interest)">Vol Increase%</th>'
         "</tr></thead>"
         "<tbody>" + "\n".join(table_rows) + "</tbody>"
         "</table>"

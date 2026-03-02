@@ -234,8 +234,8 @@ def build_body(results, writer):
     <div style="overflow-x:auto">
       <table class="cp-table">
         <thead><tr>
-          <th>Date</th><th>CUSUM</th><th>Distance</th>
-          <th>Proposed Window</th><th>Pole Flips (top 6)</th>
+          <th title="Date when regime changepoint was detected">Date</th><th title="Cumulative sum statistic for changepoint detection">CUSUM</th><th title="Cosine distance between consecutive regime fingerprints">Distance</th>
+          <th title="Suggested analysis window around this changepoint">Proposed Window</th><th title="Sectors that changed dominant pole direction">Pole Flips (top 6)</th>
         </tr></thead>
         <tbody id="cp-tbody"></tbody>
       </table>

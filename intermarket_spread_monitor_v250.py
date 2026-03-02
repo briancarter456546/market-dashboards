@@ -1263,17 +1263,17 @@ def build_body_html(
     table_html = (
         '<table class="sortable-table">'
         "<thead><tr>"
-        '<th>Market Level</th>'
-        '<th>Category</th>'
-        '<th>Spread</th>'
-        '<th>Trend</th>'
-        '<th>Dist %</th>'
-        '<th>Slope</th>'
-        '<th>5d Mom</th>'
-        '<th>20d Mom</th>'
-        '<th>Score &#9660;</th>'
-        '<th>Status / Meaning</th>'
-        '<th>Playbook</th>'
+        '<th title="Force category: Rates, Earnings, Liquidity, or Sentiment">Market Level</th>'
+        '<th title="Specific spread classification within the force level">Category</th>'
+        '<th title="Ratio name (e.g. HYG/LQD, XLY/XLP)">Spread</th>'
+        '<th title="Current trend direction and qualifier">Trend</th>'
+        '<th title="Distance from mean as percentage (z-score proxy)">Dist %</th>'
+        '<th title="10-day regression slope of the spread">Slope</th>'
+        '<th title="5-day momentum (rate of change)">5d Mom</th>'
+        '<th title="20-day momentum (rate of change)">20d Mom</th>'
+        '<th title="Composite signal score, positive=bullish, negative=bearish">Score &#9660;</th>'
+        '<th title="Interpretation of current spread regime">Status / Meaning</th>'
+        '<th title="Suggested positioning based on spread signal">Playbook</th>'
         "</tr></thead>"
         "<tbody>" + "\n".join(table_rows) + "</tbody>"
         "</table>"

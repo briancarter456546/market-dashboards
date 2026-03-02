@@ -947,7 +947,7 @@ def build_regime_changes_section(writer, regime_changes):
         content = (
             '<table>'
             '<thead><tr>'
-            '<th>Indicator</th><th>From</th><th></th><th>To</th>'
+            '<th title="Market indicator that changed regime">Indicator</th><th title="Previous regime classification">From</th><th></th><th title="New regime classification as of today">To</th>'
             '</tr></thead>'
             '<tbody>{}</tbody>'
             '</table>'
@@ -1100,7 +1100,7 @@ def build_vix_section(writer, vol_data):
         '</div>'
         '</div>'
         '<table>'
-        '<thead><tr><th>ETF Proxy</th><th>Price</th></tr></thead>'
+        '<thead><tr><th title="Volatility-related ETF ticker symbol">ETF Proxy</th><th title="Latest traded price in USD">Price</th></tr></thead>'
         '<tbody>{etf_rows}</tbody>'
         '</table>'
     ).format(
@@ -1160,12 +1160,12 @@ def build_treasury_section(writer, treas_data):
         '<div class="macro-two-col">'
         '<div>'
         '<p class="pb-header">Yield Rates</p>'
-        '<table><thead><tr><th>Tenor</th><th>Rate</th></tr></thead>'
+        '<table><thead><tr><th title="Treasury bond maturity length">Tenor</th><th title="Current Treasury yield as percentage">Rate</th></tr></thead>'
         '<tbody>{rate_rows}</tbody></table>'
         '</div>'
         '<div>'
         '<p class="pb-header">Key Spreads</p>'
-        '<table><thead><tr><th>Spread</th><th>Value</th></tr></thead>'
+        '<table><thead><tr><th title="Yield curve spread between two tenors">Spread</th><th title="Current spread value in basis points">Value</th></tr></thead>'
         '<tbody>{spread_rows}</tbody></table>'
         '</div>'
         '</div>'
@@ -1215,7 +1215,7 @@ def build_credit_section(writer, credit_data):
         '</div>'
         '</div>'
         '<table>'
-        '<thead><tr><th>ETF</th><th>Price</th><th>1D Chg%</th></tr></thead>'
+        '<thead><tr><th title="Credit market ETF ticker symbol">ETF</th><th title="Latest traded price in USD">Price</th><th title="1-day price change as percentage">1D Chg%</th></tr></thead>'
         '<tbody>{rows}</tbody>'
         '</table>'
     ).format(
@@ -1249,7 +1249,7 @@ def build_sector_section(writer, sector_data):
 
     content = (
         '<table>'
-        '<thead><tr><th>Sector</th><th>1D Change %</th></tr></thead>'
+        '<thead><tr><th title="S&amp;P 500 sector name from FMP API">Sector</th><th title="1-day price change as percentage">1D Change %</th></tr></thead>'
         '<tbody>{}</tbody>'
         '</table>'
     ).format(rows or '<tr><td colspan="2" class="muted">No data</td></tr>')
@@ -1297,12 +1297,12 @@ def build_commodity_section(writer, commodity_data):
         '<div class="macro-two-col">'
         '<div>'
         '<p class="pb-header">Futures</p>'
-        '<table><thead><tr><th>Commodity</th><th>Price</th><th>1D %</th></tr></thead>'
+        '<table><thead><tr><th title="Commodity futures contract name">Commodity</th><th title="Latest futures price in USD">Price</th><th title="1-day price change as percentage">1D %</th></tr></thead>'
         '<tbody>{fut}</tbody></table>'
         '</div>'
         '<div>'
         '<p class="pb-header">ETF Proxies</p>'
-        '<table><thead><tr><th>Symbol</th><th>Price</th><th>1D %</th></tr></thead>'
+        '<table><thead><tr><th title="Commodity or currency ETF ticker symbol">Symbol</th><th title="Latest traded price in USD">Price</th><th title="1-day price change as percentage">1D %</th></tr></thead>'
         '<tbody>{etf}</tbody></table>'
         '</div>'
         '</div>'
@@ -1383,7 +1383,7 @@ def build_index_section(writer, index_data):
     content = (
         '{spy_card}'
         '<table>'
-        '<thead><tr><th>Symbol</th><th>Price</th><th>1D %</th><th>50MA</th><th>200MA</th></tr></thead>'
+        '<thead><tr><th title="Index or ETF ticker symbol">Symbol</th><th title="Latest traded price in USD">Price</th><th title="1-day price change as percentage">1D %</th><th title="50-day moving average price level">50MA</th><th title="200-day moving average price level">200MA</th></tr></thead>'
         '<tbody>{rows}</tbody>'
         '</table>'
     ).format(
@@ -1429,7 +1429,7 @@ def build_breadth_section(writer, breadth_data):
         '</div>'
         '</div>'
         '<table>'
-        '<thead><tr><th>Metric</th><th>Pct of Universe</th></tr></thead>'
+        '<thead><tr><th title="Breadth indicator being measured">Metric</th><th title="Percentage of tracked ETFs meeting this criteria">Pct of Universe</th></tr></thead>'
         '<tbody>'
         '{r200}{r50}{r20}{rpos}{rbsr}'
         '</tbody>'

@@ -859,8 +859,8 @@ RENDER_JS_TEMPLATE = """
         }});
 
         const arrow  = col => ss.col === col ? (ss.dir === 'asc' ? ' ▲' : ' ▼') : '';
-        const thSort = (col, label) =>
-            `<th style="cursor:pointer;white-space:nowrap;" onclick="window._simSort('${{containerId}}','${{tableKey}}','${{col}}')">${{label}}${{arrow(col)}}</th>`;
+        const thSort = (col, label, tip) =>
+            `<th style="cursor:pointer;white-space:nowrap;" title="${{tip}}" onclick="window._simSort('${{containerId}}','${{tableKey}}','${{col}}')">${{label}}${{arrow(col)}}</th>`;
 
         const grpCls = {{ '25Y':'grp-25y', '5Y':'grp-5y', '1Y':'grp-1y' }};
         const wins = ['25Y','5Y','1Y'];
@@ -876,16 +876,16 @@ RENDER_JS_TEMPLATE = """
         html += '</colgroup><thead>';
         // Group header row
         html += '<tr class="grp-row">';
-        html += '<th class="grp-blank col-name"></th>';
-        wins.forEach(w => html += `<th colspan="3" class="${{grpCls[w]}}">${{w}} Window</th>`);
+        html += '<th class="grp-blank col-name" title="Asset or factor name"></th>';
+        wins.forEach(w => html += `<th colspan="3" class="${{grpCls[w]}}" title="Pattern matches from the ${{w}} lookback window">${{w}} Window</th>`);
         html += '</tr>';
         // Column header row
         html += '<tr>';
-        html += thSort('name', 'Name');
+        html += thSort('name', 'Name', 'Asset or factor name (click to sort)');
         wins.forEach(w => {{
-            html += thSort('before_'+w, 'Before 5d');
-            html += thSort('after_'+w,  'After →');
-            html += '<th style="cursor:default;white-space:nowrap;">Win% / n</th>';
+            html += thSort('before_'+w, 'Before 5d', 'Avg return 5 trading days BEFORE match date in '+w+' window (click to sort)');
+            html += thSort('after_'+w,  'After \u2192', 'Avg return 5 trading days AFTER match date in '+w+' window (click to sort)');
+            html += '<th style="cursor:default;white-space:nowrap;" title="Win rate (% positive) and sample count for this window">Win% / n</th>';
         }});
         html += '</tr></thead><tbody>';
 
@@ -987,10 +987,10 @@ RENDER_JS_TEMPLATE = """
 
         const grpCls = {{ '25Y':'grp-25y', '5Y':'grp-5y', '1Y':'grp-1y' }};
         let html = '<table><thead><tr class="grp-row">';
-        html += '<th class="grp-blank col-name">Metric</th>';
-        ['25Y','5Y','1Y'].forEach(w => html += `<th colspan="2" class="${{grpCls[w]}}">${{w}} Window</th>`);
-        html += '</tr><tr><th class="col-name">Metric</th>';
-        ['25Y','5Y','1Y'].forEach(() => {{ html += '<th>Before</th><th>After →</th>'; }});
+        html += '<th class="grp-blank col-name" title="Risk regime metric name">Metric</th>';
+        ['25Y','5Y','1Y'].forEach(w => html += `<th colspan="2" class="${{grpCls[w]}}" title="Risk regime data from the ${{w}} lookback window">${{w}} Window</th>`);
+        html += '</tr><tr><th class="col-name" title="Risk regime metric name">Metric</th>';
+        ['25Y','5Y','1Y'].forEach(() => {{ html += '<th title="Average value 5 trading days BEFORE similar-day matches">Before</th><th title="Average value 5 trading days AFTER similar-day matches">After \u2192</th>'; }});
         html += '</tr></thead><tbody>';
 
         // Regime

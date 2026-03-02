@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 # ============================================================================
-# meta_dashboard_backend.py - v1.2
+# meta_dashboard_backend.py - v1.3
 # Last updated: 2026-03-02
 # ============================================================================
+# v1.3: Add long ranker + tooltips
+#   - Load momentum_ranker_long_data.json as 6th ticker-level source
+#   - Rename "Ranker" to "Ranker S/T", add "Ranker L/T" column
+#   - Full mode: 6 sources | Trusted mode: 4 sources
+#   - Add title= tooltips to all table headers
 # v1.2: Fix empty Stock SR + Spread columns
 #   - Spread: added POLE_TO_SECTOR map (ETF poles -> sector names for spread lookup)
 #   - Stock SR: read full source CSV (995 stocks), score>=5 counts as source,
@@ -189,6 +194,9 @@ def load_all_sources():
     print('  Loading momentum_ranker_data.json...')
     sources['ranker'] = _load_json(os.path.join(_SCRIPT_DIR, 'momentum_ranker_data.json'))
 
+    print('  Loading momentum_ranker_long_data.json...')
+    sources['ranker_long'] = _load_json(os.path.join(_SCRIPT_DIR, 'momentum_ranker_long_data.json'))
+
     print('  Loading advanced_momentum_analysis.json...')
     sources['advanced'] = _load_json(os.path.join(_DATA_DIR, 'advanced_momentum_analysis.json'))
 
@@ -329,7 +337,7 @@ def build_agreement_matrix(sources, exclude=None):
     exclude = exclude or set()
     tickers = {}  # ticker -> {source_name: data}
 
-    # 1. Momentum Ranker: rank <= 150
+    # 1. Momentum Ranker (short-term): rank <= 150
     if 'ranker' not in exclude:
         ranker = sources.get('ranker')
         if ranker and 'data' in ranker:
@@ -337,6 +345,15 @@ def build_agreement_matrix(sources, exclude=None):
                 if item.get('rank', 9999) <= 150:
                     t = item['ticker']
                     tickers.setdefault(t, {})['ranker'] = item
+
+    # 1b. Momentum Ranker (long-term): rank <= 150
+    if 'ranker_long' not in exclude:
+        ranker_long = sources.get('ranker_long')
+        if ranker_long and 'data' in ranker_long:
+            for item in ranker_long['data']:
+                if item.get('rank', 9999) <= 150:
+                    t = item['ticker']
+                    tickers.setdefault(t, {})['ranker_long'] = item
 
     # 2. Advanced Momentum: signal in (STRONG_BUY, BUY)
     if 'advanced' not in exclude:
@@ -417,6 +434,8 @@ def build_agreement_matrix(sources, exclude=None):
             'pole': pole or '--',
             'ranker_rank': src_dict['ranker']['rank'] if 'ranker' in src_dict else None,
             'ranker_score': src_dict['ranker'].get('score') if 'ranker' in src_dict else None,
+            'ranker_long_rank': src_dict['ranker_long']['rank'] if 'ranker_long' in src_dict else None,
+            'ranker_long_score': src_dict['ranker_long'].get('score') if 'ranker_long' in src_dict else None,
             'advanced_signal': src_dict['advanced']['signal'] if 'advanced' in src_dict else None,
             'advanced_confidence': src_dict['advanced'].get('confidence') if 'advanced' in src_dict else None,
             'qualifier_safe': src_dict['qualifier'].get('is_safe') if 'qualifier' in src_dict else None,
@@ -786,41 +805,43 @@ def _build_routing_banner(regime):
 def _build_agreement_table(rows, mode='full'):
     """Build the agreement matrix table.
 
-    *mode* = 'full' -> 5 ticker-level columns (Ranker, Advanced, Qualifier, SecRot, Stock SR)
-    *mode* = 'trusted' -> 3 ticker-level columns (Ranker, SecRot, Stock SR)
+    *mode* = 'full' -> 6 ticker-level columns (Ranker S/T, Ranker L/T, Advanced, Qualifier, SecRot, Stock SR)
+    *mode* = 'trusted' -> 4 ticker-level columns (Ranker S/T, Ranker L/T, SecRot, Stock SR)
     """
     if not rows:
         return '<p>No tickers appear in 2+ sources.</p>'
 
     trusted = (mode == 'trusted')
-    n_sources = 3 if trusted else 5
+    n_sources = 4 if trusted else 6
 
     if trusted:
         header = (
             '<table class="sortable-table data-table">'
             '<thead><tr>'
-            '<th>Ticker</th>'
-            '<th>Pole</th>'
-            '<th>Ranker</th>'
-            '<th>SecRot</th>'
-            '<th>Stock SR</th>'
-            '<th>Spread</th>'
-            '<th>#</th>'
+            '<th title="Ticker symbol">Ticker</th>'
+            '<th title="Top correlated sector/ETF pole from ranker">Pole</th>'
+            '<th title="Short-term momentum rank (1d-1y returns). Green if top 50">Ranker S/T</th>'
+            '<th title="Long-term momentum rank (1m-10y returns). Green if top 50">Ranker L/T</th>'
+            '<th title="Sector rotation momentum score from ETF-level analysis">SecRot</th>'
+            '<th title="Stock-level sector rotation score (out of 9 patterns)">Stock SR</th>'
+            '<th title="Intermarket spread support: bullish/bearish/mixed/none">Spread</th>'
+            '<th title="Number of independent sources confirming this ticker">Sources</th>'
             '</tr></thead><tbody>'
         )
     else:
         header = (
             '<table class="sortable-table data-table">'
             '<thead><tr>'
-            '<th>Ticker</th>'
-            '<th>Pole</th>'
-            '<th>Ranker</th>'
-            '<th>Advanced</th>'
-            '<th>Qualifier</th>'
-            '<th>SecRot</th>'
-            '<th>Stock SR</th>'
-            '<th>Spread</th>'
-            '<th>#</th>'
+            '<th title="Ticker symbol">Ticker</th>'
+            '<th title="Top correlated sector/ETF pole from ranker">Pole</th>'
+            '<th title="Short-term momentum rank (1d-1y returns). Green if top 50">Ranker S/T</th>'
+            '<th title="Long-term momentum rank (1m-10y returns). Green if top 50">Ranker L/T</th>'
+            '<th title="Advanced momentum signal: OBV divergence + Sortino + trajectory">Advanced</th>'
+            '<th title="Conservative momentum qualifier: safe/not-safe with regime context">Qualifier</th>'
+            '<th title="Sector rotation momentum score from ETF-level analysis">SecRot</th>'
+            '<th title="Stock-level sector rotation score (out of 9 patterns)">Stock SR</th>'
+            '<th title="Intermarket spread support: bullish/bearish/mixed/none">Spread</th>'
+            '<th title="Number of independent sources confirming this ticker">Sources</th>'
             '</tr></thead><tbody>'
         )
 
@@ -861,12 +882,21 @@ def _build_agreement_table(rows, mode='full'):
         count = r['source_count']
         count_css = 'badge-high' if count >= n_sources - 1 else ('badge-mid' if count >= 2 else 'badge-low')
 
+        # Long ranker cell
+        if r['ranker_long_rank'] is not None:
+            rl_css = 'agree-bull' if r['ranker_long_rank'] <= 50 else 'agree-present'
+            rl_val = '#{}'.format(r['ranker_long_rank'])
+        else:
+            rl_css = 'agree-none'
+            rl_val = '--'
+
         if trusted:
             body_rows.append(
                 '<tr>'
                 '<td class="ticker-cell" data-sort="{ticker}">{ticker}</td>'
                 '<td>{pole}</td>'
                 '<td class="{ranker_css}" data-sort="{ranker_sort}">{ranker_val}</td>'
+                '<td class="{rl_css}" data-sort="{rl_sort}">{rl_val}</td>'
                 '<td class="{secrot_css}" data-sort="{secrot_sort}">{secrot_val}</td>'
                 '<td class="{ssr_css}" data-sort="{ssr_sort}">{ssr_val}</td>'
                 '<td class="{sp_css}">{sp_icon}</td>'
@@ -877,6 +907,9 @@ def _build_agreement_table(rows, mode='full'):
                     ranker_css=ranker_css,
                     ranker_sort=r['ranker_rank'] if r['ranker_rank'] else 9999,
                     ranker_val=ranker_val,
+                    rl_css=rl_css,
+                    rl_sort=r['ranker_long_rank'] if r['ranker_long_rank'] else 9999,
+                    rl_val=rl_val,
                     secrot_css=secrot_css,
                     secrot_sort=r['secrot_score'] if r['secrot_score'] else 0,
                     secrot_val=secrot_val,
@@ -920,6 +953,7 @@ def _build_agreement_table(rows, mode='full'):
                 '<td class="ticker-cell" data-sort="{ticker}">{ticker}</td>'
                 '<td>{pole}</td>'
                 '<td class="{ranker_css}" data-sort="{ranker_sort}">{ranker_val}</td>'
+                '<td class="{rl_css}" data-sort="{rl_sort}">{rl_val}</td>'
                 '<td class="{adv_css}">{adv_val}</td>'
                 '<td class="{qual_css}">{qual_val}</td>'
                 '<td class="{secrot_css}" data-sort="{secrot_sort}">{secrot_val}</td>'
@@ -932,6 +966,9 @@ def _build_agreement_table(rows, mode='full'):
                     ranker_css=ranker_css,
                     ranker_sort=r['ranker_rank'] if r['ranker_rank'] else 9999,
                     ranker_val=ranker_val,
+                    rl_css=rl_css,
+                    rl_sort=r['ranker_long_rank'] if r['ranker_long_rank'] else 9999,
+                    rl_val=rl_val,
                     adv_css=adv_css,
                     adv_val=adv_val,
                     qual_css=qual_css,
@@ -1049,7 +1086,13 @@ def _build_pattern_section(pattern):
     if pattern['secrot_predictions']:
         sr_html = '<div class="pattern-group"><h3>Sector Rotation Predictions (5d WR > 55%)</h3>'
         sr_html += '<table class="data-table compact"><thead><tr>'
-        sr_html += '<th>Ticker</th><th>Name</th><th>5d Avg</th><th>5d WR</th><th>10d Avg</th><th>10d WR</th><th>SR Score</th>'
+        sr_html += ('<th title="ETF ticker symbol">Ticker</th>'
+                    '<th title="ETF name">Name</th>'
+                    '<th title="Average predicted 5-day forward return">5d Avg</th>'
+                    '<th title="Win rate of 5-day forward predictions (% positive)">5d WR</th>'
+                    '<th title="Average predicted 10-day forward return">10d Avg</th>'
+                    '<th title="Win rate of 10-day forward predictions (% positive)">10d WR</th>'
+                    '<th title="Sector rotation composite score">SR Score</th>')
         sr_html += '</tr></thead><tbody>'
         for p in pattern['secrot_predictions']:
             sr_html += '<tr>'
@@ -1072,7 +1115,9 @@ def _build_pattern_section(pattern):
             cp['top_regime'], cp['top_sim'])
         if cp.get('similarity'):
             cp_html += '<table class="data-table compact"><thead><tr>'
-            cp_html += '<th>Period</th><th>Description</th><th>Similarity</th>'
+            cp_html += ('<th title="Historical regime period name">Period</th>'
+                        '<th title="Market context description for this period">Description</th>'
+                        '<th title="Cosine similarity to current regime fingerprint (%)">Similarity</th>')
             cp_html += '</tr></thead><tbody>'
             for s in cp['similarity'][:5]:
                 cp_html += '<tr><td>{}</td><td>{}</td><td>{:.1f}%</td></tr>'.format(
@@ -1123,7 +1168,10 @@ def _build_risk_flags(flags):
         '<span class="card-subtitle">{count} active</span></div>'
         '<table class="data-table">'
         '<thead><tr>'
-        '<th>Severity</th><th>Flag</th><th>Source</th><th>Detail</th>'
+        '<th title="Risk severity level: HIGH / MEDIUM / LOW">Severity</th>'
+        '<th title="Description of the risk flag">Flag</th>'
+        '<th title="Which dashboard detected this flag">Source</th>'
+        '<th title="Specific metric or threshold that triggered the flag">Detail</th>'
         '</tr></thead><tbody>'
         '{rows}'
         '</tbody></table></div>'
@@ -1142,9 +1190,9 @@ def build_body(regime, agreement_full, agreement_trusted,
     toggle_html = (
         '<div class="mode-toggle">'
         '<button class="toggle-btn active" id="btnTrusted" onclick="setMode(\'trusted\')">'
-        'Trusted Only (10)</button>'
+        'Trusted Only (4 sources)</button>'
         '<button class="toggle-btn" id="btnFull" onclick="setMode(\'full\')">'
-        'All Sources (12)</button>'
+        'All Sources (6 sources)</button>'
         '</div>'
     )
 
@@ -1154,9 +1202,9 @@ def build_body(regime, agreement_full, agreement_trusted,
         '<div class="card-header">'
         '<h2>Cross-Dashboard Agreement Matrix</h2>'
         '<span class="card-subtitle" id="agreeSubFull" style="display:none;">'
-        '{n_full} tickers in 2+ of 5 sources</span>'
+        '{n_full} tickers in 2+ of 6 sources</span>'
         '<span class="card-subtitle" id="agreeSubTrusted">'
-        '{n_trusted} tickers in 2+ of 3 trusted sources</span>'
+        '{n_trusted} tickers in 2+ of 4 trusted sources</span>'
         '</div>'
         '<div class="filter-row">'
         '<input type="text" id="agreeFilter" placeholder="Filter by ticker..." '
@@ -1504,7 +1552,7 @@ function filterAgreementTable() {
 
 def main():
     print('=' * 68)
-    print('META DASHBOARD BACKEND v1.1')
+    print('META DASHBOARD BACKEND v1.3')
     print('=' * 68)
 
     # 1. Load all sources
@@ -1560,7 +1608,7 @@ def main():
         df.to_csv(csv_path, index=False, encoding='utf-8')
         print('CSV: {}'.format(csv_path))
 
-    print('\n[DONE] Meta dashboard v1.1 written.')
+    print('\n[DONE] Meta dashboard v1.3 written.')
 
 
 if __name__ == '__main__':

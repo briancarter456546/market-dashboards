@@ -94,6 +94,12 @@ BACKENDS = [
         'required': True,
     },
     {
+        'script': 'momentum_ranker_long_v1_18.py',
+        'name': 'Momentum Ranker (Long)',
+        'slow': False,
+        'required': False,
+    },
+    {
         'script': 'advanced_momentum_backend.py',
         'name': 'Advanced Momentum Analyzer',
         'slow': True,
@@ -127,6 +133,12 @@ BACKENDS = [
     {
         'script': 'meta_dashboard_backend.py',
         'name': 'Meta Dashboard',
+        'slow': False,
+        'required': False,
+    },
+    {
+        'script': 'dashboard_llm_descriptions.py',
+        'name': 'LLM Dashboard Descriptions',
         'slow': False,
         'required': False,
     },
