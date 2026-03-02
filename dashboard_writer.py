@@ -438,7 +438,7 @@ tbody tr:hover { background: #fafbfd; }
     .dash-footer { padding: 16px 12px; font-size: 0.78em; }
 }
 
-/* --- LLM description block (collapsible) --- */
+/* --- LLM description block (collapsible, matches table-section) --- */
 .llm-block {
     background: #fff;
     border: 1px solid #e2e4e8;
@@ -447,71 +447,74 @@ tbody tr:hover { background: #fafbfd; }
     overflow: hidden;
 }
 .llm-block summary {
-    padding: 10px 20px;
+    padding: 16px 22px;
     background: #fafafa;
-    border-bottom: 1px solid #e2e4e8;
-    font-size: 0.80em;
-    font-weight: 600;
-    color: #666;
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
     cursor: pointer;
     list-style: none;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     user-select: none;
 }
 .llm-block summary::-webkit-details-marker { display: none; }
-.llm-block summary::before {
-    content: '\\25B6';
-    font-size: 0.7em;
+.llm-block summary::after {
+    content: '\\25B8';
+    font-size: 0.8em;
+    color: #888;
+    margin-left: auto;
     transition: transform 0.2s ease;
     display: inline-block;
 }
-.llm-block[open] summary::before {
+.llm-block[open] summary::after {
     transform: rotate(90deg);
 }
+.llm-block[open] summary {
+    border-bottom: 1px solid #e2e4e8;
+}
 .llm-block summary:hover {
-    background: #f0f1f4;
+    background: #f0f2f5;
 }
 .llm-block-body {
-    padding: 16px 20px 14px;
+    padding: 18px 22px 16px;
 }
 .llm-section-label {
-    font-size: 0.70em;
+    font-size: 0.82em;
     font-weight: 700;
-    color: #888;
+    color: #555;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 6px;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
 }
 .llm-static {
-    font-size: 0.88em;
-    color: #444;
-    line-height: 1.65;
-    margin-bottom: 16px;
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    margin-bottom: 18px;
 }
 .llm-dynamic {
-    font-size: 0.88em;
+    font-size: 0.92em;
     color: #1a1a2e;
-    line-height: 1.65;
-    padding: 12px 16px;
-    background: #f5f6fa;
-    border-left: 3px solid #4f46e5;
-    border-radius: 4px;
-    margin-bottom: 16px;
+    line-height: 1.6;
+    padding: 14px 18px;
+    background: #f8f9fb;
+    border-left: 4px solid #4f46e5;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 18px;
 }
 .llm-dynamic .llm-section-label {
     color: #4f46e5;
 }
 .llm-disclaimer {
-    font-size: 0.72em;
-    color: #aaa;
+    font-size: 0.78em;
+    color: #999;
     font-style: italic;
     border-top: 1px solid #f0f0f0;
-    padding-top: 8px;
-    margin-top: 2px;
+    padding-top: 10px;
 }
 """
 
