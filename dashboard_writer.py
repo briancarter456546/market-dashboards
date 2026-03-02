@@ -391,6 +391,17 @@ tbody tr:hover { background: #fafbfd; }
     background: #fff;
     margin-top: 8px;
 }
+.dash-footer-links {
+    margin-top: 8px;
+}
+.dash-footer-links a {
+    color: #6b7280;
+    text-decoration: none;
+}
+.dash-footer-links a:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
 
 /* ── Mobile responsive ── */
 @media (max-width: 768px) {
@@ -593,8 +604,15 @@ class DashboardWriter(object):
         return (
             '</div>'  # close .content
             '<div class="dash-footer">'
-            '{} &mdash; Generated {} &mdash; For personal research only.'
-            '</div>'.format(GITHUB_PAGES_BASE, self.date_str)
+            '{base} &mdash; Generated {date} &mdash; For personal research only.'
+            '<div class="dash-footer-links">'
+            '<a href="https://sortinoskitchen.substack.com/">Sortino\'s Kitchen</a>'
+            ' &middot; '
+            '<a href="https://brianbcarter.substack.com/">Brian on Substack</a>'
+            ' &middot; '
+            '<a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a>'
+            '</div>'
+            '</div>'.format(base=GITHUB_PAGES_BASE, date=self.date_str)
         )
 
     # ------------------------------------------------------------------
@@ -1005,7 +1023,16 @@ body {{
     {cards}
   </div>
 
-  <div class="footer">{base_url} &mdash; Generated {date} &mdash; For personal research only.</div>
+  <div class="footer">
+    {base_url} &mdash; Generated {date} &mdash; For personal research only.
+    <div style="margin-top:8px;">
+      <a href="https://sortinoskitchen.substack.com/" style="color:#bbb;text-decoration:none;">Sortino's Kitchen</a>
+      &middot;
+      <a href="https://brianbcarter.substack.com/" style="color:#bbb;text-decoration:none;">Brian on Substack</a>
+      &middot;
+      <a href="https://keynotespeakerbrian.com/" style="color:#bbb;text-decoration:none;">Brian Carter Keynote Speaker</a>
+    </div>
+  </div>
 </div>
 </body></html>""".format(
         font_link=SHARED_FONT_LINK,

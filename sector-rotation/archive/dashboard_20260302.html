@@ -333,6 +333,17 @@ tbody tr:hover { background: #fafbfd; }
     background: #fff;
     margin-top: 8px;
 }
+.dash-footer-links {
+    margin-top: 8px;
+}
+.dash-footer-links a {
+    color: #6b7280;
+    text-decoration: none;
+}
+.dash-footer-links a:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
 
 /* ── Mobile responsive ── */
 @media (max-width: 768px) {
@@ -447,7 +458,7 @@ th.sort-desc::after { content: ' ▼'; font-size: 0.7em; }
 <div class="content">
 <div class="table-section"><div class="table-section-header"><h2>How to Read</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div style="font-size:0.88em;color:#555;line-height:1.9;"><strong>Score 0-9:</strong> Win rate (0-2) + Return magnitude (0-2) + 5Y confirms (0-2) + 25Y confirms (0-2) + Horizon agreement (0-1)<br><strong>Agree:</strong> All 3 history windows predict same 10d direction &nbsp;|&nbsp; <strong>Momentum:</strong> z-score vs history &nbsp;|&nbsp; <strong>Cell colors:</strong> per-column gradient, 5th-95th percentile range &nbsp;|&nbsp; <strong>Pred cells:</strong> avg return (top) + win% (bottom) &nbsp;|&nbsp; <span style="color:#86efac;background:#14532d;padding:1px 6px;border-radius:3px;">25Y</span> <span style="color:#93c5fd;background:#1e3a5f;padding:1px 6px;border-radius:3px;">5Y</span> <span style="color:#c4b5fd;background:#3b1f5e;padding:1px 6px;border-radius:3px;">1Y</span></div></div></div>
 <div class="table-section"><div class="table-section-header"><h2>SecRot Deep Dive &mdash; Pattern Matching</h2><span style="font-size:0.85em;color:#888;">Click any column header to sort</span></div><div style="overflow-x:auto;padding:0;"><div id="secrot-table-wrap" style="padding:0;"></div></div></div>
-</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-03-02 &mdash; For personal research only.</div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-03-02 &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
 
 function getGradientColor(score) {
