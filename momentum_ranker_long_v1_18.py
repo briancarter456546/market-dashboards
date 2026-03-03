@@ -94,7 +94,7 @@ OUTPUT_CSV      = BASE_DIR / 'momentum_ranker_long_data_{}.csv'.format(datetime.
 
 BENCHMARKS = ['SPY', 'QQQ', 'IAU']
 
-MIN_PRICE = 20.0
+MIN_PRICE = 15.0
 MIN_ROWS  = 252
 MAX_CACHE_AGE_DAYS = 7    # exclude tickers whose cache is older than this (likely delisted)
 MIN_TOP_POLE_CORR  = 0.30 # below this, top_pole assignment is noise -- show -- instead
