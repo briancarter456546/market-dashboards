@@ -124,6 +124,12 @@ BACKENDS = [
         'required': False,
     },
     {
+        'script': 'slope_stage_backend.py',
+        'name': 'Slope Stage Scanner',
+        'slow': True,
+        'required': False,
+    },
+    {
         'script': 'smart_scanner_v1_1.py',
         'name': 'Smart Scanner',
         'location': 'root',
