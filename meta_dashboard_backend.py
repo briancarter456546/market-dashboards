@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 # ============================================================================
-# meta_dashboard_backend.py - v1.3
-# Last updated: 2026-03-02
+# meta_dashboard_backend.py - v1.4
+# Last updated: 2026-03-03
 # ============================================================================
+# v1.4: Add slope stage scanner as 7th ticker-level source
+#   - Load slope_stage_data.json: Stage 2/3 or 1->2 transition counts as source
+#   - Full mode: 7 sources | Trusted mode: 4 sources
+#   - Slope Stage column in full-mode agreement table
+#   - Stage 3 parabolic risk flags in full mode
 # v1.3: Add long ranker + tooltips
 #   - Load momentum_ranker_long_data.json as 6th ticker-level source
 #   - Rename "Ranker" to "Ranker S/T", add "Ranker L/T" column
@@ -232,6 +237,10 @@ def load_all_sources():
     sources['stock_secrot'], _ = _load_latest_csv(
         os.path.join(_DATA_DIR, 'stock_secrot_scores_*.csv'))
 
+    # --- Slope Stage Scanner ---
+    print('  Loading slope_stage_data.json...')
+    sources['slope_stage'] = _load_json(os.path.join(_DATA_DIR, 'slope_stage_data.json'))
+
     # --- Routing JSON ---
     print('  Loading secrot routing JSON...')
     sources['routing'], _ = _load_latest_json(
@@ -390,6 +399,17 @@ def build_agreement_matrix(sources, exclude=None):
             if row.get('total_score', 0) >= 5:
                 tickers.setdefault(t, {})['stock_secrot'] = row.to_dict()
 
+    # 6. Slope Stage: Stage 2/3 or recent 1->2 transition counts as source
+    if 'slope_stage' not in exclude:
+        slope_data = sources.get('slope_stage')
+        if slope_data and 'results' in slope_data:
+            for item in slope_data['results']:
+                stage = item.get('stage')
+                has_transition = bool(item.get('transitions_1_to_2'))
+                if stage in (2, 3) or has_transition:
+                    t = item['ticker']
+                    tickers.setdefault(t, {})['slope_stage'] = item
+
     # Filter to 2+ sources
     multi = {}
     for t, src_dict in tickers.items():
@@ -443,6 +463,8 @@ def build_agreement_matrix(sources, exclude=None):
             'secrot_pred5d': src_dict['secrot'].get('pred_5d_avg') if 'secrot' in src_dict else None,
             'secrot_score': src_dict['secrot'].get('sr_score') if 'secrot' in src_dict else None,
             'stock_sr_score': sr_data.get('total_score') if sr_data else None,
+            'slope_stage': src_dict['slope_stage'].get('stage') if 'slope_stage' in src_dict else None,
+            'slope_tq_score': src_dict['slope_stage'].get('tq_score') if 'slope_stage' in src_dict else None,
             'spread_support': spread_support,
             'source_count': len(src_dict),
             'sources': list(src_dict.keys()),
@@ -693,6 +715,22 @@ def build_risk_flags(sources, agreement_rows, trusted_only=False):
                     'severity': 'medium',
                 })
 
+    # 3b. Slope Stage parabolic (stage 3 with high crash risk)
+    if not trusted_only:
+        slope_data = sources.get('slope_stage')
+        if slope_data and 'results' in slope_data:
+            parabolic_items = [r for r in slope_data['results']
+                               if r.get('stage') == 3 and r.get('crash_risk', 0) >= 40]
+            parabolic_items.sort(key=lambda x: x.get('crash_risk', 0), reverse=True)
+            for item in parabolic_items[:10]:
+                flags.append({
+                    'flag': 'Parabolic (Slope): {}'.format(item['ticker']),
+                    'source': 'Slope Stage Scanner',
+                    'detail': 'Stage 3 | Slope: {:.0f}% | Crash risk: {:.0f}'.format(
+                        item.get('slope_pct', 0), item.get('crash_risk', 0)),
+                    'severity': 'high' if item.get('crash_risk', 0) >= 60 else 'medium',
+                })
+
     # 4. Credit/equity divergence -- uses raw HYG/LQD ratio (trusted)
     # but SPY trend from macro; keep in trusted since it's a raw data check
     macro = sources.get('macro') or {}
@@ -805,14 +843,14 @@ def _build_routing_banner(regime):
 def _build_agreement_table(rows, mode='full'):
     """Build the agreement matrix table.
 
-    *mode* = 'full' -> 6 ticker-level columns (Ranker S/T, Ranker L/T, Advanced, Qualifier, SecRot, Stock SR)
+    *mode* = 'full' -> 7 ticker-level columns (Ranker S/T, Ranker L/T, Advanced, Qualifier, SecRot, Stock SR, Slope Stage)
     *mode* = 'trusted' -> 4 ticker-level columns (Ranker S/T, Ranker L/T, SecRot, Stock SR)
     """
     if not rows:
         return '<p>No tickers appear in 2+ sources.</p>'
 
     trusted = (mode == 'trusted')
-    n_sources = 4 if trusted else 6
+    n_sources = 4 if trusted else 7
 
     if trusted:
         header = (
@@ -842,6 +880,7 @@ def _build_agreement_table(rows, mode='full'):
             '<th title="Conservative momentum qualifier: safe/not-safe with regime context">Qualifier</th>'
             '<th title="Sector rotation momentum score from ETF-level analysis">SecRot</th>'
             '<th title="Stock-level sector rotation score (out of 9 patterns)">Stock SR</th>'
+            '<th title="Slope Stage: 90-day trendline stage (2=Uptrend, 3=Parabolic) + TQ score">Slope</th>'
             '<th title="Intermarket spread support: bullish/bearish/mixed/none">Spread</th>'
             '<th title="Number of independent sources confirming this ticker">Sources</th>'
             '</tr></thead><tbody>'
@@ -952,6 +991,27 @@ def _build_agreement_table(rows, mode='full'):
                 qual_css = 'agree-none'
                 qual_val = '--'
 
+            # Slope Stage cell
+            if r['slope_stage'] is not None:
+                ss = r['slope_stage']
+                tq = r.get('slope_tq_score')
+                if ss == 2:
+                    slope_css = 'agree-bull'
+                    slope_val = 'S2'
+                elif ss == 3:
+                    slope_css = 'agree-warn'
+                    slope_val = 'S3'
+                else:
+                    slope_css = 'agree-present'
+                    slope_val = 'S{}'.format(ss)
+                if tq is not None:
+                    slope_val += ' ({:.0f})'.format(tq)
+                slope_sort = tq if tq else 0
+            else:
+                slope_css = 'agree-none'
+                slope_val = '--'
+                slope_sort = 0
+
             body_rows.append(
                 '<tr>'
                 '<td><input type="checkbox" class="own-cb" data-ticker="{ticker}"'
@@ -964,6 +1024,7 @@ def _build_agreement_table(rows, mode='full'):
                 '<td class="{qual_css}">{qual_val}</td>'
                 '<td class="{secrot_css}" data-sort="{secrot_sort}">{secrot_val}</td>'
                 '<td class="{ssr_css}" data-sort="{ssr_sort}">{ssr_val}</td>'
+                '<td class="{slope_css}" data-sort="{slope_sort}">{slope_val}</td>'
                 '<td class="{sp_css}">{sp_icon}</td>'
                 '<td><span class="count-badge {count_css}">{count}/{n_src}</span></td>'
                 '</tr>'.format(
@@ -985,6 +1046,9 @@ def _build_agreement_table(rows, mode='full'):
                     ssr_css=ssr_css,
                     ssr_sort=r['stock_sr_score'] if r['stock_sr_score'] else 0,
                     ssr_val=ssr_val,
+                    slope_css=slope_css,
+                    slope_sort=slope_sort,
+                    slope_val=slope_val,
                     sp_css=sp_css,
                     sp_icon=sp_icon,
                     count=count,
@@ -1198,7 +1262,7 @@ def build_body(regime, agreement_full, agreement_trusted,
         '<button class="toggle-btn active" id="btnTrusted" onclick="setMode(\'trusted\')">'
         'Trusted Only (4 sources)</button>'
         '<button class="toggle-btn" id="btnFull" onclick="setMode(\'full\')">'
-        'All Sources (6 sources)</button>'
+        'All Sources (7 sources)</button>'
         '</div>'
     )
 
@@ -1208,7 +1272,7 @@ def build_body(regime, agreement_full, agreement_trusted,
         '<div class="card-header">'
         '<h2>Cross-Dashboard Agreement Matrix</h2>'
         '<span class="card-subtitle" id="agreeSubFull" style="display:none;">'
-        '{n_full} tickers in 2+ of 6 sources</span>'
+        '{n_full} tickers in 2+ of 7 sources</span>'
         '<span class="card-subtitle" id="agreeSubTrusted">'
         '{n_trusted} tickers in 2+ of 4 trusted sources</span>'
         '</div>'
@@ -1575,7 +1639,7 @@ def main():
     print('\n[3/7] Building agreement matrices...')
     agreement_full = build_agreement_matrix(sources)
     agreement_trusted = build_agreement_matrix(
-        sources, exclude={'advanced', 'qualifier'})
+        sources, exclude={'advanced', 'qualifier', 'slope_stage'})
     print('  Full: {} tickers | Trusted: {} tickers'.format(
         len(agreement_full), len(agreement_trusted)))
 

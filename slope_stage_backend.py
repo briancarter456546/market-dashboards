@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# slope_stage_backend.py - v1.0
+# slope_stage_backend.py - v1.1
 # Last updated: 2026-03-03
 # =============================================================================
+# v1.1: Ownership checkboxes, sortable dates, Trend Quality Score, meta integration
 # v1.0: Initial dashboard backend ported from slope_trendline_classifier_v1.6.1
 #
 # Classifies all price_cache tickers into 4 market stages using 90-day linear
@@ -234,6 +235,48 @@ def compute_all_trendlines_vectorized(prices):
     }
 
 
+def compute_trend_quality_score(stage, r_squared, crash_risk, distance_pct):
+    """Compute 0-100 Trend Quality Score from four components.
+
+    Components:
+      Stage position  30% - Stage 2 best, Stage 3 moderate, Stage 1 low, Stage 0 zero
+      R-squared       30% - Higher = cleaner trend = better signal
+      Crash risk      25% - Inverted: low crash = high score
+      Distance        15% - Penalize extremes: 0-5% above trend is ideal
+    """
+    # Stage base: 0->0, 1->25, 2->100, 3->65 (parabolic is riskier)
+    stage_map = {0: 0.0, 1: 25.0, 2: 100.0, 3: 65.0}
+    stage_score = stage_map.get(stage, 0.0)
+
+    # R-squared: 0-1 scaled to 0-100
+    r2_score = max(0.0, min(100.0, r_squared * 100.0))
+
+    # Crash risk: invert (0 crash = 100 score, 100 crash = 0 score)
+    crash_score = max(0.0, 100.0 - crash_risk)
+
+    # Distance from trend: ideal is 0-5% above, penalize extremes
+    if distance_pct is None or np.isnan(distance_pct):
+        dist_score = 50.0
+    elif 0 <= distance_pct <= 5:
+        dist_score = 100.0
+    elif 5 < distance_pct <= 20:
+        dist_score = max(0.0, 100.0 - (distance_pct - 5) * (100.0 / 15.0))
+    elif distance_pct > 20:
+        dist_score = 0.0
+    elif -5 <= distance_pct < 0:
+        dist_score = max(0.0, 60.0 + distance_pct * 12.0)
+    else:
+        dist_score = 0.0
+
+    composite = (
+        stage_score * 0.30 +
+        r2_score * 0.30 +
+        crash_score * 0.25 +
+        dist_score * 0.15
+    )
+    return round(max(0.0, min(100.0, composite)), 1)
+
+
 def process_single_asset(ticker, df):
     """Process one ticker, return summary dict or None."""
     try:
@@ -292,6 +335,10 @@ def process_single_asset(ticker, df):
             else:
                 break
 
+        # Trend Quality Score (0-100 composite)
+        tq_score = compute_trend_quality_score(
+            current_stage, current_r2, current_crash, current_distance)
+
         return {
             "ticker": ticker,
             "stage": current_stage,
@@ -303,6 +350,7 @@ def process_single_asset(ticker, df):
             "crash_risk": round(current_crash, 1),
             "price": round(current_price, 2),
             "days_in_stage": days_in_stage,
+            "tq_score": tq_score,
             "transitions_1_to_2": transitions,
         }
 
@@ -462,6 +510,27 @@ SORT_JS = """
 """
 
 
+def _own_cell(ticker):
+    """Ownership checkbox cell."""
+    return (
+        '<td><input type="checkbox" class="own-cb" data-ticker="{t}"'
+        ' onclick="window._ownToggle(\'{t}\', this)" title="Mark as owned"></td>'
+    ).format(t=ticker)
+
+
+def _score_cell(val):
+    """Trend Quality Score cell with color coding."""
+    if val is None:
+        return '<td class="num muted" data-val="0">n/a</td>'
+    if val >= 70:
+        css = "pos"
+    elif val >= 40:
+        css = "warn"
+    else:
+        css = "neg"
+    return '<td class="num {c}" data-val="{v}">{v:.0f}</td>'.format(c=css, v=val)
+
+
 def _stage_pill(stage):
     """Inline HTML pill for a stage number."""
     name = STAGE_NAMES.get(stage, "?")
@@ -550,6 +619,7 @@ def build_body_html(results, writer):
                 "r_squared": r["r_squared"],
                 "crash_risk": r["crash_risk"],
                 "price": r["price"],
+                "tq_score": r.get("tq_score"),
             })
     entry_signals.sort(key=lambda x: x["date"], reverse=True)
 
@@ -637,27 +707,27 @@ def build_body_html(results, writer):
     # 4. Entry Signals (Stage 1 -> 2)
     # -----------------------------------------------------------------
     if entry_signals:
-        headers = ["Ticker", "Transition Date", "Price", "Slope %", "Distance %",
-                   "R-squared", "Crash Risk"]
+        headers = ["Own", "Ticker", "Transition Date", "Price", "Slope %",
+                   "Distance %", "R-sq", "Crash Risk", "TQ Score"]
         rows = []
         for s in entry_signals:
+            date_sortval = s["date"].replace("-", "")
             rows.append(
                 '<tr>'
+                '{}'
                 '<td><strong>{}</strong></td>'
                 '<td data-val="{}">{}</td>'
-                '{}'
-                '{}'
-                '{}'
-                '{}'
-                '{}'
+                '{}{}{}{}{}{}'
                 '</tr>'.format(
+                    _own_cell(s["ticker"]),
                     s["ticker"],
-                    s["date"], s["date"],
+                    date_sortval, s["date"],
                     _num_cell(s["price"], fmt="${:.2f}", css="neutral"),
                     _num_cell(s["slope_pct"], fmt="{:.1f}", suffix="%"),
                     _num_cell(s["distance_pct"], fmt="{:.1f}", suffix="%"),
                     _num_cell(s["r_squared"], fmt="{:.3f}", css="neutral"),
                     _crash_cell(s["crash_risk"]),
+                    _score_cell(s.get("tq_score")),
                 )
             )
         table = _build_table(headers, rows)
@@ -679,16 +749,18 @@ def build_body_html(results, writer):
     # -----------------------------------------------------------------
     # 5. Stage 2 - Sustained Uptrends
     # -----------------------------------------------------------------
-    headers = ["Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
-               "R-squared", "Volatility %", "Crash Risk"]
+    headers = ["Own", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
+               "R-sq", "Vol %", "Crash Risk", "TQ Score"]
     rows = []
     for r in stage2:
         rows.append(
             '<tr>'
+            '{}'
             '<td><strong>{}</strong></td>'
             '<td>{}</td>'
-            '{}{}{}{}{}{}'
+            '{}{}{}{}{}{}{}'
             '</tr>'.format(
+                _own_cell(r["ticker"]),
                 r["ticker"],
                 _stage_pill(r["stage"]),
                 _num_cell(r["slope_pct"], fmt="{:.1f}", suffix="%"),
@@ -697,6 +769,7 @@ def build_body_html(results, writer):
                 _num_cell(r["r_squared"], fmt="{:.3f}", css="neutral"),
                 _num_cell(r["volatility_pct"], fmt="{:.1f}", suffix="%", css="neutral"),
                 _crash_cell(r["crash_risk"]),
+                _score_cell(r.get("tq_score")),
             )
         )
     table = _build_table(headers, rows)
@@ -711,16 +784,18 @@ def build_body_html(results, writer):
     # -----------------------------------------------------------------
     # 6. Stage 3 - Parabolic (Exit Watch)
     # -----------------------------------------------------------------
-    headers = ["Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
-               "R-squared", "Volatility %", "Crash Risk"]
+    headers = ["Own", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
+               "R-sq", "Vol %", "Crash Risk", "TQ Score"]
     rows = []
     for r in stage3:
         rows.append(
             '<tr>'
+            '{}'
             '<td><strong>{}</strong></td>'
             '<td>{}</td>'
-            '{}{}{}{}{}{}'
+            '{}{}{}{}{}{}{}'
             '</tr>'.format(
+                _own_cell(r["ticker"]),
                 r["ticker"],
                 _stage_pill(r["stage"]),
                 _num_cell(r["slope_pct"], fmt="{:.1f}", suffix="%"),
@@ -729,6 +804,7 @@ def build_body_html(results, writer):
                 _num_cell(r["r_squared"], fmt="{:.3f}", css="neutral"),
                 _num_cell(r["volatility_pct"], fmt="{:.1f}", suffix="%", css="neutral"),
                 _crash_cell(r["crash_risk"]),
+                _score_cell(r.get("tq_score")),
             )
         )
     table = _build_table(headers, rows)
@@ -745,16 +821,18 @@ def build_body_html(results, writer):
     # -----------------------------------------------------------------
     all_sorted = sorted(results, key=lambda x: (-x["stage"], -x["slope_pct"]))
 
-    headers = ["Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
-               "R-squared", "Volatility %", "Crash Risk"]
+    headers = ["Own", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
+               "R-sq", "Vol %", "Crash Risk", "TQ Score"]
     rows = []
     for r in all_sorted:
         rows.append(
             '<tr>'
+            '{}'
             '<td><strong>{}</strong></td>'
             '<td>{}</td>'
-            '{}{}{}{}{}{}'
+            '{}{}{}{}{}{}{}'
             '</tr>'.format(
+                _own_cell(r["ticker"]),
                 r["ticker"],
                 _stage_pill(r["stage"]),
                 _num_cell(r["slope_pct"], fmt="{:.1f}", suffix="%"),
@@ -763,6 +841,7 @@ def build_body_html(results, writer):
                 _num_cell(r["r_squared"], fmt="{:.3f}", css="neutral"),
                 _num_cell(r["volatility_pct"], fmt="{:.1f}", suffix="%", css="neutral"),
                 _crash_cell(r["crash_risk"]),
+                _score_cell(r.get("tq_score")),
             )
         )
     table = _build_table(headers, rows)
