@@ -47,10 +47,8 @@ import sys
 # =============================================================================
 
 # Absolute path to the separate market-dashboards git repo (for GitHub Pages)
-REPO_ROOT = os.path.join(
-    os.path.expanduser("~"),
-    "1youtubevideopull", "market-dashboards"
-)
+# Uses env var if set (for server deploy), otherwise defaults to script's own directory
+REPO_ROOT = os.environ.get('DASHBOARD_REPO_ROOT', os.path.dirname(os.path.abspath(__file__)))
 
 # Dashboard HTML goes at the repo root (GitHub Pages serves from /)
 DOCS_DIR = REPO_ROOT
@@ -713,6 +711,13 @@ DASHBOARD_DESCRIPTIONS = {
         "Includes regime-gated routing, intermarket force analysis, pattern "
         "context, and risk flags synthesized from all backends."
     ),
+    "slope-stage": (
+        "Classifies 1,300+ assets into 4 market stages using 90-day linear "
+        "regression slope: Deep Decline (<-30%), Basing (-30% to +10%), "
+        "Sustained Uptrend (+10% to +80%), and Parabolic (>+80%). Entry "
+        "signals fire on Stage 1->2 transitions. Includes crash risk, "
+        "R-squared trend quality, and distance from trendline."
+    ),
 }
 
 _LLM_DISCLAIMER = (
@@ -1086,6 +1091,16 @@ DASHBOARD_REGISTRY = [
                        "Auto-picks Method A/B/C based on drift tier with top picks and conviction scores.",
         "icon":        "🎯",
         "color":       "#059669",
+        "tag":         "Scanner",
+    },
+    {
+        "slug":        "slope-stage",
+        "title":       "Slope Stage Scanner",
+        "description": "90-day trendline stages for 1,300+ assets. Entry signals on Stage 1->2 "
+                       "transitions, exit watch for Stage 3 parabolic. Crash risk, R-squared, "
+                       "and distance from trendline.",
+        "icon":        "📐",
+        "color":       "#f97316",
         "tag":         "Scanner",
     },
     {

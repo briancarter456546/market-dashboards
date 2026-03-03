@@ -55,7 +55,10 @@ from dashboard_writer import DashboardWriter
 # CONFIG
 # ---------------------------------------------------------------------------
 
-FMP_API_KEY = 'n8AsfliF6N8cItUN2fGShwtoKDorWy3m'
+FMP_API_KEY = os.environ.get('FMP_API_KEY', '')
+if not FMP_API_KEY:
+    print('[FAIL] FMP_API_KEY not set in environment')
+    sys.exit(1)
 FMP_BASE    = 'https://financialmodelingprep.com/api'
 
 MACRO_DATA_FILE    = os.path.join(_DATA_DIR, "macro_data.json")
