@@ -718,6 +718,12 @@ DASHBOARD_DESCRIPTIONS = {
         "signals fire on Stage 1->2 transitions. Includes crash risk, "
         "R-squared trend quality, and distance from trendline."
     ),
+    "rsi2-backtest": (
+        "RSI(2) mean-reversion pullback strategy backtested across 1,384 tickers. "
+        "Entry: Close > SMA200, Close < SMA5, RSI(2) < 10. Exit: Close > SMA5. "
+        "Sortable profit factor table with regime heatmap showing where the "
+        "strategy works best. 196,113 total trades analyzed."
+    ),
 }
 
 _LLM_DISCLAIMER = (
@@ -1111,6 +1117,15 @@ DASHBOARD_REGISTRY = [
         "icon":        "🧭",
         "color":       "#1e40af",
         "tag":         "Meta",
+    },
+    {
+        "slug":        "rsi2-backtest",
+        "title":       "RSI(2) Mean-Reversion Backtest",
+        "description": "RSI(2) pullback strategy tested across 1,384 tickers. Sortable profit factor table "
+                       "with regime heatmap. Entry: Close > SMA200, Close < SMA5, RSI(2) < 10.",
+        "icon":        "📉",
+        "color":       "#e11d48",
+        "tag":         "Backtest",
     },
 ]
 
