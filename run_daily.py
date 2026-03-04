@@ -77,7 +77,7 @@ BACKENDS = [
         'required': True,
     },
     {
-        'script': 'similar_days_analyzer_v1_12.py',
+        'script': 'similar_days_analyzer_v1_13.py',
         'name': 'Similar Days Analysis',
         'slow': False,
         'required': True,
@@ -137,7 +137,7 @@ BACKENDS = [
         'required': False,
     },
     {
-        'script': 'smart_scanner_v1_1.py',
+        'script': 'smart_scanner_v1_0.py',
         'name': 'Smart Scanner',
         'location': 'root',
         'slow': True,

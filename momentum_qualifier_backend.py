@@ -216,7 +216,7 @@ def qualify_momentum(df):
         return None
 
     # Criterion 2: monthly consistency
-    monthly_returns = last_year['close'].resample('M').last().pct_change()
+    monthly_returns = last_year['close'].resample('ME').last().pct_change()
     positive_months = int((monthly_returns > 0).sum())
 
     if positive_months < MIN_POSITIVE_MONTHS:
