@@ -46,6 +46,13 @@ BACKENDS = [
         'required': True,
     },
     {
+        'script': 'fmp_pole_returns_exporter_v1_0.py',
+        'name': 'FMP Pole Returns Exporter',
+        'location': 'root',
+        'slow': False,
+        'required': True,
+    },
+    {
         'script': 'macro_backend.py',
         'name': 'Macro Dashboard',
         'slow': False,
