@@ -1259,9 +1259,49 @@ def build_body_html(output, latest_date, writer):
     sonar_result = _get_sonar_analysis(llm_prompt)
     if sonar_result and sonar_result.get('content'):
         import html as _html
-        safe_content = _html.escape(sonar_result['content'])
+        import re as _re
+
+        raw = sonar_result['content']
         citations = sonar_result.get('citations', [])
 
+        # --- Convert markdown to HTML ---
+        rendered_lines = []
+        for line in raw.split('\n'):
+            line = _html.escape(line)
+
+            # Headings: ### -> h3, ## -> h2
+            if line.startswith('### '):
+                line = f'<h3 style="margin:18px 0 8px;font-size:1.05em;color:#1e293b;">{line[4:]}</h3>'
+                rendered_lines.append(line)
+                continue
+            elif line.startswith('## '):
+                line = f'<h2 style="margin:18px 0 8px;font-size:1.1em;color:#1e293b;">{line[3:]}</h2>'
+                rendered_lines.append(line)
+                continue
+
+            # Bold: **text** -> <strong>
+            line = _re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', line)
+
+            # Citation refs: [1][3] -> superscript links
+            def _cite_link(m):
+                num = m.group(1)
+                idx = int(num) - 1
+                if 0 <= idx < len(citations):
+                    url = _html.escape(citations[idx])
+                    return f'<sup><a href="{url}" target="_blank" style="color:#4f46e5;text-decoration:none;">[{num}]</a></sup>'
+                return f'<sup>[{num}]</sup>'
+            line = _re.sub(r'\[(\d+)\]', _cite_link, line)
+
+            # Blank lines -> paragraph break
+            if line.strip() == '':
+                rendered_lines.append('<br>')
+                continue
+
+            rendered_lines.append(f'<p style="margin:4px 0;line-height:1.6;">{line}</p>')
+
+        rendered_content = '\n'.join(rendered_lines)
+
+        # Sources footer
         citation_html = ''
         if citations:
             citation_items = ''.join(
@@ -1283,8 +1323,7 @@ def build_body_html(output, latest_date, writer):
             '</div>'
             '<div style="padding:16px;">'
             f'<div style="background:#f8f9fb;border:1px solid #e2e4e8;border-radius:6px;'
-            f'padding:14px;font-size:0.82em;font-family:inherit;white-space:pre-wrap;'
-            f'line-height:1.6;max-height:800px;overflow-y:auto;">{safe_content}</div>'
+            f'padding:18px;font-size:0.85em;font-family:inherit;">{rendered_content}</div>'
             f'{citation_html}'
             '</div></div>'
         )
