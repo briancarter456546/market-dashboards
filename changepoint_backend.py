@@ -380,6 +380,25 @@ const WINDOW_HINTS = {
   '252d': '252-day z-score -- full-year positioning, slow structural picture',
 };
 
+// Compute global absMax across ALL windows so x-axis stays fixed when switching
+const _globalAbsMax = (function() {
+  let gMax = 0;
+  const sources = poleWindows || {};
+  for (const key of Object.keys(sources)) {
+    for (const d of (sources[key] || [])) {
+      const av = Math.abs(d.z);
+      if (av > gMax) gMax = av;
+    }
+  }
+  if (poleData) {
+    for (const d of poleData) {
+      const av = Math.abs(d.z);
+      if (av > gMax) gMax = av;
+    }
+  }
+  return Math.max(gMax * 1.08, 1.5);
+})();
+
 function renderPoleChart(windowKey) {
   const poles_all = (poleWindows && poleWindows[windowKey]) ? poleWindows[windowKey] : poleData;
   if (!poles_all || poles_all.length === 0) return;
@@ -401,8 +420,7 @@ function renderPoleChart(windowKey) {
     .attr('width', totalW).attr('height', H + margin.top + margin.bottom);
   const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-  const absMax = d3.max(poles, d => Math.abs(d.z));
-  const xMax = Math.max(absMax * 1.08, 1.5);
+  const xMax = _globalAbsMax;
   const xScale = d3.scaleLinear().domain([-xMax, xMax]).range([0, W]);
   const xZero = xScale(0);
 
