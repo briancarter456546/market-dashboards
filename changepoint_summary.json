@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-05T08:59:51.323290",
+  "generated_at": "2026-03-05T10:41:34.351465",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.392259707290885,
+  "norm_drift": 2.3921074158264206,
   "top_regime": "tariff_shock",
   "top_sim": 43.7,
   "regime_similarity": [
@@ -23,7 +23,7 @@
     {
       "name": "post_gfc_zirp",
       "desc": "QE recovery / low-vol grind",
-      "sim": 6.5
+      "sim": 6.4
     },
     {
       "name": "ai_bull",
