@@ -511,9 +511,9 @@ SORT_JS = """
 
 
 def _own_cell(ticker):
-    """Ownership checkbox cell."""
+    """Ownership checkbox cell with data-val for sorting (0=unowned, 1=owned)."""
     return (
-        '<td><input type="checkbox" class="own-cb" data-ticker="{t}"'
+        '<td data-val="0"><input type="checkbox" class="own-cb" data-ticker="{t}"'
         ' onclick="window._ownToggle(\'{t}\', this)" title="Mark as owned"></td>'
     ).format(t=ticker)
 

@@ -137,6 +137,12 @@ BACKENDS = [
         'required': False,
     },
     {
+        'script': 'pullback_health_backend.py',
+        'name': 'Pullback Health Monitor',
+        'slow': False,
+        'required': False,
+    },
+    {
         'script': 'smart_scanner_v1_4.py',
         'name': 'Smart Scanner',
         'location': 'root',

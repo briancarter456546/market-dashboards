@@ -604,6 +604,8 @@ document.addEventListener('DOMContentLoaded', function() {
             cb.checked = true;
             var tr = cb.closest('tr');
             if (tr) tr.classList.add('row-owned');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
         }
     });
 });
@@ -613,6 +615,9 @@ window._ownToggle = function(ticker, cb) {
     window._owned.toggle(ticker);
     var tr = cb.closest('tr');
     if (tr) tr.classList.toggle('row-owned');
+    /* Update td data-val so column sorting works (1=owned, 0=not) */
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
 };
 """
 
@@ -723,6 +728,14 @@ DASHBOARD_DESCRIPTIONS = {
         "Entry: Close > SMA200, Close < SMA5, RSI(2) < 10. Exit: Close > SMA5. "
         "Sortable profit factor table with regime heatmap showing where the "
         "strategy works best. 196,113 total trades analyzed."
+    ),
+    "pullback-health": (
+        "Monitors all tickers for pullback severity using 6 scientist-mode "
+        "validated metrics: NATR-normalized drawdown, SMA structure (4 MAs), "
+        "slope stage, volatility expansion ratio, beta-adjusted residual "
+        "drawdown vs SPY, and historical recovery from similar past drawdowns. "
+        "Composite health score 0-100 classifies pullbacks as Healthy, Caution, "
+        "Warning, or Breakdown. Filter to owned stocks for portfolio monitoring."
     ),
 }
 
@@ -1126,6 +1139,16 @@ DASHBOARD_REGISTRY = [
         "icon":        "📉",
         "color":       "#e11d48",
         "tag":         "Backtest",
+    },
+    {
+        "slug":        "pullback-health",
+        "title":       "Pullback Health Monitor",
+        "description": "6-metric pullback classifier: NATR drawdown, SMA structure, slope stage, "
+                       "vol expansion, beta-adjusted residual DD, historical recovery. "
+                       "Filter to owned stocks for portfolio health monitoring.",
+        "icon":        "🩺",
+        "color":       "#0891b2",
+        "tag":         "Risk",
     },
 ]
 
