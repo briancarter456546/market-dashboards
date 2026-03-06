@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 # ============================================================================
-# meta_dashboard_backend.py - v1.4
-# Last updated: 2026-03-03
+# meta_dashboard_backend.py - v1.5
+# Last updated: 2026-03-06
 # ============================================================================
+# v1.5: Add pullback health as 8th ticker-level source
+#   - Load pullback_health_data.json: health >= 80 (HEALTHY) counts as source
+#   - Full mode: 8 sources | Trusted mode: 5 sources (health is trusted)
+#   - Health column in both full-mode and trusted-mode tables
+#   - Tooltip on Health header
 # v1.4: Add slope stage scanner as 7th ticker-level source
 #   - Load slope_stage_data.json: Stage 2/3 or 1->2 transition counts as source
 #   - Full mode: 7 sources | Trusted mode: 4 sources
@@ -241,6 +246,10 @@ def load_all_sources():
     print('  Loading slope_stage_data.json...')
     sources['slope_stage'] = _load_json(os.path.join(_DATA_DIR, 'slope_stage_data.json'))
 
+    # --- Pullback Health ---
+    print('  Loading pullback_health_data.json...')
+    sources['pullback_health'] = _load_json(os.path.join(_DATA_DIR, 'pullback_health_data.json'))
+
     # --- Routing JSON ---
     print('  Loading secrot routing JSON...')
     sources['routing'], _ = _load_latest_json(
@@ -410,6 +419,17 @@ def build_agreement_matrix(sources, exclude=None):
                     t = item['ticker']
                     tickers.setdefault(t, {})['slope_stage'] = item
 
+    # 7. Pullback Health: health >= 80 (HEALTHY verdict) counts as source
+    health_data = sources.get('pullback_health')
+    health_lookup = {}  # ticker -> item (full universe for display)
+    if health_data and 'results' in health_data:
+        for item in health_data['results']:
+            t = item.get('ticker')
+            if t:
+                health_lookup[t] = item
+                if item.get('health', 0) >= 80:
+                    tickers.setdefault(t, {})['pullback_health'] = item
+
     # Filter to 2+ sources
     multi = {}
     for t, src_dict in tickers.items():
@@ -449,6 +469,9 @@ def build_agreement_matrix(sources, exclude=None):
         # Check spread support
         spread_support = _check_spread_support(sector, pole, spread_signals)
 
+        # Health data (show for all tickers in matrix, not just source-qualifying)
+        h_data = src_dict.get('pullback_health') or health_lookup.get(ticker)
+
         row = {
             'ticker': ticker,
             'pole': pole or '--',
@@ -465,6 +488,8 @@ def build_agreement_matrix(sources, exclude=None):
             'stock_sr_score': sr_data.get('total_score') if sr_data else None,
             'slope_stage': src_dict['slope_stage'].get('stage') if 'slope_stage' in src_dict else None,
             'slope_tq_score': src_dict['slope_stage'].get('tq_score') if 'slope_stage' in src_dict else None,
+            'health_score': h_data.get('health') if h_data else None,
+            'health_verdict': h_data.get('verdict') if h_data else None,
             'spread_support': spread_support,
             'source_count': len(src_dict),
             'sources': list(src_dict.keys()),
@@ -843,14 +868,14 @@ def _build_routing_banner(regime):
 def _build_agreement_table(rows, mode='full'):
     """Build the agreement matrix table.
 
-    *mode* = 'full' -> 7 ticker-level columns (Ranker S/T, Ranker L/T, Advanced, Qualifier, SecRot, Stock SR, Slope Stage)
-    *mode* = 'trusted' -> 4 ticker-level columns (Ranker S/T, Ranker L/T, SecRot, Stock SR)
+    *mode* = 'full' -> 8 ticker-level columns (Ranker S/T, Ranker L/T, Advanced, Qualifier, SecRot, Stock SR, Slope Stage, Health)
+    *mode* = 'trusted' -> 5 ticker-level columns (Ranker S/T, Ranker L/T, SecRot, Stock SR, Health)
     """
     if not rows:
         return '<p>No tickers appear in 2+ sources.</p>'
 
     trusted = (mode == 'trusted')
-    n_sources = 4 if trusted else 7
+    n_sources = 5 if trusted else 8
 
     if trusted:
         header = (
@@ -863,6 +888,7 @@ def _build_agreement_table(rows, mode='full'):
             '<th title="Long-term momentum rank (1m-10y returns). Green if top 50">Ranker L/T</th>'
             '<th title="Sector rotation momentum score from ETF-level analysis">SecRot</th>'
             '<th title="Stock-level sector rotation score (out of 9 patterns)">Stock SR</th>'
+            '<th title="Pullback health score 0-100 (NATR drawdown + SMA structure + slope + vol + residual DD + historical recovery). Green if HEALTHY (>=80)">Health</th>'
             '<th title="Intermarket spread support: bullish/bearish/mixed/none">Spread</th>'
             '<th title="Number of independent sources confirming this ticker">Sources</th>'
             '</tr></thead><tbody>'
@@ -881,6 +907,7 @@ def _build_agreement_table(rows, mode='full'):
             '<th title="Sector rotation momentum score from ETF-level analysis">SecRot</th>'
             '<th title="Stock-level sector rotation score (out of 9 patterns)">Stock SR</th>'
             '<th title="Slope Stage: 90-day trendline stage (2=Uptrend, 3=Parabolic) + TQ score">Slope</th>'
+            '<th title="Pullback health score 0-100 (NATR drawdown + SMA structure + slope + vol + residual DD + historical recovery). Green if HEALTHY (>=80)">Health</th>'
             '<th title="Intermarket spread support: bullish/bearish/mixed/none">Spread</th>'
             '<th title="Number of independent sources confirming this ticker">Sources</th>'
             '</tr></thead><tbody>'
@@ -931,6 +958,25 @@ def _build_agreement_table(rows, mode='full'):
             rl_css = 'agree-none'
             rl_val = '--'
 
+        # Health cell (both modes)
+        hs = r.get('health_score')
+        hv = r.get('health_verdict', '')
+        if hs is not None:
+            if hs >= 80:
+                health_css = 'agree-bull'
+            elif hs >= 50:
+                health_css = 'agree-present'
+            else:
+                health_css = 'agree-warn'
+            health_val = '{:.0f}'.format(hs)
+            if hv:
+                health_val += ' ({})'.format(hv[:4])
+            health_sort = hs
+        else:
+            health_css = 'agree-none'
+            health_val = '--'
+            health_sort = 0
+
         if trusted:
             body_rows.append(
                 '<tr>'
@@ -942,6 +988,7 @@ def _build_agreement_table(rows, mode='full'):
                 '<td class="{rl_css}" data-sort="{rl_sort}">{rl_val}</td>'
                 '<td class="{secrot_css}" data-sort="{secrot_sort}">{secrot_val}</td>'
                 '<td class="{ssr_css}" data-sort="{ssr_sort}">{ssr_val}</td>'
+                '<td class="{health_css}" data-sort="{health_sort}">{health_val}</td>'
                 '<td class="{sp_css}">{sp_icon}</td>'
                 '<td><span class="count-badge {count_css}">{count}/{n_src}</span></td>'
                 '</tr>'.format(
@@ -959,6 +1006,9 @@ def _build_agreement_table(rows, mode='full'):
                     ssr_css=ssr_css,
                     ssr_sort=r['stock_sr_score'] if r['stock_sr_score'] else 0,
                     ssr_val=ssr_val,
+                    health_css=health_css,
+                    health_sort=health_sort,
+                    health_val=health_val,
                     sp_css=sp_css,
                     sp_icon=sp_icon,
                     count=count,
@@ -1025,6 +1075,7 @@ def _build_agreement_table(rows, mode='full'):
                 '<td class="{secrot_css}" data-sort="{secrot_sort}">{secrot_val}</td>'
                 '<td class="{ssr_css}" data-sort="{ssr_sort}">{ssr_val}</td>'
                 '<td class="{slope_css}" data-sort="{slope_sort}">{slope_val}</td>'
+                '<td class="{health_css}" data-sort="{health_sort}">{health_val}</td>'
                 '<td class="{sp_css}">{sp_icon}</td>'
                 '<td><span class="count-badge {count_css}">{count}/{n_src}</span></td>'
                 '</tr>'.format(
@@ -1049,6 +1100,9 @@ def _build_agreement_table(rows, mode='full'):
                     slope_css=slope_css,
                     slope_sort=slope_sort,
                     slope_val=slope_val,
+                    health_css=health_css,
+                    health_sort=health_sort,
+                    health_val=health_val,
                     sp_css=sp_css,
                     sp_icon=sp_icon,
                     count=count,

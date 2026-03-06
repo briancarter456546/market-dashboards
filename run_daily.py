@@ -143,7 +143,7 @@ BACKENDS = [
         'required': False,
     },
     {
-        'script': 'smart_scanner_v1_4.py',
+        'script': 'smart_scanner_v1_5.py',
         'name': 'Smart Scanner',
         'location': 'root',
         'slow': True,
