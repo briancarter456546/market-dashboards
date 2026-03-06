@@ -427,7 +427,7 @@ def build_agreement_matrix(sources, exclude=None):
             t = item.get('ticker')
             if t:
                 health_lookup[t] = item
-                if item.get('health', 0) >= 80:
+                if (item.get('health') or 0) >= 80:
                     tickers.setdefault(t, {})['pullback_health'] = item
 
     # Filter to 2+ sources
