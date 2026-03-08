@@ -12,7 +12,7 @@ Usage:
     python run_daily.py -v        # Short form for --verbose
 
 Schedule with Windows Task Scheduler:
-    Program:   C:/Users/lynda/1youtubevideopull/perplexity-user-data/cucumber_digital/venv/Scripts/python.exe
+    Program:   C:/Users/lynda/anaconda3/python.exe
     Arguments: run_daily.py
     Start in:  C:/Users/lynda/1youtubevideopull/market-dashboards
     Trigger:   Daily at 4:30 PM, weekdays only
@@ -143,7 +143,7 @@ BACKENDS = [
         'required': False,
     },
     {
-        'script': 'smart_scanner_v1_5.py',
+        'script': 'smart_scanner_v1_6.py',
         'name': 'Smart Scanner',
         'location': 'root',
         'slow': True,
@@ -158,6 +158,18 @@ BACKENDS = [
     {
         'script': 'meta_dashboard_backend.py',
         'name': 'Meta Dashboard',
+        'slow': False,
+        'required': False,
+    },
+    {
+        'script': 'bear_hunter_backend.py',
+        'name': 'Bear Hunter',
+        'slow': False,
+        'required': False,
+    },
+    {
+        'script': 'market_reality_backend.py',
+        'name': 'Market Reality Check',
         'slow': False,
         'required': False,
     },

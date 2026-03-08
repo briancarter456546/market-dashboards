@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Reality Check - 2026-03-08</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a2e;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* --- Top stat bar (dark anchor) --- */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    background: #1e1e2e;
+    border-bottom: 3px solid #2d2d4a;
+}
+
+.stat-bar .stat {
+    padding: 20px 26px;
+    border-right: 1px solid #2d2d4a;
+}
+.stat-bar .stat:last-child { border-right: none; }
+
+.stat .stat-label {
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #8888aa;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+}
+
+.stat .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.1em;
+    font-weight: 600;
+    color: #f0f0f0;
+    line-height: 1.1;
+}
+
+.stat .stat-value.pos     { color: #22c55e; }
+.stat .stat-value.neg     { color: #ef4444; }
+.stat .stat-value.warn    { color: #f59e0b; }
+.stat .stat-value.neutral { color: #f0f0f0; }
+
+/* --- Page header --- */
+.page-header {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.page-header .meta {
+    font-size: 0.88em;
+    color: #888;
+}
+
+.page-header .meta a { color: #4f46e5; text-decoration: none; }
+
+/* --- Nav bar --- */
+.page-nav {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 0 30px;
+    display: flex;
+}
+
+.page-nav a {
+    display: inline-block;
+    padding: 13px 20px;
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+.page-nav a:hover  { color: #1a1a2e; }
+.page-nav a.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+/* --- Content area --- */
+.content { padding: 26px 30px; }
+
+/* --- Regime banner --- */
+.regime-banner {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-left: 6px solid #22c55e;
+    border-radius: 8px;
+    padding: 18px 26px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.regime-label {
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.regime-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    color: #888;
+    border-left: 1px solid #e2e4e8;
+    padding-left: 28px;
+    line-height: 1.8;
+}
+
+/* --- Stat/force cards --- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    padding: 18px 22px;
+    border-top: 5px solid #ccc;
+}
+
+.card .label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.9em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.card .sub {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #888;
+}
+
+/* --- Table section wrapper --- */
+.table-section {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.table-section-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid #e2e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.table-section-header h2 {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* --- Tables --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95em;
+}
+
+thead th {
+    background: #f8f9fb;
+    color: #555;
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e2e4e8;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+thead th:hover { background: #f0f2f5; color: #1a1a2e; }
+thead th.sorted-asc  { color: #16a34a; }
+thead th.sorted-desc { color: #dc2626; }
+
+tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbfd; }
+
+/* Numbers and tickers use mono font */
+.num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92em;
+}
+
+.ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #1a1a2e;
+}
+
+/* Color classes */
+.pos   { color: #16a34a; font-weight: 600; }
+.neg   { color: #dc2626; font-weight: 600; }
+.warn  { color: #d97706; font-weight: 600; }
+.muted { color: #aaa; }
+.accent { color: #4f46e5; }
+
+/* Score badges - pill shaped */
+.badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-align: center;
+    min-width: 52px;
+}
+
+.badge-2  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-1  { background: #f0fdf4; color: #16a34a; border: 1px solid #d1fae5; }
+.badge-n1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge-n2 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+/* Qualifier pills */
+.qualifier {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.q-confirmed { background: #dcfce7; color: #15803d; }
+.q-fading    { background: #fff7ed; color: #c2410c; }
+.q-diverging { background: #eff6ff; color: #1d4ed8; }
+.q-holding   { background: #f1f5f9; color: #64748b; }
+
+/* Trend pills */
+.trend-above {
+    background: #dcfce7; color: #15803d;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+.trend-below {
+    background: #fee2e2; color: #b91c1c;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+
+/* --- Playbook text blocks --- */
+.pb-header {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e4e8;
+}
+.pb-header:first-child { margin-top: 0; }
+
+.pb-body {
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.7;
+    margin: 4px 0;
+}
+
+.pb-item {
+    font-size: 0.9em;
+    color: #4f46e5;
+    margin: 5px 0 5px 16px;
+    border-left: 3px solid #c7d2fe;
+    padding-left: 12px;
+    line-height: 1.65;
+}
+
+/* --- Footer --- */
+.dash-footer {
+    padding: 22px 30px;
+    font-size: 0.82em;
+    color: #aaa;
+    border-top: 1px solid #e2e4e8;
+    text-align: center;
+    background: #fff;
+    margin-top: 8px;
+}
+.dash-footer-links {
+    margin-top: 8px;
+}
+.dash-footer-links a {
+    color: #6b7280;
+    text-decoration: none;
+}
+.dash-footer-links a:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    body { font-size: 15px; }
+    .stat-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-bar .stat { padding: 14px 16px; }
+    .stat .stat-value { font-size: 1.5em; }
+    .stat .stat-label { font-size: 0.72em; }
+    .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 6px; }
+    .page-header h1 { font-size: 1.2em; }
+    .page-nav { padding: 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .page-nav a { padding: 10px 14px; font-size: 0.82em; white-space: nowrap; }
+    .content { padding: 16px 12px; }
+    .regime-banner { flex-direction: column; padding: 14px 16px; gap: 12px; }
+    .regime-label { font-size: 1.2em; }
+    .regime-score { border-left: none; padding-left: 0; border-top: 1px solid #e2e4e8; padding-top: 10px; }
+    .cards { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 14px 16px; }
+    .card .value { font-size: 1.5em; }
+    .table-section { border-radius: 0; margin-left: -12px; margin-right: -12px; }
+    .table-section-header { padding: 12px 16px; }
+    table { font-size: 0.85em; }
+    thead th { padding: 8px 10px; font-size: 0.75em; }
+    tbody td { padding: 8px 10px; }
+    .badge { padding: 3px 10px; font-size: 0.82em; min-width: 44px; }
+    .qualifier { padding: 3px 9px; font-size: 0.75em; }
+    .pb-item { margin-left: 8px; padding-left: 10px; }
+    .dash-footer { padding: 16px 12px; font-size: 0.78em; }
+}
+
+/* --- LLM description block (collapsible, matches table-section) --- */
+.llm-block {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    margin-bottom: 22px;
+    overflow: hidden;
+}
+.llm-block summary {
+    padding: 16px 22px;
+    background: #fafafa;
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+}
+.llm-block summary::-webkit-details-marker { display: none; }
+.llm-block summary::after {
+    content: '\25B8';
+    font-size: 0.8em;
+    color: #888;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.llm-block[open] summary::after {
+    transform: rotate(90deg);
+}
+.llm-block[open] summary {
+    border-bottom: 1px solid #e2e4e8;
+}
+.llm-block summary:hover {
+    background: #f0f2f5;
+}
+.llm-block-body {
+    padding: 18px 22px 16px;
+}
+.llm-section-label {
+    font-size: 0.82em;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+}
+.llm-static {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+.llm-dynamic {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 14px 18px;
+    background: #f8f9fb;
+    border-left: 4px solid #4f46e5;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 18px;
+}
+.llm-dynamic .llm-section-label {
+    color: #4f46e5;
+}
+.llm-disclaimer {
+    font-size: 0.78em;
+    color: #999;
+    font-style: italic;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 10px;
+}
+
+
+/* --- Shared ownership checkbox (all dashboards) --- */
+.own-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #f59e0b; }
+.row-owned { background: #fff7ed !important; }
+.row-owned:hover { background: #ffedd5 !important; }
+th.own-th { width: 30px; text-align: center; cursor: default; }
+
+
+.anthro-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #fff;
+    margin: 1px 2px;
+}
+.verdict-item {
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-left: 3px solid #2563eb;
+    background: #f0f7ff;
+    font-size: 0.9em;
+}
+.article-row td { vertical-align: top; }
+.article-row:hover { background: #f8f9fa !important; }
+a.article-link {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+}
+a.article-link:hover { text-decoration: underline; }
+.category-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+}
+.cat-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.82em;
+    font-weight: 600;
+    color: #fff;
+}
+.reality-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 12px 0;
+}
+.reality-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px 16px;
+    border-left: 3px solid #64748b;
+}
+.reality-card .label {
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+}
+.reality-card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.3em;
+    font-weight: 600;
+    color: #1e293b;
+}
+.filler-warning {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.82em;
+    color: #92400e;
+    margin-top: 12px;
+}
+
+</style>
+</head><body>
+<div class="page-header">
+  <h1>Market Reality Check</h1>
+  <div class="meta">
+    Anthropomorphism vs Quantitative Truth &nbsp;|&nbsp;
+    <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
+  </div>
+</div>
+<div class="page-nav">
+  <a href="#spreads" class="active">Dashboard</a>
+  <a href="archive/dashboard_20260308.html">Archive: 2026-03-08</a>
+  <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
+</div>
+<div class="content">
+<div class="stat-bar"><div class="stat"><div class="stat-label">VIX</div><div class="stat-value neg">29.49</div></div><div class="stat"><div class="stat-label">VIX/VIX3M</div><div class="stat-value neg">1.07</div></div><div class="stat"><div class="stat-label">Sector Disp %</div><div class="stat-value neutral">0.931</div></div><div class="stat"><div class="stat-label">Avg Correlation</div><div class="stat-value pos">0.332</div></div><div class="stat"><div class="stat-label">Anthro Rate</div><div class="stat-value neutral">1/87</div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Quantitative Reality</h2><span style="font-size:0.85em;color:#888;">What the data actually shows -- no emotion, no metaphors</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div class="reality-grid">
+        <div class="reality-card">
+            <div class="label">VIX</div>
+            <div class="value">29.49</div>
+            <div style='font-size:0.75em;color:#64748b;margin-top:2px;'>ACUTE STRESS (VIX 30%+ above 20d avg)</div>
+        </div>
+        <div class="reality-card">
+            <div class="label">VIX 5d Change</div>
+            <div class="value">37.5%</div>
+            
+        </div>
+        <div class="reality-card">
+            <div class="label">VIX3M</div>
+            <div class="value">27.56</div>
+            <div style='font-size:0.75em;color:#64748b;margin-top:2px;'>BACKWARDATION -- acute panic (near-term fear exceeds longer-term)</div>
+        </div>
+        <div class="reality-card">
+            <div class="label">SKEW</div>
+            <div class="value">146.23</div>
+            <div style='font-size:0.75em;color:#64748b;margin-top:2px;'>Tail risk pricing</div>
+        </div>
+        <div class="reality-card">
+            <div class="label">SPY 20d Vol (ann.)</div>
+            <div class="value">13.5%</div>
+            
+        </div>
+        <div class="reality-card">
+            <div class="label">Sector Dispersion</div>
+            <div class="value">0.931%</div>
+            
+        </div>
+        <div class="reality-card">
+            <div class="label">Avg Sector Corr</div>
+            <div class="value">0.332</div>
+            <div style='font-size:0.75em;color:#64748b;margin-top:2px;'>ROTATION -- capital moving between sectors, not leaving</div>
+        </div>
+        <div class="reality-card">
+            <div class="label">Best Sector (20d)</div>
+            <div class="value">XLU (+8.1%)</div>
+            
+        </div>
+        <div class="reality-card">
+            <div class="label">Worst Sector (20d)</div>
+            <div class="value">XLF (-6.5%)</div>
+            
+        </div></div><h3 style="margin-top:16px;color:#1e40af;">Reality Verdict</h3><div class="verdict-item">VIX at 29.49: Hedging demand above average but not extreme. Moderate risk-pricing.</div><div class="verdict-item">VIX term structure: BACKWARDATION -- acute panic (near-term fear exceeds longer-term)</div><div class="verdict-item">Sector dispersion 0.931%, avg correlation 0.332: ROTATION -- capital moving between sectors, not leaving</div><div class="verdict-item">Rotation evidence: strongest XLU (+8.1%), weakest XLF (-6.5%)</div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Commentary Anthropomorphism Scanner</h2><span style="font-size:0.85em;color:#888;">Click headlines to read the original article</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p style='font-size:0.9em;color:#475569;'>Scanned <strong>87</strong> articles | <strong>1</strong> contain anthropomorphisms | <strong>1</strong> total emotional phrases | <strong>1%</strong> anthropomorphism rate</p><div class="category-bar"><span class="cat-chip" style="background:#e74c3c">fear: 1</span></div><div style="margin:8px 0;font-size:0.85em;color:#64748b;">Top phrases: <strong>nervous</strong> (1)</div>
+    <div class="table-wrap">
+    <table>
+    <thead>
+        <tr>
+            <th style="text-align:left;">Source</th>
+            <th style="text-align:left;">Headline</th>
+            <th style="text-align:left;">Emotional Language</th>
+            <th style="text-align:left;">Actually Measure</th>
+        </tr>
+    </thead>
+    <tbody>
+    
+        <tr class="article-row">
+            <td style="white-space:nowrap;font-size:0.82em;">CNBC</td>
+            <td><a class="article-link" href="https://www.cnbc.com/2026/03/06/e-shaped-economy-replacing-k-shape-2026.html" target="_blank" rel="noopener noreferrer">'E-shaped' economy is replacing a K-shaped one in 2026, economist says: The middle class is 'spending in a nervous way' now</a></td>
+            <td><span class="anthro-tag" style="background:#e74c3c">nervous</span> </td>
+            <td style="font-size:0.82em;color:#475569;">VIX, put/call</td>
+        </tr></tbody></table></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Methodology</h2><span style="font-size:0.85em;color:#888;">Morris et al., Columbia/UCLA, 2007</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;">
+    <p style="font-size:0.85em;color:#475569;line-height:1.6;">
+    Based on <strong>Morris et al. (2007)</strong>: agent metaphors ("the market climbed")
+    cause investors to expect trend continuance, while object metaphors ("the market was pushed")
+    do not. This dashboard scans live commentary for 50+ anthropomorphic phrases, classifies them
+    by category (fear, panic, exhaustion, euphoria, etc.), and cross-references with quantitative
+    metrics that would verify or refute each claim.
+    <br><br>
+    <strong>Key distinction:</strong> "skittish" implies irrational fear that should revert.
+    "Rotating" implies orderly capital reallocation that may persist. These carry opposite trading
+    implications, yet commentators use them interchangeably. Check the data, not the metaphor.
+    </p>
+    </div></div>
+<details class="llm-block">
+<summary>About This Dashboard</summary>
+<div class="llm-block-body">
+<div class="llm-section-label">What It Does</div>
+<div class="llm-static">Scans live financial commentary RSS feeds for anthropomorphic language (e.g. 'skittish', 'panicking', 'exhausted') and cross-references with quantitative market data: VIX level and term structure, sector dispersion, average sector correlation, and SKEW. Classifies whether commentary describes rotation, panic, or something else entirely. Based on Morris et al. (2007): agent metaphors cause investors to expect trend continuance.</div>
+<div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div>
+</div></details>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-03-08 &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+<script>
+
+/* --- Shared ownership state (localStorage, cross-dashboard) --- */
+window._owned = (function() {
+    var KEY = 'dashboard_owned_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+
+    /* Migration: copy old momentum-ranker-only key if it exists */
+    var OLD_KEY = 'mr_owned_tickers_v1';
+    try {
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+            var oldArr = JSON.parse(old);
+            if (oldArr && oldArr.length) {
+                oldArr.forEach(function(t) { _set.add(t); });
+                localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            }
+            localStorage.removeItem(OLD_KEY);
+        }
+    } catch(e) {}
+
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.own-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._owned.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-owned');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared toggle helper for Python-rendered tables */
+window._ownToggle = function(ticker, cb) {
+    window._owned.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-owned');
+    /* Update td data-val so column sorting works (1=owned, 0=not) */
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+
+function getGradientColor(score) {
+    var clamped = Math.max(0, Math.min(1, score));
+    var r, g, b;
+    if (clamped < 0.25) {
+        var t = clamped * 4;
+        r = Math.round(211 + (255 - 211) * t);
+        g = Math.round(47 + (152 - 47) * t);
+        b = Math.round(47 + (0 - 47) * t);
+    } else if (clamped < 0.5) {
+        var t = (clamped - 0.25) * 4;
+        r = 255;
+        g = Math.round(152 + (235 - 152) * t);
+        b = Math.round(0 + (59 - 0) * t);
+    } else if (clamped < 0.75) {
+        var t = (clamped - 0.5) * 4;
+        r = Math.round(255 + (139 - 255) * t);
+        g = Math.round(235 + (195 - 235) * t);
+        b = Math.round(59 + (74 - 59) * t);
+    } else {
+        var t = (clamped - 0.75) * 4;
+        r = Math.round(139 + (0 - 139) * t);
+        g = Math.round(195 + (200 - 195) * t);
+        b = Math.round(74 + (83 - 74) * t);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+</script>
+</body></html>

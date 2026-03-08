@@ -743,6 +743,22 @@ DASHBOARD_DESCRIPTIONS = {
         "Shows active positions, today's signals, and running trade performance. "
         "Watchlist starts narrow (SPY) and expands as patterns are validated."
     ),
+    "bear-hunter": (
+        "Volatility-harvesting mean-reversion system for SPY. "
+        "Buys deeply oversold conditions (StochK4 < 18.93) when VIX is elevated (19.5-58) "
+        "and price is below its 200-day average. Exits on overbought (StochK7 > 92.61) or "
+        "multi-indicator deterioration. Scimode-validated: PF 2.28 across 33 years, "
+        "100% threshold robustness, OVERBOUGHT exits have 100% win rate across 4 decades. "
+        "Uses real CBOE VIX data, not a proxy."
+    ),
+    "market-reality": (
+        "Scans live financial commentary RSS feeds for anthropomorphic language "
+        "(e.g. 'skittish', 'panicking', 'exhausted') and cross-references with "
+        "quantitative market data: VIX level and term structure, sector dispersion, "
+        "average sector correlation, and SKEW. Classifies whether commentary "
+        "describes rotation, panic, or something else entirely. Based on Morris "
+        "et al. (2007): agent metaphors cause investors to expect trend continuance."
+    ),
 }
 
 _LLM_DISCLAIMER = (
@@ -1164,6 +1180,25 @@ DASHBOARD_REGISTRY = [
         "icon":        "🎯",
         "color":       "#7c3aed",
         "tag":         "Scanner",
+    },
+    {
+        "slug":        "bear-hunter",
+        "title":       "Bear Hunter - Volatility Harvester",
+        "description": "SPY mean-reversion signals during elevated VIX. Current signal state, "
+                       "indicator distances to thresholds, trade history, and yearly performance.",
+        "icon":        "\U0001f43b",
+        "color":       "#b91c1c",
+        "tag":         "Scanner",
+    },
+    {
+        "slug":        "market-reality",
+        "title":       "Market Reality Check",
+        "description": "Scans commentary for anthropomorphic language and cross-references with "
+                       "VIX term structure, sector dispersion, and correlation data. "
+                       "Is the market 'skittish' or just rotating?",
+        "icon":        "🔮",
+        "color":       "#dc2626",
+        "tag":         "Sentiment",
     },
 ]
 
