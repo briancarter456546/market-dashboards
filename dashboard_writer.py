@@ -760,6 +760,14 @@ DASHBOARD_DESCRIPTIONS = {
         "(price makes new low but OBV doesn't). Composite 0-6 score. "
         "PENDING VALIDATION: methods and thresholds not yet scimode-tested."
     ),
+    "pole-rotation": (
+        "Visualizes the ~20 ETF poles (out of 43 total) that passed reliability testing "
+        "via RSI(2) mean-reversion backtest with Profit Factor >= 1.5. Each pole is a "
+        "Factor-Mimicking Portfolio (equal-weighted top 5 ETF constituents). Heatmap cards "
+        "show 1W/1M/3M returns color-coded by momentum. Performance table includes 6M and "
+        "YTD returns plus backtest trust scores (PF, win rate) and SPY beta. Poles excluded "
+        "from regression (US Large Cap Core, US Dollar, Cash, Dow, S&P Variants) are removed."
+    ),
 }
 
 _LLM_DISCLAIMER = (
@@ -1201,6 +1209,16 @@ DASHBOARD_REGISTRY = [
         "icon":        "💰",
         "color":       "#0d9488",
         "tag":         "Flow",
+    },
+    {
+        "slug":        "pole-rotation",
+        "title":       "Proven Pole Rotation",
+        "description": "21 ETF poles that passed RSI(2) reliability testing (PF >= 1.5). "
+                       "Heatmap cards with 1W/1M/3M returns, sortable performance table, "
+                       "and backtest trust scores for each factor-mimicking portfolio.",
+        "icon":        "🧲",
+        "color":       "#7c3aed",
+        "tag":         "Taxonomy",
     },
 ]
 
