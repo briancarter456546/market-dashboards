@@ -1,7 +1,10 @@
 # ============================================================================
-# market_reality_backend.py - v1.0
+# market_reality_backend.py - v1.1
 # Last updated: 2026-03-08
 # ============================================================================
+# v1.1: Context filtering (market-as-person, not people-as-emotional),
+#       date column, more feeds, raised max_per_feed, synonyms,
+#       actual measured values in table
 # v1.0: Initial build - RSS scan, anthro detection, quant reality from cache
 # ============================================================================
 """
@@ -63,16 +66,28 @@ ANTHRO_LEXICON = {
     "spooked":      {"category": "fear",        "implies": "startled reaction",         "measure": ["VIX", "put/call"]},
     "anxious":      {"category": "fear",        "implies": "generalized worry",         "measure": ["VIX", "SKEW"]},
     "rattled":      {"category": "fear",        "implies": "shaken confidence",         "measure": ["VIX", "breadth"]},
+    "on edge":      {"category": "fear",        "implies": "ready to bolt",             "measure": ["VIX", "put/call"]},
+    "uneasy":       {"category": "fear",        "implies": "discomfort, doubt",         "measure": ["VIX", "SKEW"]},
+    "trembling":    {"category": "fear",        "implies": "shaking with fear",         "measure": ["VIX", "put/call"]},
+    "twitchy":      {"category": "fear",        "implies": "jumpy, reactive",           "measure": ["VIX", "put/call"]},
+    "apprehensive": {"category": "fear",        "implies": "dread of what's next",      "measure": ["VIX", "SKEW"]},
+    "wary":         {"category": "fear",        "implies": "guarded, watchful",         "measure": ["VIX", "put/call"]},
 
     # PANIC
     "panicking":    {"category": "panic",       "implies": "irrational liquidation",    "measure": ["VIX term structure", "correlation", "breadth"]},
     "panic":        {"category": "panic",       "implies": "mass irrational fear",      "measure": ["VIX term structure", "correlation"]},
     "capitulation": {"category": "panic",       "implies": "giving up / surrender",     "measure": ["VIX term structure", "breadth", "volume"]},
+    "capitulating": {"category": "panic",       "implies": "surrendering positions",    "measure": ["VIX term structure", "breadth", "volume"]},
     "meltdown":     {"category": "panic",       "implies": "system collapse",           "measure": ["VIX term structure", "correlation"]},
     "bloodbath":    {"category": "panic",       "implies": "violent destruction",        "measure": ["VIX", "breadth"]},
     "carnage":      {"category": "panic",       "implies": "mass destruction",          "measure": ["VIX", "breadth", "correlation"]},
     "freefall":     {"category": "panic",       "implies": "uncontrolled descent",      "measure": ["VIX term structure", "breadth"]},
     "free fall":    {"category": "panic",       "implies": "uncontrolled descent",      "measure": ["VIX term structure", "breadth"]},
+    "cratering":    {"category": "panic",       "implies": "collapsing violently",      "measure": ["VIX term structure", "breadth"]},
+    "imploding":    {"category": "panic",       "implies": "collapsing inward",         "measure": ["VIX term structure", "correlation"]},
+    "tanking":      {"category": "panic",       "implies": "rapid uncontrolled fall",   "measure": ["VIX", "breadth"]},
+    "plunging":     {"category": "panic",       "implies": "diving headfirst",          "measure": ["VIX", "breadth"]},
+    "crashing":     {"category": "panic",       "implies": "violent impact",            "measure": ["VIX term structure", "correlation"]},
 
     # EXHAUSTION
     "tired":        {"category": "exhaustion",  "implies": "fatigue, needs rest",       "measure": ["ADX", "OBV", "breadth"]},
@@ -80,6 +95,11 @@ ANTHRO_LEXICON = {
     "fatigued":     {"category": "exhaustion",  "implies": "weakening momentum",        "measure": ["ADX", "OBV"]},
     "running out of steam": {"category": "exhaustion", "implies": "decelerating",       "measure": ["ADX", "RSI"]},
     "losing steam": {"category": "exhaustion",  "implies": "momentum fading",           "measure": ["ADX", "RSI", "OBV"]},
+    "out of gas":   {"category": "exhaustion",  "implies": "no fuel left",              "measure": ["ADX", "RSI", "OBV"]},
+    "winded":       {"category": "exhaustion",  "implies": "needs to catch breath",     "measure": ["ADX", "RSI"]},
+    "spent":        {"category": "exhaustion",  "implies": "used up all energy",        "measure": ["ADX", "volume"]},
+    "running on fumes": {"category": "exhaustion", "implies": "nearly depleted",        "measure": ["ADX", "RSI", "OBV"]},
+    "petering out": {"category": "exhaustion",  "implies": "gradually dying",           "measure": ["ADX", "RSI"]},
 
     # CONSOLIDATION
     "digesting":    {"category": "consolidation", "implies": "thoughtful processing",   "measure": ["ATR", "Bollinger width"]},
@@ -87,6 +107,9 @@ ANTHRO_LEXICON = {
     "mulling":      {"category": "consolidation", "implies": "deliberating",            "measure": ["ATR", "volume"]},
     "processing":   {"category": "consolidation", "implies": "cognitive work",          "measure": ["ATR", "Bollinger width"]},
     "pausing":      {"category": "consolidation", "implies": "temporary halt",          "measure": ["ATR", "volume"]},
+    "catching its breath": {"category": "consolidation", "implies": "resting before next move", "measure": ["ATR", "volume"]},
+    "taking a breather": {"category": "consolidation", "implies": "brief rest",         "measure": ["ATR", "volume"]},
+    "treading water": {"category": "consolidation", "implies": "staying afloat, no progress", "measure": ["ATR", "Bollinger width"]},
 
     # CONFUSION
     "confused":     {"category": "confusion",   "implies": "market doesn't know",       "measure": ["dispersion", "correlation"]},
@@ -94,6 +117,10 @@ ANTHRO_LEXICON = {
     "mixed signals": {"category": "confusion",  "implies": "contradictory data",        "measure": ["dispersion", "breadth"]},
     "indecisive":   {"category": "confusion",   "implies": "can't make up its mind",    "measure": ["ATR", "dispersion"]},
     "directionless": {"category": "confusion",  "implies": "no trend",                  "measure": ["ADX", "dispersion"]},
+    "lost":         {"category": "confusion",   "implies": "doesn't know where to go",  "measure": ["ADX", "dispersion"]},
+    "torn":         {"category": "confusion",   "implies": "pulled both ways",          "measure": ["dispersion", "correlation"]},
+    "searching for direction": {"category": "confusion", "implies": "aimless movement", "measure": ["ADX", "dispersion"]},
+    "at a crossroads": {"category": "confusion", "implies": "decision point",           "measure": ["ATR", "VIX"]},
 
     # EUPHORIA
     "euphoric":     {"category": "euphoria",    "implies": "irrational exuberance",     "measure": ["VIX (low)", "bullish %"]},
@@ -102,6 +129,9 @@ ANTHRO_LEXICON = {
     "ecstatic":     {"category": "euphoria",    "implies": "extreme joy",               "measure": ["VIX (low)", "bullish %"]},
     "frothy":       {"category": "euphoria",    "implies": "bubbly, overvalued",        "measure": ["VIX (low)", "breadth (high)"]},
     "bubbly":       {"category": "euphoria",    "implies": "unsustainable optimism",    "measure": ["VIX (low)", "bullish %"]},
+    "ebullient":    {"category": "euphoria",    "implies": "enthusiastically optimistic", "measure": ["VIX (low)", "bullish %"]},
+    "intoxicated":  {"category": "euphoria",    "implies": "drunk on gains",            "measure": ["VIX (low)", "bullish %"]},
+    "soaring":      {"category": "euphoria",    "implies": "flying high, unstoppable",  "measure": ["VIX (low)", "RSI"]},
 
     # AGGRESSION
     "fighting":     {"category": "aggression",  "implies": "willful struggle",          "measure": ["volume at price", "order flow"]},
@@ -109,6 +139,10 @@ ANTHRO_LEXICON = {
     "struggling":   {"category": "aggression",  "implies": "difficulty advancing",      "measure": ["volume at price", "breadth"]},
     "wrestling":    {"category": "aggression",  "implies": "contested ground",          "measure": ["volume at price", "order flow"]},
     "clawing back": {"category": "aggression",  "implies": "desperate recovery",        "measure": ["breadth", "volume"]},
+    "defending":    {"category": "aggression",  "implies": "holding a line",            "measure": ["volume at price", "breadth"]},
+    "under attack": {"category": "aggression",  "implies": "being assaulted",           "measure": ["VIX", "breadth"]},
+    "under siege":  {"category": "aggression",  "implies": "sustained assault",         "measure": ["VIX", "breadth"]},
+    "punished":     {"category": "aggression",  "implies": "suffering consequences",    "measure": ["VIX", "breadth"]},
 
     # HEALTH / SICKNESS
     "healthy":      {"category": "health",      "implies": "good condition",            "measure": ["breadth", "ADX", "volume"]},
@@ -116,6 +150,11 @@ ANTHRO_LEXICON = {
     "recovering":   {"category": "health",      "implies": "healing from illness",      "measure": ["breadth", "RSI"]},
     "ailing":       {"category": "health",      "implies": "persistently ill",          "measure": ["breadth", "ADX"]},
     "wounded":      {"category": "health",      "implies": "injured but alive",         "measure": ["breadth", "volume"]},
+    "limping":      {"category": "health",      "implies": "moving but impaired",       "measure": ["breadth", "ADX"]},
+    "bruised":      {"category": "health",      "implies": "hurt but not broken",       "measure": ["breadth", "RSI"]},
+    "bleeding":     {"category": "health",      "implies": "losing life force",         "measure": ["breadth", "volume"]},
+    "contagion":    {"category": "health",      "implies": "spreading sickness",        "measure": ["correlation", "breadth"]},
+    "infected":     {"category": "health",      "implies": "disease spreading",         "measure": ["correlation", "breadth"]},
 
     # FILLER (common but unfalsifiable)
     "profit-taking": {"category": "filler",     "implies": "intentional selling",       "measure": ["UNFALSIFIABLE"]},
@@ -124,7 +163,76 @@ ANTHRO_LEXICON = {
     "sidelined":    {"category": "filler",      "implies": "waiting to act",            "measure": ["volume", "money flow"]},
     "cautious":     {"category": "filler",      "implies": "careful behavior",          "measure": ["VIX", "put/call"]},
     "resilient":    {"category": "filler",      "implies": "strong despite adversity",  "measure": ["breadth", "RSI"]},
+    "shrugging off": {"category": "filler",     "implies": "ignoring bad news",         "measure": ["UNFALSIFIABLE"]},
+    "betting on":   {"category": "filler",      "implies": "wagering / gambling",       "measure": ["UNFALSIFIABLE"]},
+    "bracing for":  {"category": "filler",      "implies": "preparing for impact",      "measure": ["VIX", "put/call"]},
 }
+
+# ============================================================================
+# MARKET SUBJECT CONTEXT FILTER
+# ============================================================================
+# The anthro word must be near a market subject, not describing people/consumers.
+# This prevents false positives like "middle class is spending in a nervous way"
+
+MARKET_SUBJECTS = [
+    "market", "markets", "wall street", "stocks", "stock market",
+    "s&p", "s&p 500", "dow", "nasdaq", "russell",
+    "equities", "indices", "index", "rally", "selloff", "sell-off",
+    "trading", "session", "futures",
+    "bull", "bear", "correction", "rebound", "recovery",
+    "sector", "sectors", "tech", "financials",
+    "treasury", "treasuries", "bond", "bonds",
+    "crude", "oil", "gold", "commodities",
+    "bitcoin", "crypto",
+    "investors", "traders", "fund", "hedge fund",
+    "shares", "etf", "portfolio",
+    "federal reserve", "fed ", "central bank",
+    "earnings", "revenue", "gdp",
+]
+
+# People/non-market subjects -- only reject when these appear WITHOUT any market subject
+NON_MARKET_SUBJECTS = [
+    "middle class", "households", "families", "voters",
+    "police", "capitol", "congress", "election",
+    "patients", "students", "children",
+    "he said", "she said",
+]
+
+
+def is_market_anthropomorphism(text, phrase):
+    """Check if the anthro phrase is describing the market/financial context, not unrelated topics."""
+    text_lower = text.lower()
+    pos = text_lower.find(phrase.lower())
+    if pos == -1:
+        return False
+
+    # Some phrases are almost always about markets in financial news context
+    ALWAYS_MARKET = {
+        "bloodbath", "carnage", "freefall", "free fall", "capitulation",
+        "capitulating", "meltdown", "frothy", "bubbly", "profit-taking",
+        "profit taking", "bargain hunting", "sidelined", "cratering",
+        "imploding", "tanking", "contagion", "soaring", "plunging",
+        "crashing", "clawing back",
+    }
+    if phrase.lower() in ALWAYS_MARKET:
+        return True
+
+    # Look at a window around the phrase (100 chars each side)
+    window_start = max(0, pos - 100)
+    window_end = min(len(text_lower), pos + len(phrase) + 100)
+    window = text_lower[window_start:window_end]
+
+    # Check for market subjects nearby
+    has_market = any(subj in window for subj in MARKET_SUBJECTS)
+    # Check for clearly non-market context
+    has_non_market = any(subj in window for subj in NON_MARKET_SUBJECTS)
+
+    # If clearly non-market context with no market subjects -> reject
+    if has_non_market and not has_market:
+        return False
+
+    # Default: require at least one market subject nearby
+    return has_market
 
 CATEGORY_COLORS = {
     "fear":           "#e74c3c",
@@ -146,8 +254,12 @@ RSS_FEEDS = {
     "Yahoo Finance":    "https://finance.yahoo.com/news/rssindex",
     "MarketWatch":      "https://feeds.marketwatch.com/marketwatch/marketpulse/",
     "CNBC":             "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114",
+    "CNBC Top News":    "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100727362",
     "Google News (Markets)": "https://news.google.com/rss/search?q=stock+market+today&hl=en-US&gl=US&ceid=US:en",
+    "Google News (Wall St)": "https://news.google.com/rss/search?q=wall+street+stocks&hl=en-US&gl=US&ceid=US:en",
     "Seeking Alpha":    "https://seekingalpha.com/market_currents.xml",
+    "Reuters Business": "https://news.google.com/rss/search?q=site:reuters.com+stock+market&hl=en-US&gl=US&ceid=US:en",
+    "Bloomberg via Google": "https://news.google.com/rss/search?q=site:bloomberg.com+markets&hl=en-US&gl=US&ceid=US:en",
 }
 
 
@@ -180,20 +292,46 @@ def load_ticker(ticker):
 # NEWS INGESTION
 # ============================================================================
 
-def fetch_headlines(max_per_feed=20):
+def parse_pub_date(date_str):
+    """Parse various RSS date formats into a datetime string."""
+    if not date_str:
+        return ""
+    from email.utils import parsedate_to_datetime
+    try:
+        dt = parsedate_to_datetime(date_str)
+        return dt.strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        pass
+    # Try ISO format
+    for fmt in ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"]:
+        try:
+            dt = datetime.strptime(date_str[:19], fmt[:len(date_str)])
+            return dt.strftime("%Y-%m-%d %H:%M")
+        except Exception:
+            pass
+    return date_str[:16]
+
+
+def fetch_headlines(max_per_feed=50):
     """Fetch headlines + summaries from RSS feeds."""
     articles = []
+    seen_titles = set()
     for source, url in RSS_FEEDS.items():
         try:
             feed = feedparser.parse(url)
             for entry in feed.entries[:max_per_feed]:
-                text = entry.get("title", "") + " " + entry.get("summary", "")
+                title = entry.get("title", "")
+                if title in seen_titles:
+                    continue
+                seen_titles.add(title)
+                text = title + " " + entry.get("summary", "")
+                pub_date = parse_pub_date(entry.get("published", ""))
                 articles.append({
                     "source": source,
-                    "title": entry.get("title", ""),
+                    "title": title,
                     "link": entry.get("link", ""),
                     "text": text,
-                    "published": entry.get("published", ""),
+                    "published": pub_date,
                 })
         except Exception as e:
             print(f"  [!] Error fetching {source}: {e}")
@@ -205,17 +343,18 @@ def fetch_headlines(max_per_feed=20):
 # ============================================================================
 
 def detect_anthropomorphisms(text):
-    """Scan text for anthropomorphic market language."""
+    """Scan text for anthropomorphic market language with context filtering."""
     text_lower = text.lower()
     matches = []
     for phrase, meta in ANTHRO_LEXICON.items():
+        found = False
         if " " in phrase:
-            if phrase in text_lower:
-                matches.append({"phrase": phrase, **meta})
+            found = phrase in text_lower
         else:
             pattern = r"\b" + re.escape(phrase) + r"\b"
-            if re.search(pattern, text_lower):
-                matches.append({"phrase": phrase, **meta})
+            found = bool(re.search(pattern, text_lower))
+        if found and is_market_anthropomorphism(text, phrase):
+            matches.append({"phrase": phrase, **meta})
     return matches
 
 
@@ -497,8 +636,110 @@ def build_reality_section(writer, reality, verdicts):
                           hint="What the data actually shows -- no emotion, no metaphors")
 
 
-def build_commentary_section(writer, articles):
-    """Build the commentary scan table with clickable links."""
+def format_measured_value(measure_name, reality):
+    """Turn a measure name into the actual current value from reality data."""
+    mapping = {
+        "VIX": ("vix", "VIX={v}"),
+        "VIX (low)": ("vix", "VIX={v}"),
+        "put/call": None,
+        "put/call (low)": None,
+        "SKEW": ("skew", "SKEW={v}"),
+        "VIX term structure": ("vix_term_ratio", "VIX/VIX3M={v}"),
+        "correlation": ("avg_sector_corr", "SectorCorr={v}"),
+        "breadth": None,
+        "breadth (high)": None,
+        "volume": None,
+        "volume at price": None,
+        "order flow": None,
+        "money flow": None,
+        "dispersion": ("sector_dispersion", "Disp={v}%"),
+        "ADX": None,
+        "RSI": None,
+        "OBV": None,
+        "ATR": None,
+        "Bollinger width": None,
+        "bullish %": None,
+    }
+    info = mapping.get(measure_name)
+    if info is None:
+        return measure_name
+    key, fmt = info
+    val = reality.get(key)
+    if val is None:
+        return measure_name
+    return fmt.format(v=val)
+
+
+def generate_article_verdict(article, reality):
+    """Generate a data-driven verdict for a single flagged article."""
+    phrases = [d["phrase"] for d in article["anthro_details"]]
+    categories = set(d["category"] for d in article["anthro_details"])
+    measures_needed = set()
+    for d in article["anthro_details"]:
+        for m in d["measure"]:
+            if m != "UNFALSIFIABLE":
+                measures_needed.add(m)
+
+    verdicts = []
+
+    # VIX-related verdicts
+    vix = reality.get("vix")
+    if vix is not None and measures_needed & {"VIX", "VIX (low)", "put/call", "put/call (low)"}:
+        if "fear" in categories or "panic" in categories:
+            if vix > 30:
+                verdicts.append(f"VIX {vix} confirms elevated stress")
+            elif vix > 20:
+                verdicts.append(f"VIX {vix} shows moderate hedging, not panic")
+            else:
+                verdicts.append(f"VIX {vix} is LOW -- no fear in options market")
+        if "euphoria" in categories:
+            if vix < 15:
+                verdicts.append(f"VIX {vix} confirms complacency zone")
+            else:
+                verdicts.append(f"VIX {vix} too high for euphoria -- hedging active")
+
+    # Term structure verdicts
+    term_ratio = reality.get("vix_term_ratio")
+    if term_ratio is not None and "VIX term structure" in measures_needed:
+        if term_ratio > 1.0:
+            verdicts.append(f"VIX/VIX3M {term_ratio} backwardated -- acute stress confirmed")
+        else:
+            verdicts.append(f"VIX/VIX3M {term_ratio} contango -- orderly, NOT panic")
+
+    # Correlation/dispersion verdicts
+    corr = reality.get("avg_sector_corr")
+    disp = reality.get("sector_dispersion")
+    if corr is not None and measures_needed & {"correlation", "dispersion"}:
+        if corr > 0.7:
+            verdicts.append(f"Sector corr {corr} -- broad selling together")
+        elif corr < 0.4 and disp and disp > 0.5:
+            verdicts.append(f"Corr {corr}, disp {disp}% -- rotation, not panic")
+        else:
+            verdicts.append(f"Sector corr {corr} -- mixed, not extreme")
+
+    # SKEW
+    skew = reality.get("skew")
+    if skew is not None and "SKEW" in measures_needed:
+        if skew > 150:
+            verdicts.append(f"SKEW {skew} elevated -- tail hedging active")
+        else:
+            verdicts.append(f"SKEW {skew} -- normal tail risk pricing")
+
+    # Unfalsifiable
+    has_unfalsifiable = any(
+        "UNFALSIFIABLE" in d["measure"] for d in article["anthro_details"]
+    )
+    if has_unfalsifiable:
+        verdicts.append("Contains unfalsifiable claims -- no data can verify or refute")
+
+    if not verdicts:
+        verdicts.append("No cached data available for these metrics")
+
+    return " | ".join(verdicts)
+
+
+def build_commentary_section(writer, articles, reality):
+    """Build the commentary scan table with actual values and verdicts."""
     flagged = [a for a in articles if a["anthro_count"] > 0]
     flagged.sort(key=lambda x: x["anthro_count"], reverse=True)
 
@@ -524,26 +765,16 @@ def build_commentary_section(writer, articles):
     phrase_html += ', '.join(f'<strong>{p}</strong> ({c})' for p, c in phrase_counts)
     phrase_html += '</div>'
 
-    # Table
-    table_html = '''
-    <div class="table-wrap">
-    <table>
-    <thead>
-        <tr>
-            <th style="text-align:left;">Source</th>
-            <th style="text-align:left;">Headline</th>
-            <th style="text-align:left;">Emotional Language</th>
-            <th style="text-align:left;">Actually Measure</th>
-        </tr>
-    </thead>
-    <tbody>
-    '''
-
+    # Build article cards (not a table -- each article gets a card with verdict)
+    cards_html = ''
     for a in flagged[:30]:
+        # Date
+        pub_date = a.get("published", "")
+        date_display = pub_date[:10] if len(pub_date) >= 10 else pub_date
+
         # Build clickable headline
         link = a.get("link", "")
         title = a.get("title", "(no title)")
-        # Escape HTML in title
         title_safe = title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
         if link:
             headline_html = f'<a class="article-link" href="{link}" target="_blank" rel="noopener noreferrer">{title_safe}</a>'
@@ -552,33 +783,36 @@ def build_commentary_section(writer, articles):
 
         # Build phrase tags
         phrase_tags = ""
-        measures = set()
+        measure_values = []
         for det in a["anthro_details"]:
             color = CATEGORY_COLORS.get(det["category"], "#95a5a6")
             phrase_tags += f'<span class="anthro-tag" style="background:{color}">{det["phrase"]}</span> '
             for m in det["measure"]:
-                if m != "UNFALSIFIABLE":
-                    measures.add(m)
+                if m == "UNFALSIFIABLE":
+                    continue
+                val_str = format_measured_value(m, reality)
+                if val_str not in measure_values:
+                    measure_values.append(val_str)
 
-        # Unfalsifiable warning
-        unfals = any(
-            "UNFALSIFIABLE" in det["measure"]
-            for det in a["anthro_details"]
-        )
-        if unfals:
+        has_unfals = any("UNFALSIFIABLE" in det["measure"] for det in a["anthro_details"])
+        if has_unfals:
             phrase_tags += '<span class="anthro-tag" style="background:#dc2626">UNFALSIFIABLE</span> '
 
-        measures_str = ", ".join(sorted(measures)) if measures else "N/A"
+        measures_str = ", ".join(measure_values) if measure_values else "N/A"
 
-        table_html += f'''
-        <tr class="article-row">
-            <td style="white-space:nowrap;font-size:0.82em;">{a["source"]}</td>
-            <td>{headline_html}</td>
-            <td>{phrase_tags}</td>
-            <td style="font-size:0.82em;color:#475569;">{measures_str}</td>
-        </tr>'''
+        # Generate per-article verdict
+        verdict = generate_article_verdict(a, reality)
 
-    table_html += '</tbody></table></div>'
+        cards_html += f'''
+        <div style="background:#f8f9fa;border-radius:8px;padding:12px 16px;margin:8px 0;border-left:3px solid {CATEGORY_COLORS.get(a["anthro_categories"][0], "#95a5a6") if a["anthro_categories"] else "#95a5a6"};">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+                <div>{headline_html}</div>
+                <div style="font-size:0.75em;color:#94a3b8;white-space:nowrap;margin-left:12px;">{a["source"]} | {date_display}</div>
+            </div>
+            <div style="margin-bottom:6px;">{phrase_tags}</div>
+            <div style="font-size:0.82em;color:#475569;margin-bottom:4px;"><strong>Measured:</strong> {measures_str}</div>
+            <div style="font-size:0.82em;color:#1e40af;background:#eff6ff;padding:6px 10px;border-radius:4px;"><strong>Verdict:</strong> {verdict}</div>
+        </div>'''
 
     # Filler warning
     filler_count = sum(
@@ -606,7 +840,7 @@ def build_commentary_section(writer, articles):
         f"<strong>{flagged_count * 100 // max(total, 1)}%</strong> anthropomorphism rate</p>"
     )
 
-    content = summary + cat_html + phrase_html + table_html + filler_html
+    content = summary + cat_html + phrase_html + cards_html + filler_html
     return writer.section("Commentary Anthropomorphism Scanner", content,
                           hint="Click headlines to read the original article")
 
@@ -617,9 +851,10 @@ def build_methodology_section(writer):
     <p style="font-size:0.85em;color:#475569;line-height:1.6;">
     Based on <strong>Morris et al. (2007)</strong>: agent metaphors ("the market climbed")
     cause investors to expect trend continuance, while object metaphors ("the market was pushed")
-    do not. This dashboard scans live commentary for 50+ anthropomorphic phrases, classifies them
-    by category (fear, panic, exhaustion, euphoria, etc.), and cross-references with quantitative
-    metrics that would verify or refute each claim.
+    do not. This dashboard scans live commentary for 80+ anthropomorphic phrases, classifies them
+    by category (fear, panic, exhaustion, euphoria, etc.), cross-references with quantitative
+    metrics from price_cache, and generates per-article verdicts comparing claims to reality.
+    Context filtering ensures only market-as-person language is flagged (not "nervous consumers").
     <br><br>
     <strong>Key distinction:</strong> "skittish" implies irrational fear that should revert.
     "Rotating" implies orderly capital reallocation that may persist. These carry opposite trading
@@ -636,13 +871,13 @@ def build_methodology_section(writer):
 
 def main():
     print("=" * 60)
-    print("  Market Reality Check Backend v1.0")
+    print("  Market Reality Check Backend v1.1")
     print("=" * 60)
     t0 = time.time()
 
     # 1. Fetch RSS
     print("\n[FETCH] Scanning RSS feeds...")
-    articles = fetch_headlines(max_per_feed=20)
+    articles = fetch_headlines(max_per_feed=50)
     print(f"  Got {len(articles)} articles from {len(RSS_FEEDS)} feeds")
 
     if not articles:
@@ -677,7 +912,7 @@ def main():
     parts.append(writer.build_header("Anthropomorphism vs Quantitative Truth"))
     parts.append(build_stat_bar(writer, reality, articles, len(flagged)))
     parts.append(build_reality_section(writer, reality, verdicts))
-    parts.append(build_commentary_section(writer, articles))
+    parts.append(build_commentary_section(writer, articles, reality))
     parts.append(build_methodology_section(writer))
     parts.append(writer.llm_block())
     parts.append(writer.footer())
