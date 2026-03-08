@@ -737,6 +737,12 @@ DASHBOARD_DESCRIPTIONS = {
         "Composite health score 0-100 classifies pullbacks as Healthy, Caution, "
         "Warning, or Breakdown. Filter to owned stocks for portfolio monitoring."
     ),
+    "rsi2-scanner": (
+        "Daily scanner for RSI(2) mean-reversion pullback signals. "
+        "Entry: close > SMA200, close < SMA5, RSI(2) < 10. Exit: close > SMA5. "
+        "Shows active positions, today's signals, and running trade performance. "
+        "Watchlist starts narrow (SPY) and expands as patterns are validated."
+    ),
 }
 
 _LLM_DISCLAIMER = (
@@ -1149,6 +1155,15 @@ DASHBOARD_REGISTRY = [
         "icon":        "🩺",
         "color":       "#0891b2",
         "tag":         "Risk",
+    },
+    {
+        "slug":        "rsi2-scanner",
+        "title":       "RSI(2) Mean-Reversion Scanner",
+        "description": "Live RSI(2) pullback signals, open positions, and trade history for the "
+                       "mean-reversion strategy. Watchlist starts narrow and expands with confidence.",
+        "icon":        "🎯",
+        "color":       "#7c3aed",
+        "tag":         "Scanner",
     },
 ]
 

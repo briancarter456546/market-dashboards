@@ -150,6 +150,12 @@ BACKENDS = [
         'required': False,
     },
     {
+        'script': 'rsi2_dashboard_backend.py',
+        'name': 'RSI2 Scanner Dashboard',
+        'slow': False,
+        'required': False,
+    },
+    {
         'script': 'meta_dashboard_backend.py',
         'name': 'Meta Dashboard',
         'slow': False,
