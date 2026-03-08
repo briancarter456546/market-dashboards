@@ -743,14 +743,6 @@ DASHBOARD_DESCRIPTIONS = {
         "Shows active positions, today's signals, and running trade performance. "
         "Watchlist starts narrow (SPY) and expands as patterns are validated."
     ),
-    "bear-hunter": (
-        "Volatility-harvesting mean-reversion system for SPY. "
-        "Buys deeply oversold conditions (StochK4 < 18.93) when VIX is elevated (19.5-58) "
-        "and price is below its 200-day average. Exits on overbought (StochK7 > 92.61) or "
-        "multi-indicator deterioration. Scimode-validated: PF 2.28 across 33 years, "
-        "100% threshold robustness, OVERBOUGHT exits have 100% win rate across 4 decades. "
-        "Uses real CBOE VIX data, not a proxy."
-    ),
     "market-reality": (
         "Scans live financial commentary RSS feeds for anthropomorphic language "
         "(e.g. 'skittish', 'panicking', 'exhausted') and cross-references with "
@@ -758,6 +750,15 @@ DASHBOARD_DESCRIPTIONS = {
         "average sector correlation, and SKEW. Classifies whether commentary "
         "describes rotation, panic, or something else entirely. Based on Morris "
         "et al. (2007): agent metaphors cause investors to expect trend continuance."
+    ),
+    "smart-money": (
+        "Volume-based institutional flow detection using six indicators: "
+        "OBV trend (above 20-day MA), MFI oversold (<40), CMF oscillator "
+        "(short EMA vs long EMA of Chaikin Money Flow), relative volume "
+        "(>1.3x 20-day avg), NVI/PVI institutional signal (Fosback's theory "
+        "that institutions trade on low-volume days), and OBV divergence "
+        "(price makes new low but OBV doesn't). Composite 0-6 score. "
+        "PENDING VALIDATION: methods and thresholds not yet scimode-tested."
     ),
 }
 
@@ -1182,15 +1183,6 @@ DASHBOARD_REGISTRY = [
         "tag":         "Scanner",
     },
     {
-        "slug":        "bear-hunter",
-        "title":       "Bear Hunter - Volatility Harvester",
-        "description": "SPY mean-reversion signals during elevated VIX. Current signal state, "
-                       "indicator distances to thresholds, trade history, and yearly performance.",
-        "icon":        "\U0001f43b",
-        "color":       "#b91c1c",
-        "tag":         "Scanner",
-    },
-    {
         "slug":        "market-reality",
         "title":       "Market Reality Check",
         "description": "Scans commentary for anthropomorphic language and cross-references with "
@@ -1199,6 +1191,16 @@ DASHBOARD_REGISTRY = [
         "icon":        "🔮",
         "color":       "#dc2626",
         "tag":         "Sentiment",
+    },
+    {
+        "slug":        "smart-money",
+        "title":       "Smart Money Flow",
+        "description": "Volume-based institutional flow indicators: OBV trend, MFI oversold, "
+                       "CMF oscillator, relative volume, NVI/PVI institutional signal, and OBV divergence. "
+                       "Composite 0-6 score with BUY/SELL/HOLD for ~1,400 tickers.",
+        "icon":        "💰",
+        "color":       "#0d9488",
+        "tag":         "Flow",
     },
 ]
 
