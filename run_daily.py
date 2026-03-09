@@ -171,6 +171,12 @@ BACKENDS = [
     # scimode validation (CMF/OBV/MFI = coin flip vs real 13F data).
     # Archived to perplexity-user-data/archive/. Replaced by institutional_flows_backend.py.
     {
+        'script': 'institutional_flows_backend.py',
+        'name': 'Institutional Flows',
+        'slow': False,
+        'required': False,
+    },
+    {
         'script': 'pole_rotation_backend.py',
         'name': 'Proven Pole Rotation',
         'slow': False,

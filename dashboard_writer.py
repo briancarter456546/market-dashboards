@@ -752,6 +752,15 @@ DASHBOARD_DESCRIPTIONS = {
         "et al. (2007): agent metaphors cause investors to expect trend continuance."
     ),
     # "smart-money" REMOVED 2026-03-09: failed scimode validation against real 13F data
+    "institutional-flows": (
+        "Real institutional positioning from regulatory filings. "
+        "13F quarterly institutional holder conviction (adding vs reducing). "
+        "CFTC Commitment of Traders leveraged money and asset manager positioning "
+        "in key futures (S&P, Nasdaq, crude, gold, bonds, VIX). "
+        "FINRA Reg SHO daily short volume ratios. "
+        "SEC Form 4 insider purchases (open-market buys only, not grants/exercises). "
+        "Replaces smart-money dashboard which failed validation against this real data."
+    ),
     "pole-rotation": (
         "Visualizes the ~20 ETF poles (out of 43 total) that passed reliability testing "
         "via RSI(2) mean-reversion backtest with Profit Factor >= 1.5. Each pole is a "
@@ -1198,6 +1207,16 @@ DASHBOARD_REGISTRY = [
         "tag":         "Sentiment",
     },
     # smart-money tile REMOVED 2026-03-09: failed validation
+    {
+        "slug":        "institutional-flows",
+        "title":       "Institutional Flows",
+        "description": "Real institutional positioning: 13F holder conviction, "
+                       "CFTC COT leveraged money, FINRA short volume ratios, "
+                       "and SEC Form 4 insider purchases.",
+        "icon":        "🏛️",
+        "color":       "#0d9488",
+        "tag":         "Flow",
+    },
     {
         "slug":        "pole-rotation",
         "title":       "Proven Pole Rotation",

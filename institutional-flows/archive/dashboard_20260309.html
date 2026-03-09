@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Institutional Flows - 2026-03-09</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a2e;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* --- Top stat bar (dark anchor) --- */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    background: #1e1e2e;
+    border-bottom: 3px solid #2d2d4a;
+}
+
+.stat-bar .stat {
+    padding: 20px 26px;
+    border-right: 1px solid #2d2d4a;
+}
+.stat-bar .stat:last-child { border-right: none; }
+
+.stat .stat-label {
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #8888aa;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+}
+
+.stat .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.1em;
+    font-weight: 600;
+    color: #f0f0f0;
+    line-height: 1.1;
+}
+
+.stat .stat-value.pos     { color: #22c55e; }
+.stat .stat-value.neg     { color: #ef4444; }
+.stat .stat-value.warn    { color: #f59e0b; }
+.stat .stat-value.neutral { color: #f0f0f0; }
+
+/* --- Page header --- */
+.page-header {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.page-header .meta {
+    font-size: 0.88em;
+    color: #888;
+}
+
+.page-header .meta a { color: #4f46e5; text-decoration: none; }
+
+/* --- Nav bar --- */
+.page-nav {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 0 30px;
+    display: flex;
+}
+
+.page-nav a {
+    display: inline-block;
+    padding: 13px 20px;
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+.page-nav a:hover  { color: #1a1a2e; }
+.page-nav a.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+/* --- Content area --- */
+.content { padding: 26px 30px; }
+
+/* --- Regime banner --- */
+.regime-banner {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-left: 6px solid #22c55e;
+    border-radius: 8px;
+    padding: 18px 26px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.regime-label {
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.regime-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    color: #888;
+    border-left: 1px solid #e2e4e8;
+    padding-left: 28px;
+    line-height: 1.8;
+}
+
+/* --- Stat/force cards --- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    padding: 18px 22px;
+    border-top: 5px solid #ccc;
+}
+
+.card .label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.9em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.card .sub {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #888;
+}
+
+/* --- Table section wrapper --- */
+.table-section {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.table-section-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid #e2e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.table-section-header h2 {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* --- Tables --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95em;
+}
+
+thead th {
+    background: #f8f9fb;
+    color: #555;
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e2e4e8;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+thead th:hover { background: #f0f2f5; color: #1a1a2e; }
+thead th.sorted-asc  { color: #16a34a; }
+thead th.sorted-desc { color: #dc2626; }
+
+tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbfd; }
+
+/* Numbers and tickers use mono font */
+.num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92em;
+}
+
+.ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #1a1a2e;
+}
+
+/* Color classes */
+.pos   { color: #16a34a; font-weight: 600; }
+.neg   { color: #dc2626; font-weight: 600; }
+.warn  { color: #d97706; font-weight: 600; }
+.muted { color: #aaa; }
+.accent { color: #4f46e5; }
+
+/* Score badges - pill shaped */
+.badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-align: center;
+    min-width: 52px;
+}
+
+.badge-2  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-1  { background: #f0fdf4; color: #16a34a; border: 1px solid #d1fae5; }
+.badge-n1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge-n2 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+/* Qualifier pills */
+.qualifier {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.q-confirmed { background: #dcfce7; color: #15803d; }
+.q-fading    { background: #fff7ed; color: #c2410c; }
+.q-diverging { background: #eff6ff; color: #1d4ed8; }
+.q-holding   { background: #f1f5f9; color: #64748b; }
+
+/* Trend pills */
+.trend-above {
+    background: #dcfce7; color: #15803d;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+.trend-below {
+    background: #fee2e2; color: #b91c1c;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+
+/* --- Playbook text blocks --- */
+.pb-header {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e4e8;
+}
+.pb-header:first-child { margin-top: 0; }
+
+.pb-body {
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.7;
+    margin: 4px 0;
+}
+
+.pb-item {
+    font-size: 0.9em;
+    color: #4f46e5;
+    margin: 5px 0 5px 16px;
+    border-left: 3px solid #c7d2fe;
+    padding-left: 12px;
+    line-height: 1.65;
+}
+
+/* --- Footer --- */
+.dash-footer {
+    padding: 22px 30px;
+    font-size: 0.82em;
+    color: #aaa;
+    border-top: 1px solid #e2e4e8;
+    text-align: center;
+    background: #fff;
+    margin-top: 8px;
+}
+.dash-footer-links {
+    margin-top: 8px;
+}
+.dash-footer-links a {
+    color: #6b7280;
+    text-decoration: none;
+}
+.dash-footer-links a:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    body { font-size: 15px; }
+    .stat-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-bar .stat { padding: 14px 16px; }
+    .stat .stat-value { font-size: 1.5em; }
+    .stat .stat-label { font-size: 0.72em; }
+    .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 6px; }
+    .page-header h1 { font-size: 1.2em; }
+    .page-nav { padding: 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .page-nav a { padding: 10px 14px; font-size: 0.82em; white-space: nowrap; }
+    .content { padding: 16px 12px; }
+    .regime-banner { flex-direction: column; padding: 14px 16px; gap: 12px; }
+    .regime-label { font-size: 1.2em; }
+    .regime-score { border-left: none; padding-left: 0; border-top: 1px solid #e2e4e8; padding-top: 10px; }
+    .cards { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 14px 16px; }
+    .card .value { font-size: 1.5em; }
+    .table-section { border-radius: 0; margin-left: -12px; margin-right: -12px; }
+    .table-section-header { padding: 12px 16px; }
+    table { font-size: 0.85em; }
+    thead th { padding: 8px 10px; font-size: 0.75em; }
+    tbody td { padding: 8px 10px; }
+    .badge { padding: 3px 10px; font-size: 0.82em; min-width: 44px; }
+    .qualifier { padding: 3px 9px; font-size: 0.75em; }
+    .pb-item { margin-left: 8px; padding-left: 10px; }
+    .dash-footer { padding: 16px 12px; font-size: 0.78em; }
+}
+
+/* --- LLM description block (collapsible, matches table-section) --- */
+.llm-block {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    margin-bottom: 22px;
+    overflow: hidden;
+}
+.llm-block summary {
+    padding: 16px 22px;
+    background: #fafafa;
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+}
+.llm-block summary::-webkit-details-marker { display: none; }
+.llm-block summary::after {
+    content: '\25B8';
+    font-size: 0.8em;
+    color: #888;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.llm-block[open] summary::after {
+    transform: rotate(90deg);
+}
+.llm-block[open] summary {
+    border-bottom: 1px solid #e2e4e8;
+}
+.llm-block summary:hover {
+    background: #f0f2f5;
+}
+.llm-block-body {
+    padding: 18px 22px 16px;
+}
+.llm-section-label {
+    font-size: 0.82em;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+}
+.llm-static {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+.llm-dynamic {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 14px 18px;
+    background: #f8f9fb;
+    border-left: 4px solid #4f46e5;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 18px;
+}
+.llm-dynamic .llm-section-label {
+    color: #4f46e5;
+}
+.llm-disclaimer {
+    font-size: 0.78em;
+    color: #999;
+    font-style: italic;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 10px;
+}
+
+
+/* --- Shared ownership checkbox (all dashboards) --- */
+.own-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #f59e0b; }
+.row-owned { background: #fff7ed !important; }
+.row-owned:hover { background: #ffedd5 !important; }
+th.own-th { width: 30px; text-align: center; cursor: default; }
+
+
+.stat-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.stat-card {
+    flex: 1; min-width: 180px; padding: 16px;
+    background: #1e293b; border-radius: 8px; border: 1px solid #334155;
+}
+.stat-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; }
+.stat-value { font-size: 28px; font-weight: bold; color: #f1f5f9; margin: 4px 0; }
+.stat-sub { font-size: 12px; color: #64748b; }
+.data-table { width: 100%; border-collapse: collapse; margin: 12px 0 24px 0; font-size: 13px; }
+.data-table th {
+    text-align: left; padding: 8px 12px; border-bottom: 2px solid #334155;
+    color: #94a3b8; font-size: 11px; text-transform: uppercase;
+}
+.data-table td { padding: 6px 12px; border-bottom: 1px solid #1e293b; }
+.data-table tr:hover { background: #1e293b; }
+h3 { color: #f1f5f9; margin-top: 32px; margin-bottom: 8px; }
+p { color: #94a3b8; font-size: 13px; margin-bottom: 8px; }
+
+</style>
+</head><body>
+<div class="stat-row"><div class="stat-card"><div class="stat-label">13F Top Conviction</div><div class="stat-value">NFLX</div><div class="stat-sub">1349 tickers, 47.6% avg adding</div></div>
+<div class="stat-card"><div class="stat-label">COT Extremes</div><div class="stat-value">1</div><div class="stat-sub">9 contracts tracked</div></div>
+<div class="stat-card"><div class="stat-label">High Short (2026-03-06)</div><div class="stat-value">560</div><div class="stat-sub">1120 tickers, 49.8% avg ratio</div></div>
+<div class="stat-card"><div class="stat-label">Insider Purchases</div><div class="stat-value">1241</div><div class="stat-sub">215 tickers, $2.2B total</div></div></div><h3>13F Institutional Conviction (Top 30)</h3><p>Quarterly 13F filings: how many institutional holders added vs reduced positions.</p><table class="data-table"><thead><tr><th>Ticker</th><th>Net Conv.</th><th>Adding</th><th>Reducing</th><th>Total Holders</th><th>% Adding</th><th>Total Shares</th></tr></thead><tbody><tr><td><b>NFLX</b></td><td style="color:#16a34a">+2917</td><td>3644</td><td>727</td><td>4481</td><td>81.3%</td><td>3.4B</td></tr>
+<tr><td><b>XLK</b></td><td style="color:#16a34a">+2048</td><td>2486</td><td>438</td><td>3030</td><td>82.0%</td><td>393.4M</td></tr>
+<tr><td><b>NOW</b></td><td style="color:#16a34a">+1894</td><td>2384</td><td>490</td><td>2946</td><td>80.9%</td><td>944.3M</td></tr>
+<tr><td><b>XLE</b></td><td style="color:#16a34a">+1453</td><td>1927</td><td>474</td><td>2473</td><td>77.9%</td><td>427.0M</td></tr>
+<tr><td><b>XLU</b></td><td style="color:#16a34a">+1207</td><td>1562</td><td>355</td><td>1998</td><td>78.2%</td><td>345.2M</td></tr>
+<tr><td><b>XLY</b></td><td style="color:#16a34a">+1081</td><td>1415</td><td>334</td><td>1813</td><td>78.0%</td><td>191.6M</td></tr>
+<tr><td><b>AMZN</b></td><td style="color:#16a34a">+990</td><td>3843</td><td>2853</td><td>7271</td><td>52.9%</td><td>8.0B</td></tr>
+<tr><td><b>VOO</b></td><td style="color:#16a34a">+864</td><td>2353</td><td>1489</td><td>4311</td><td>54.6%</td><td>618.1M</td></tr>
+<tr><td><b>VEA</b></td><td style="color:#16a34a">+757</td><td>1875</td><td>1118</td><td>3369</td><td>55.7%</td><td>2.7B</td></tr>
+<tr><td><b>BN</b></td><td style="color:#16a34a">+755</td><td>894</td><td>139</td><td>1067</td><td>83.8%</td><td>1.6B</td></tr>
+<tr><td><b>TSLA</b></td><td style="color:#16a34a">+706</td><td>2572</td><td>1866</td><td>5005</td><td>51.4%</td><td>1.9B</td></tr>
+<tr><td><b>META</b></td><td style="color:#16a34a">+669</td><td>3285</td><td>2616</td><td>6402</td><td>51.3%</td><td>2.2B</td></tr>
+<tr><td><b>IEMG</b></td><td style="color:#16a34a">+658</td><td>1541</td><td>883</td><td>2668</td><td>57.8%</td><td>1.8B</td></tr>
+<tr><td><b>XLB</b></td><td style="color:#16a34a">+609</td><td>857</td><td>248</td><td>1175</td><td>72.9%</td><td>111.3M</td></tr>
+<tr><td><b>IEFA</b></td><td style="color:#16a34a">+598</td><td>1526</td><td>928</td><td>2790</td><td>54.7%</td><td>1.8B</td></tr>
+<tr><td><b>GEV</b></td><td style="color:#16a34a">+565</td><td>1532</td><td>967</td><td>2909</td><td>52.7%</td><td>229.1M</td></tr>
+<tr><td><b>AGG</b></td><td style="color:#16a34a">+559</td><td>1478</td><td>919</td><td>2689</td><td>55.0%</td><td>1.5B</td></tr>
+<tr><td><b>VXUS</b></td><td style="color:#16a34a">+554</td><td>1095</td><td>541</td><td>1901</td><td>57.6%</td><td>428.5M</td></tr>
+<tr><td><b>VTV</b></td><td style="color:#16a34a">+542</td><td>1615</td><td>1073</td><td>3140</td><td>51.4%</td><td>663.5M</td></tr>
+<tr><td><b>ISRG</b></td><td style="color:#16a34a">+527</td><td>1584</td><td>1057</td><td>2993</td><td>52.9%</td><td>352.1M</td></tr>
+<tr><td><b>MU</b></td><td style="color:#16a34a">+524</td><td>1733</td><td>1209</td><td>3206</td><td>54.1%</td><td>1.2B</td></tr>
+<tr><td><b>VWO</b></td><td style="color:#16a34a">+517</td><td>1676</td><td>1159</td><td>3159</td><td>53.1%</td><td>1.6B</td></tr>
+<tr><td><b>BND</b></td><td style="color:#16a34a">+505</td><td>1274</td><td>769</td><td>2249</td><td>56.6%</td><td>1.3B</td></tr>
+<tr><td><b>VCIT</b></td><td style="color:#16a34a">+465</td><td>977</td><td>512</td><td>1654</td><td>59.1%</td><td>560.0M</td></tr>
+<tr><td><b>IVV</b></td><td style="color:#16a34a">+440</td><td>2289</td><td>1849</td><td>4731</td><td>48.4%</td><td>1.0B</td></tr>
+<tr><td><b>SCHF</b></td><td style="color:#16a34a">+408</td><td>994</td><td>586</td><td>1826</td><td>54.4%</td><td>1.7B</td></tr>
+<tr><td><b>BNDX</b></td><td style="color:#16a34a">+392</td><td>818</td><td>426</td><td>1356</td><td>60.3%</td><td>896.1M</td></tr>
+<tr><td><b>VTI</b></td><td style="color:#16a34a">+391</td><td>2007</td><td>1616</td><td>4141</td><td>48.5%</td><td>614.6M</td></tr>
+<tr><td><b>VEU</b></td><td style="color:#16a34a">+391</td><td>984</td><td>593</td><td>1917</td><td>51.3%</td><td>420.7M</td></tr>
+<tr><td><b>BAI</b></td><td style="color:#16a34a">+386</td><td>432</td><td>46</td><td>489</td><td>88.3%</td><td>250.0M</td></tr></tbody></table>
+<h3>COT Positioning: Leveraged Money & Asset Managers</h3><p>CFTC Commitment of Traders (Traders in Financial Futures). Leveraged Money = hedge funds. Extremes are contrarian signals.</p><table class="data-table"><thead><tr><th>Contract</th><th>Lev Net</th><th>Lev % OI</th><th>AM Net</th><th>Report Date</th></tr></thead><tbody><tr><td><b>S&P 500</b></td><td style="color:#dc2626">-406K</td><td>-22.5%</td><td style="color:#16a34a">1.0M</td><td>2026-03-03</td></tr>
+<tr><td><b>Nasdaq 100</b> [EXTREME]</td><td style="color:#dc2626">-108K</td><td>-83.3%</td><td style="color:#16a34a">10K</td><td>2026-03-03</td></tr>
+<tr><td><b>Russell 2000</b></td><td style="color:#dc2626">-37K</td><td>-9.9%</td><td style="color:#16a34a">60K</td><td>2026-03-03</td></tr>
+<tr><td><b>Bitcoin</b></td><td style="color:#16a34a">35K</td><td>19.3%</td><td style="color:#dc2626">0</td><td>2026-03-03</td></tr>
+<tr><td><b>GBP</b></td><td style="color:#16a34a">35K</td><td>14.2%</td><td style="color:#dc2626">-126K</td><td>2026-03-03</td></tr>
+<tr><td><b>JPY</b></td><td style="color:#dc2626">-34K</td><td>-9.1%</td><td style="color:#16a34a">18K</td><td>2026-03-03</td></tr>
+<tr><td><b>Nasdaq 100</b></td><td style="color:#dc2626">-33K</td><td>-13.0%</td><td style="color:#16a34a">69K</td><td>2026-03-03</td></tr>
+<tr><td><b>VIX</b></td><td style="color:#dc2626">-31K</td><td>-8.6%</td><td style="color:#dc2626">-24K</td><td>2026-03-03</td></tr>
+<tr><td><b>EUR/USD</b></td><td style="color:#16a34a">30K</td><td>3.6%</td><td style="color:#16a34a">370K</td><td>2026-03-03</td></tr></tbody></table>
+<h3>Short Volume Monitor (2026-03-06)</h3><p>FINRA Reg SHO daily short volume. Tickers with >50% short ratio and >100K volume. High short ratio may indicate squeeze potential.</p><table class="data-table"><thead><tr><th>Ticker</th><th>Short Ratio</th><th>Short Vol</th><th>Total Vol</th></tr></thead><tbody><tr><td><b>HDGE</b></td><td style="color:#dc2626">97.4%</td><td>766K</td><td>786K</td></tr>
+<tr><td><b>SOYB</b></td><td style="color:#dc2626">90.6%</td><td>146K</td><td>161K</td></tr>
+<tr><td><b>RLI</b></td><td style="color:#dc2626">88.3%</td><td>234K</td><td>264K</td></tr>
+<tr><td><b>SAMT</b></td><td style="color:#dc2626">86.6%</td><td>118K</td><td>136K</td></tr>
+<tr><td><b>EUAD</b></td><td style="color:#dc2626">86.6%</td><td>768K</td><td>886K</td></tr>
+<tr><td><b>DFEV</b></td><td style="color:#dc2626">86.3%</td><td>432K</td><td>501K</td></tr>
+<tr><td><b>DBC</b></td><td style="color:#dc2626">86.1%</td><td>2.7M</td><td>3.1M</td></tr>
+<tr><td><b>KBE</b></td><td style="color:#dc2626">86.0%</td><td>1.1M</td><td>1.3M</td></tr>
+<tr><td><b>KYMR</b></td><td style="color:#dc2626">86.0%</td><td>108K</td><td>126K</td></tr>
+<tr><td><b>EIS</b></td><td style="color:#dc2626">85.9%</td><td>285K</td><td>332K</td></tr>
+<tr><td><b>ZBH</b></td><td style="color:#dc2626">85.0%</td><td>598K</td><td>703K</td></tr>
+<tr><td><b>INVX</b></td><td style="color:#dc2626">84.5%</td><td>207K</td><td>245K</td></tr>
+<tr><td><b>BMO</b></td><td style="color:#dc2626">84.4%</td><td>264K</td><td>312K</td></tr>
+<tr><td><b>STIP</b></td><td style="color:#dc2626">84.2%</td><td>692K</td><td>822K</td></tr>
+<tr><td><b>LXP</b></td><td style="color:#dc2626">83.1%</td><td>141K</td><td>170K</td></tr>
+<tr><td><b>WYNN</b></td><td style="color:#dc2626">82.9%</td><td>781K</td><td>942K</td></tr>
+<tr><td><b>PFG</b></td><td style="color:#dc2626">82.9%</td><td>423K</td><td>510K</td></tr>
+<tr><td><b>SHV</b></td><td style="color:#dc2626">82.8%</td><td>3.7M</td><td>4.5M</td></tr>
+<tr><td><b>DG</b></td><td style="color:#dc2626">82.4%</td><td>1.1M</td><td>1.4M</td></tr>
+<tr><td><b>IGM</b></td><td style="color:#dc2626">82.4%</td><td>241K</td><td>292K</td></tr>
+<tr><td><b>SEA</b></td><td style="color:#dc2626">82.3%</td><td>247K</td><td>300K</td></tr>
+<tr><td><b>XOP</b></td><td style="color:#dc2626">81.2%</td><td>2.4M</td><td>2.9M</td></tr>
+<tr><td><b>OKE</b></td><td style="color:#dc2626">81.1%</td><td>1.5M</td><td>1.8M</td></tr>
+<tr><td><b>JETS</b></td><td style="color:#dc2626">80.8%</td><td>2.9M</td><td>3.6M</td></tr>
+<tr><td><b>NDAQ</b></td><td style="color:#dc2626">80.8%</td><td>2.3M</td><td>2.9M</td></tr>
+<tr><td><b>BRO</b></td><td style="color:#dc2626">80.6%</td><td>616K</td><td>764K</td></tr>
+<tr><td><b>PPA</b></td><td style="color:#dc2626">80.6%</td><td>219K</td><td>272K</td></tr>
+<tr><td><b>HALO</b></td><td style="color:#dc2626">80.5%</td><td>471K</td><td>585K</td></tr>
+<tr><td><b>ST</b></td><td style="color:#dc2626">80.4%</td><td>543K</td><td>676K</td></tr>
+<tr><td><b>NORW</b></td><td style="color:#dc2626">79.9%</td><td>160K</td><td>200K</td></tr></tbody></table>
+<h3>Largest Insider Purchases (Open Market Buys)</h3><p>Form 4 filings: P-Purchase transactions only (excludes grants, exercises, awards). Sorted by dollar value.</p><table class="data-table"><thead><tr><th>Ticker</th><th>Insider</th><th>Role</th><th>Date</th><th>Price</th><th>Shares</th><th>Value</th></tr></thead><tbody><tr><td><b>PSA</b></td><td>Mitra Shankh</td><td>director</td><td>2026-02-20</td><td>$350.00</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$393.70</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$394.76</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$389.71</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$391.76</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$392.78</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$388.75</td>
+<tr><td><b>CRSP</b></td><td>George Simeon</td><td>director</td><td>2025-07-16</td><td>$52.03</td>
+<tr><td><b>HYMC</b></td><td>Sprott Eric</td><td>10 percent owner</td><td>2025-10-14</td><td>$6.50</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$395.53</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$390.60</td>
+<tr><td><b>HYMC</b></td><td>Sprott Eric</td><td>10 percent owner</td><td>2025-09-10</td><td>$4.28</td>
+<tr><td><b>MGM</b></td><td>IAC Inc.</td><td>10 percent owner</td><td>2025-12-05</td><td>$36.30</td>
+<tr><td><b>PSA</b></td><td>HAVNER RONALD L JR</td><td>director</td><td>2026-02-20</td><td>$350.00</td>
+<tr><td><b>HYMC</b></td><td>Sprott Eric</td><td>10 percent owner</td><td>2025-09-10</td><td>$6.00</td>
+<tr><td><b>KMI</b></td><td>KINDER RICHARD D</td><td>director, 10 percent owner, officer: Executive Chairman</td><td>2025-10-27</td><td>$25.96</td>
+<tr><td><b>COGT</b></td><td>Fairmount Funds Management LLC</td><td>director</td><td>2025-07-10</td><td>$9.00</td>
+<tr><td><b>HYMC</b></td><td>Sprott Eric</td><td>10 percent owner</td><td>2025-12-03</td><td>$10.30</td>
+<tr><td><b>ET</b></td><td>WARREN KELCY L</td><td>director</td><td>2025-08-20</td><td>$17.36</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-01-27</td><td>$67.40</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-02-19</td><td>$70.53</td>
+<tr><td><b>FIG</b></td><td>Reed Andrew Phillips</td><td>director</td><td>2026-02-23</td><td>$24.32</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-02-17</td><td>$71.19</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-01-28</td><td>$67.58</td>
+<tr><td><b>CHY</b></td><td>MetLife Investment Management, LLC</td><td>director: </td><td>2022-05-24</td><td>$25.00</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-01-29</td><td>$68.08</td>
+<tr><td><b>ET</b></td><td>WARREN KELCY L</td><td>director</td><td>2025-11-19</td><td>$16.95</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-02-18</td><td>$70.58</td>
+<tr><td><b>ET</b></td><td>WARREN KELCY L</td><td>director</td><td>2025-11-20</td><td>$16.81</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-02-02</td><td>$67.71</td></tbody></table>
+<script>
+
+/* --- Shared ownership state (localStorage, cross-dashboard) --- */
+window._owned = (function() {
+    var KEY = 'dashboard_owned_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+
+    /* Migration: copy old momentum-ranker-only key if it exists */
+    var OLD_KEY = 'mr_owned_tickers_v1';
+    try {
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+            var oldArr = JSON.parse(old);
+            if (oldArr && oldArr.length) {
+                oldArr.forEach(function(t) { _set.add(t); });
+                localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            }
+            localStorage.removeItem(OLD_KEY);
+        }
+    } catch(e) {}
+
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.own-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._owned.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-owned');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared toggle helper for Python-rendered tables */
+window._ownToggle = function(ticker, cb) {
+    window._owned.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-owned');
+    /* Update td data-val so column sorting works (1=owned, 0=not) */
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+
+function getGradientColor(score) {
+    var clamped = Math.max(0, Math.min(1, score));
+    var r, g, b;
+    if (clamped < 0.25) {
+        var t = clamped * 4;
+        r = Math.round(211 + (255 - 211) * t);
+        g = Math.round(47 + (152 - 47) * t);
+        b = Math.round(47 + (0 - 47) * t);
+    } else if (clamped < 0.5) {
+        var t = (clamped - 0.25) * 4;
+        r = 255;
+        g = Math.round(152 + (235 - 152) * t);
+        b = Math.round(0 + (59 - 0) * t);
+    } else if (clamped < 0.75) {
+        var t = (clamped - 0.5) * 4;
+        r = Math.round(255 + (139 - 255) * t);
+        g = Math.round(235 + (195 - 235) * t);
+        b = Math.round(59 + (74 - 59) * t);
+    } else {
+        var t = (clamped - 0.75) * 4;
+        r = Math.round(139 + (0 - 139) * t);
+        g = Math.round(195 + (200 - 195) * t);
+        b = Math.round(74 + (83 - 74) * t);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+</script>
+</body></html>
