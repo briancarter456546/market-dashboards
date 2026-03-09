@@ -459,6 +459,11 @@ tbody tr:hover { background: #fafbfd; }
 .row-owned { background: #fff7ed !important; }
 .row-owned:hover { background: #ffedd5 !important; }
 th.own-th { width: 30px; text-align: center; cursor: default; }
+/* --- Shared watchlist checkbox (all dashboards) --- */
+.watch-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #3b82f6; }
+.row-watched:not(.row-owned) { background: #eff6ff !important; }
+.row-watched:not(.row-owned):hover { background: #dbeafe !important; }
+th.watch-th { width: 30px; text-align: center; cursor: default; }
 
 
 /* --- Heatmap table --- */
@@ -664,7 +669,7 @@ th.own-th { width: 30px; text-align: center; cursor: default; }
 
 </style>
 </head><body>
-<div class="stat-bar"><div class="stat"><div class="stat-label">ETFs Analyzed</div><div class="stat-value neutral">1412</div></div><div class="stat"><div class="stat-label">Spreads Tracked</div><div class="stat-value neutral">26</div></div><div class="stat"><div class="stat-label">Latest Date</div><div class="stat-value neutral">2026-03-09</div></div><div class="stat"><div class="stat-label">Top Analog Score</div><div class="stat-value pos">1.000</div></div></div>
+<div class="stat-bar"><div class="stat"><div class="stat-label">ETFs Analyzed</div><div class="stat-value neutral">1414</div></div><div class="stat"><div class="stat-label">Spreads Tracked</div><div class="stat-value neutral">26</div></div><div class="stat"><div class="stat-label">Latest Date</div><div class="stat-value neutral">2026-03-09</div></div><div class="stat"><div class="stat-label">Top Analog Score</div><div class="stat-value pos">1.000</div></div></div>
 <div class="page-header">
   <h1>Historical Mirror</h1>
   <div class="meta">
@@ -678,7 +683,7 @@ th.own-th { width: 30px; text-align: center; cursor: default; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Compares today's market fingerprint (momentum + spread state) against every historical bi-weekly period over 25 years. Produces a similarity heatmap, top analog periods, and forward return distributions with percentile bands.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div>Today's market fingerprint shows an extremely rare alignment, with the composite similarity score of 1.0000 indicating a perfect match to the current momentum and spread conditions—a level not seen in the 25-year historical record. The next closest analogs are significantly weaker, with September 2001 (0.7804) and June 2000 (0.6765) representing the only other periods with composite similarity above 0.65, both occurring during known market stress periods. The dominance of 2000-2001 analogs in the top matches suggests today's market structure resembles conditions from the dot-com crash era, particularly in spread behavior where both 2001 and 2000 periods show perfect or near-perfect spread component scores. This concentration of historical matches in a single volatile period, combined with the perfect score for today, indicates an unusual and potentially significant market configuration that warrants attention to forward return distributions from those analog periods.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Compares today's market fingerprint (momentum + spread state) against every historical bi-weekly period over 25 years. Produces a similarity heatmap, top analog periods, and forward return distributions with percentile bands.</div><div class="llm-dynamic"><div class="llm-section-label">Today's Reading</div>Today's market fingerprint (March 9, 2026) shows a perfect composite match (1.0000) to itself, with both momentum and spreads at peak levels (1.0000 each), indicating an exceptionally strong and synchronized market state. The closest historical analog is September 10, 2001 (composite 0.7804), which had matching spreads (1.0000) but weaker momentum (0.5609)—a notable pairing given that date's historical significance. The next tier of analogs clusters around mid-2000 and early 2001, all with composite scores between 0.54 and 0.68, suggesting today shares characteristics with periods of elevated volatility and shifting risk sentiment from the dot-com era. The sharp drop-off after the top 10 analogs indicates today's combined momentum-and-spread state is relatively rare in the 25-year dataset, occurring most frequently during market inflection points. Forward return distributions tied to these analogs should be examined carefully, as the September 2001 comparison in particular represents an environment fundamentally different from typical market conditions.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
 <div class="regime-banner" style="border-left-color:#22c55e;"><div class="regime-label" style="color:#22c55e;">TOP ANALOG: 2026-03-09 (2026)</div><div class="regime-score">Composite: 1.000 &nbsp;|&nbsp; Momentum: 1.000 &nbsp;|&nbsp; Spreads: 1.000 &nbsp;|&nbsp; Period: Mar 09</div></div>
 <div class="table-section"><div class="table-section-header"><h2>Top 10 Most Similar Periods</h2><span style="font-size:0.85em;color:#888;">Based on composite momentum + spread state match</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table><thead><tr><th title="Match rank (1 = most similar to today)">#</th><th title="End date of the matched historical period">End Date</th><th>Year</th><th>Period Label</th><th title="Combined similarity score (momentum + spreads)">Composite</th><th title="Momentum profile correlation with today">Momentum</th><th title="Spread state similarity with today">Spreads</th></tr></thead><tbody><tr><td><span class="analog-rank">1</span></td><td class="num">2026-03-09</td><td class="num">2026</td><td>Mar 09</td><td class="num"><span class="score-bar"><span class="score-bar-fill" data-score="1.0000"></span></span> 1.000</td><td class="num">1.000</td><td class="num">1.000</td></tr>
 <tr><td><span class="analog-rank">2</span></td><td class="num">2001-09-10</td><td class="num">2001</td><td>Sep 10</td><td class="num"><span class="score-bar"><span class="score-bar-fill" data-score="0.7804"></span></span> 0.780</td><td class="num">0.561</td><td class="num">1.000</td></tr>
@@ -817,7 +822,7 @@ th.own-th { width: 30px; text-align: center; cursor: default; }
 <tr><td class="year-cell">2024</td><td style="background:rgb(231,95,25);color:#fff;" title="2024 Apr 07: 0.115">0.12</td><td style="background:rgb(238,111,18);color:#fff;" title="2024 Apr 21: 0.154">0.15</td><td style="background:rgb(224,79,32);color:#fff;" title="2024 May 05: 0.077">0.08</td><td style="background:rgb(231,95,25);color:#fff;" title="2024 May 19: 0.115">0.12</td><td style="background:rgb(231,95,25);color:#fff;" title="2024 Jun 02: 0.115">0.12</td><td style="background:rgb(238,111,18);color:#fff;" title="2024 Jun 16: 0.154">0.15</td><td style="background:rgb(255,183,22);color:#fff;" title="2024 Jun 30: 0.346">0.35</td><td style="background:rgb(255,183,22);color:#fff;" title="2024 Jul 14: 0.346">0.35</td><td style="background:rgb(251,143,3);color:#fff;" title="2024 Jul 28: 0.231">0.23</td><td style="background:rgb(238,111,18);color:#fff;" title="2024 Aug 11: 0.154">0.15</td><td style="background:rgb(244,127,10);color:#fff;" title="2024 Aug 25: 0.192">0.19</td><td style="background:rgb(231,95,25);color:#fff;" title="2024 Sep 08: 0.115">0.12</td><td style="background:rgb(244,127,10);color:#fff;" title="2024 Sep 22: 0.192">0.19</td><td style="background:rgb(255,171,13);color:#fff;" title="2024 Oct 06: 0.308">0.31</td><td style="background:rgb(255,235,59);color:#1a1a2e;" title="2024 Oct 20: 0.500">0.50</td><td style="background:rgb(255,222,49);color:#1a1a2e;" title="2024 Nov 03: 0.462">0.46</td><td style="background:rgb(183,210,68);color:#1a1a2e;" title="2024 Nov 17: 0.654">0.65</td><td style="background:rgb(255,183,22);color:#fff;" title="2024 Dec 01: 0.346">0.35</td><td style="background:rgb(244,127,10);color:#fff;" title="2024 Dec 15: 0.192">0.19</td><td style="background:rgb(238,111,18);color:#fff;" title="2024 Dec 29: 0.154">0.15</td><td style="background:rgb(231,95,25);color:#fff;" title="2024 Jan 12: 0.115">0.12</td><td style="background:rgb(238,111,18);color:#fff;" title="2024 Jan 26: 0.154">0.15</td><td style="background:rgb(217,63,39);color:#fff;" title="2024 Feb 09: 0.038">0.04</td><td style="background:rgb(231,95,25);color:#fff;" title="2024 Feb 23: 0.115">0.12</td><td style="background:rgb(244,127,10);color:#fff;" title="2024 Mar 09: 0.192">0.19</td></tr>
 <tr><td class="year-cell">2025</td><td style="background:rgb(238,111,18);color:#fff;" title="2025 Apr 07: 0.154">0.15</td><td style="background:rgb(231,95,25);color:#fff;" title="2025 Apr 21: 0.115">0.12</td><td style="background:rgb(255,158,4);color:#fff;" title="2025 May 05: 0.269">0.27</td><td style="background:rgb(219,222,63);color:#1a1a2e;" title="2025 May 19: 0.577">0.58</td><td style="background:rgb(237,228,61);color:#1a1a2e;" title="2025 Jun 02: 0.538">0.54</td><td style="background:rgb(237,228,61);color:#1a1a2e;" title="2025 Jun 16: 0.538">0.54</td><td style="background:rgb(255,222,49);color:#1a1a2e;" title="2025 Jun 30: 0.462">0.46</td><td style="background:rgb(251,143,3);color:#fff;" title="2025 Jul 14: 0.231">0.23</td><td style="background:rgb(244,127,10);color:#fff;" title="2025 Jul 28: 0.192">0.19</td><td style="background:rgb(224,79,32);color:#fff;" title="2025 Aug 11: 0.077">0.08</td><td style="background:rgb(231,95,25);color:#fff;" title="2025 Aug 25: 0.115">0.12</td><td style="background:rgb(217,63,39);color:#fff;" title="2025 Sep 08: 0.038">0.04</td><td style="background:rgb(224,79,32);color:#fff;" title="2025 Sep 22: 0.077">0.08</td><td style="background:rgb(244,127,10);color:#fff;" title="2025 Oct 06: 0.192">0.19</td><td style="background:rgb(255,158,4);color:#fff;" title="2025 Oct 20: 0.269">0.27</td><td style="background:rgb(231,95,25);color:#fff;" title="2025 Nov 03: 0.115">0.12</td><td style="background:rgb(255,158,4);color:#fff;" title="2025 Nov 17: 0.269">0.27</td><td style="background:rgb(255,183,22);color:#fff;" title="2025 Dec 01: 0.346">0.35</td><td style="background:rgb(255,171,13);color:#fff;" title="2025 Dec 15: 0.308">0.31</td><td style="background:rgb(255,209,40);color:#1a1a2e;" title="2025 Dec 29: 0.423">0.42</td><td style="background:rgb(255,158,4);color:#fff;" title="2025 Jan 12: 0.269">0.27</td><td style="background:rgb(255,158,4);color:#fff;" title="2025 Jan 26: 0.269">0.27</td><td style="background:rgb(231,95,25);color:#fff;" title="2025 Feb 09: 0.115">0.12</td><td style="background:rgb(251,143,3);color:#fff;" title="2025 Feb 23: 0.231">0.23</td><td style="background:rgb(238,111,18);color:#fff;" title="2025 Mar 09: 0.154">0.15</td></tr>
 <tr><td class="year-cell">2026</td><td style="background:rgb(165,204,70);color:#1a1a2e;" title="2026 Apr 07: 0.692">0.69</td><td style="background:rgb(255,222,49);color:#1a1a2e;" title="2026 Apr 21: 0.462">0.46</td><td style="background:rgb(251,143,3);color:#fff;" title="2026 May 05: 0.231">0.23</td><td style="background:rgb(244,127,10);color:#fff;" title="2026 May 19: 0.192">0.19</td><td style="background:rgb(238,111,18);color:#fff;" title="2026 Jun 02: 0.154">0.15</td><td style="background:rgb(238,111,18);color:#fff;" title="2026 Jun 16: 0.154">0.15</td><td style="background:rgb(217,63,39);color:#fff;" title="2026 Jun 30: 0.038">0.04</td><td style="background:rgb(217,63,39);color:#fff;" title="2026 Jul 14: 0.038">0.04</td><td style="background:rgb(211,47,47);color:#fff;" title="2026 Jul 28: 0.000">0.00</td><td style="background:rgb(255,171,13);color:#fff;" title="2026 Aug 11: 0.308">0.31</td><td style="background:rgb(251,143,3);color:#fff;" title="2026 Aug 25: 0.231">0.23</td><td style="background:rgb(251,143,3);color:#fff;" title="2026 Sep 08: 0.231">0.23</td><td style="background:rgb(255,171,13);color:#fff;" title="2026 Sep 22: 0.308">0.31</td><td style="background:rgb(255,183,22);color:#fff;" title="2026 Oct 06: 0.346">0.35</td><td style="background:rgb(255,196,31);color:#1a1a2e;" title="2026 Oct 20: 0.385">0.38</td><td style="background:rgb(255,158,4);color:#fff;" title="2026 Nov 03: 0.269">0.27</td><td style="background:rgb(251,143,3);color:#fff;" title="2026 Nov 17: 0.231">0.23</td><td style="background:rgb(244,127,10);color:#fff;" title="2026 Dec 01: 0.192">0.19</td><td style="background:rgb(238,111,18);color:#fff;" title="2026 Dec 15: 0.154">0.15</td><td style="background:rgb(224,79,32);color:#fff;" title="2026 Dec 29: 0.077">0.08</td><td style="background:rgb(244,127,10);color:#fff;" title="2026 Jan 12: 0.192">0.19</td><td style="background:rgb(255,171,13);color:#fff;" title="2026 Jan 26: 0.308">0.31</td><td style="background:rgb(255,158,4);color:#fff;" title="2026 Feb 09: 0.269">0.27</td><td style="background:rgb(255,235,59);color:#1a1a2e;" title="2026 Feb 23: 0.500">0.50</td><td style="background:rgb(0,200,83);color:#fff;" title="2026 Mar 09: 1.000">1.00</td></tr></tbody></table></div><div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px;font-size:0.82em;color:#888;"><span>Low similarity</span><div style="background:linear-gradient(to right,rgb(211,47,47),rgb(255,235,59),rgb(139,195,74));width:140px;height:10px;border-radius:5px;"></div><span>High similarity</span></div></div></div>
-</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-09 3:35 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-09 7:36 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
 
 /* --- Shared ownership state (localStorage, cross-dashboard) --- */
@@ -871,6 +876,45 @@ window._ownToggle = function(ticker, cb) {
     var tr = cb.closest('tr');
     if (tr) tr.classList.toggle('row-owned');
     /* Update td data-val so column sorting works (1=owned, 0=not) */
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+/* --- Shared watchlist state (localStorage, cross-dashboard) --- */
+window._watched = (function() {
+    var KEY = 'dashboard_watched_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init watch checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.watch-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._watched.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-watched');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared watch toggle helper for Python-rendered tables */
+window._watchToggle = function(ticker, cb) {
+    window._watched.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-watched');
     var td = cb.closest('td');
     if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
 };

@@ -459,6 +459,11 @@ tbody tr:hover { background: #fafbfd; }
 .row-owned { background: #fff7ed !important; }
 .row-owned:hover { background: #ffedd5 !important; }
 th.own-th { width: 30px; text-align: center; cursor: default; }
+/* --- Shared watchlist checkbox (all dashboards) --- */
+.watch-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #3b82f6; }
+.row-watched:not(.row-owned) { background: #eff6ff !important; }
+.row-watched:not(.row-owned):hover { background: #dbeafe !important; }
+th.watch-th { width: 30px; text-align: center; cursor: default; }
 
 
 /* Heatmap card grid */
@@ -1276,7 +1281,7 @@ th.own-th { width: 30px; text-align: center; cursor: default; }
   <td class="num" data-sort="1.10">1.10</td>
 </tr></tbody></table></div></div>
 <div class="table-section"><div class="table-section-header"><h2>Methodology</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div style="font-size:0.88em;color:#666;line-height:1.7;"><b>Methodology:</b> 43 ETF poles were tested using an RSI(2) mean-reversion pullback strategy across full history. Poles with Profit Factor >= 1.5 after excluding regression-excluded poles (US Large Cap Core, US Dollar, Cash, Dow, S&P Variants) are shown here as "proven." Returns are computed from equal-weighted FMP (Factor-Mimicking Portfolio) log returns of each pole's top 5 ETF constituents.<br><br><b>PF Tiers:</b> <span style="color:#d97706;font-weight:700;">Gold (PF >= 2.0)</span> = Elite reliability. <span style="color:#16a34a;font-weight:700;">Green (PF 1.5-2.0)</span> = Proven reliability.</div></div></div>
-</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-09 3:50 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-09 7:39 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
 
 /* --- Shared ownership state (localStorage, cross-dashboard) --- */
@@ -1330,6 +1335,45 @@ window._ownToggle = function(ticker, cb) {
     var tr = cb.closest('tr');
     if (tr) tr.classList.toggle('row-owned');
     /* Update td data-val so column sorting works (1=owned, 0=not) */
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+/* --- Shared watchlist state (localStorage, cross-dashboard) --- */
+window._watched = (function() {
+    var KEY = 'dashboard_watched_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init watch checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.watch-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._watched.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-watched');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared watch toggle helper for Python-rendered tables */
+window._watchToggle = function(ticker, cb) {
+    window._watched.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-watched');
     var td = cb.closest('td');
     if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
 };

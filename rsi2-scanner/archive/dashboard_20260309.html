@@ -459,6 +459,11 @@ tbody tr:hover { background: #fafbfd; }
 .row-owned { background: #fff7ed !important; }
 .row-owned:hover { background: #ffedd5 !important; }
 th.own-th { width: 30px; text-align: center; cursor: default; }
+/* --- Shared watchlist checkbox (all dashboards) --- */
+.watch-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #3b82f6; }
+.row-watched:not(.row-owned) { background: #eff6ff !important; }
+.row-watched:not(.row-owned):hover { background: #dbeafe !important; }
+th.watch-th { width: 30px; text-align: center; cursor: default; }
 
 
 .signal-badge {
@@ -497,7 +502,7 @@ th.own-th { width: 30px; text-align: center; cursor: default; }
 
 </style>
 </head><body>
-<div class="stat-bar"><div class="stat"><div class="stat-label">Open Positions</div><div class="stat-value neutral">0</div></div><div class="stat"><div class="stat-label">Today Signals</div><div class="stat-value neutral">0</div></div><div class="stat"><div class="stat-label">Cumul P/L</div><div class="stat-value pos">+0.00%</div></div><div class="stat"><div class="stat-label">Win Rate</div><div class="stat-value neutral">--</div></div><div class="stat"><div class="stat-label">Total Trades</div><div class="stat-value neutral">0</div></div></div><div class="regime-banner" style="border-left-color:#6b7280;"><div class="regime-label" style="color:#6b7280;">NO SIGNAL</div><div class="regime-score">No entry or exit signals today</div></div><div class="page-header">
+<div class="stat-bar"><div class="stat"><div class="stat-label">Open Positions</div><div class="stat-value neutral">5</div></div><div class="stat"><div class="stat-label">Today Signals</div><div class="stat-value neutral">0</div></div><div class="stat"><div class="stat-label">Cumul P/L</div><div class="stat-value pos">+0.00%</div></div><div class="stat"><div class="stat-label">Win Rate</div><div class="stat-value neutral">--</div></div><div class="stat"><div class="stat-label">Total Trades</div><div class="stat-value neutral">0</div></div></div><div class="regime-banner" style="border-left-color:#22c55e;"><div class="regime-label" style="color:#22c55e;">SCANNING</div><div class="regime-score">5 open position(s) -- monitoring for exits</div></div><div class="page-header">
   <h1>RSI(2) Mean-Reversion Scanner</h1>
   <div class="meta">
     RSI(2)<10 | SMA200/SMA5 &nbsp;|&nbsp;
@@ -510,7 +515,21 @@ th.own-th { width: 30px; text-align: center; cursor: default; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Daily scanner for RSI(2) mean-reversion pullback signals. Entry: close > SMA200, close < SMA5, RSI(2) < 10. Exit: close > SMA5. Shows active positions, today's signals, and running trade performance. Watchlist starts narrow (SPY) and expands as patterns are validated.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details><div style="background:#f0f4ff;border:1px solid #d0d8e8;border-radius:8px;padding:14px 18px;margin:16px 0;font-size:0.88em;color:#444;">Daily scanner for RSI(2) mean-reversion pullback signals. Entry: close > SMA200, close < SMA5, RSI(2) < 10. Exit: close > SMA5. Shows active positions, today's signals, and running trade performance. Watchlist starts narrow (SPY) and expands as patterns are validated.</div><div class="table-section"><div class="table-section-header"><h2>Today's Signals</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p style="color:#888;padding:8px 0;">No signals today -- quiet day.</p></div></div><div class="table-section"><div class="table-section-header"><h2>Open Positions</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p style="color:#888;padding:8px 0;">No open positions.</p></div></div><div class="table-section"><div class="table-section-header"><h2>Recent Trades (Last 10)</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p style="color:#888;padding:8px 0;">No completed trades yet.</p></div></div><div class="table-section"><div class="table-section-header"><h2>Performance Summary</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p style="color:#888;padding:8px 0;">No trades to summarize.</p></div></div><div class="table-section"><div class="table-section-header"><h2>Watchlist Status</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="data-table" style="width:100%;"><thead><tr><th>Ticker</th><th>Close</th><th>RSI(2)</th><th>&gt; SMA200</th><th>Status</th></tr></thead><tbody><tr><td style="font-weight:600;">SPY</td><td style="font-family:'IBM Plex Mono',monospace;">$678.27</td><td style="font-family:'IBM Plex Mono',monospace;">52.2</td><td>Yes</td><td><span class="signal-badge signal-none">WATCH</span></td></tr></tbody></table></div></div></div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-09 4:57 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Daily scanner for RSI(2) mean-reversion pullback signals. Entry: close > SMA200, close < SMA5, RSI(2) < 10. Exit: close > SMA5. Shows active positions, today's signals, and running trade performance. Watchlist starts narrow (SPY) and expands as patterns are validated.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details><div style="background:#f0f4ff;border:1px solid #d0d8e8;border-radius:8px;padding:14px 18px;margin:16px 0;font-size:0.88em;color:#444;">Daily scanner for RSI(2) mean-reversion pullback signals. Entry: close > SMA200, close < SMA5, RSI(2) < 10. Exit: close > SMA5. Shows active positions, today's signals, and running trade performance. Watchlist starts narrow (SPY) and expands as patterns are validated.</div><div class="table-section"><div class="table-section-header"><h2>Today's Signals</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p style="color:#888;padding:8px 0;">No signals today -- quiet day.</p></div></div><div class="table-section"><div class="table-section-header"><h2>Open Positions</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="data-table" style="width:100%;"><thead><tr><th>Ticker</th><th>Entry Date</th><th>Entry Price</th><th>Current</th><th>P/L</th><th>Days</th></tr></thead><tbody><tr><td style="font-weight:600;">TSN</td><td>2026-03-09</td><td style="font-family:'IBM Plex Mono',monospace;">$60.76</td><td style="font-family:'IBM Plex Mono',monospace;">$60.76</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+0.00%</td><td>0</td></tr>
+<tr><td style="font-weight:600;">TSM</td><td>2026-03-09</td><td style="font-family:'IBM Plex Mono',monospace;">$340.73</td><td style="font-family:'IBM Plex Mono',monospace;">$340.73</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+0.00%</td><td>0</td></tr>
+<tr><td style="font-weight:600;">CSCO</td><td>2026-03-09</td><td style="font-family:'IBM Plex Mono',monospace;">$75.84</td><td style="font-family:'IBM Plex Mono',monospace;">$75.84</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+0.00%</td><td>0</td></tr>
+<tr><td style="font-weight:600;">HIG</td><td>2026-03-09</td><td style="font-family:'IBM Plex Mono',monospace;">$136.85</td><td style="font-family:'IBM Plex Mono',monospace;">$136.85</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+0.00%</td><td>0</td></tr>
+<tr><td style="font-weight:600;">SPY</td><td>2026-03-09</td><td style="font-family:'IBM Plex Mono',monospace;">$669.51</td><td style="font-family:'IBM Plex Mono',monospace;">$669.51</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+0.00%</td><td>0</td></tr></tbody></table></div></div><div class="table-section"><div class="table-section-header"><h2>Recent Trades (Last 10)</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p style="color:#888;padding:8px 0;">No completed trades yet.</p></div></div><div class="table-section"><div class="table-section-header"><h2>Performance Summary</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p style="color:#888;padding:8px 0;">No trades to summarize.</p></div></div><div class="table-section"><div class="table-section-header"><h2>Watchlist Status</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="data-table" style="width:100%;"><thead><tr><th>Ticker</th><th>Close</th><th>RSI(2)</th><th>&gt; SMA200</th><th>Status</th></tr></thead><tbody><tr><td style="font-weight:600;">APH</td><td style="font-family:'IBM Plex Mono',monospace;">$132.59</td><td style="font-family:'IBM Plex Mono',monospace;">42.4</td><td>Yes</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
+<tr><td style="font-weight:600;">COST</td><td style="font-family:'IBM Plex Mono',monospace;">$1001.31</td><td style="font-family:'IBM Plex Mono',monospace;">74.4</td><td>Yes</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
+<tr><td style="font-weight:600;">CSCO</td><td style="font-family:'IBM Plex Mono',monospace;">$75.84</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">6.6</td><td>Yes</td><td><span class="signal-badge signal-entry">SIGNAL</span></td></tr>
+<tr><td style="font-weight:600;">HIG</td><td style="font-family:'IBM Plex Mono',monospace;">$136.85</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">6.7</td><td>Yes</td><td><span class="signal-badge signal-entry">SIGNAL</span></td></tr>
+<tr><td style="font-weight:600;">MSFT</td><td style="font-family:'IBM Plex Mono',monospace;">$408.08</td><td style="font-family:'IBM Plex Mono',monospace;">42.6</td><td>No</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
+<tr><td style="font-weight:600;">ORCL</td><td style="font-family:'IBM Plex Mono',monospace;">$149.22</td><td style="font-family:'IBM Plex Mono',monospace;">20.1</td><td>No</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
+<tr><td style="font-weight:600;">SNPS</td><td style="font-family:'IBM Plex Mono',monospace;">$433.27</td><td style="font-family:'IBM Plex Mono',monospace;">40.1</td><td>No</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
+<tr><td style="font-weight:600;">SPY</td><td style="font-family:'IBM Plex Mono',monospace;">$669.51</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">7.2</td><td>Yes</td><td><span class="signal-badge signal-entry">SIGNAL</span></td></tr>
+<tr><td style="font-weight:600;">TSM</td><td style="font-family:'IBM Plex Mono',monospace;">$340.73</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">4.9</td><td>Yes</td><td><span class="signal-badge signal-entry">SIGNAL</span></td></tr>
+<tr><td style="font-weight:600;">TSN</td><td style="font-family:'IBM Plex Mono',monospace;">$60.76</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">2.3</td><td>Yes</td><td><span class="signal-badge signal-entry">SIGNAL</span></td></tr>
+<tr><td style="font-weight:600;">XLY</td><td style="font-family:'IBM Plex Mono',monospace;">$112.38</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">9.2</td><td>No</td><td><span class="signal-badge signal-none">WATCH</span></td></tr></tbody></table></div></div></div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-09 7:38 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
 
 /* --- Shared ownership state (localStorage, cross-dashboard) --- */
@@ -564,6 +583,45 @@ window._ownToggle = function(ticker, cb) {
     var tr = cb.closest('tr');
     if (tr) tr.classList.toggle('row-owned');
     /* Update td data-val so column sorting works (1=owned, 0=not) */
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+/* --- Shared watchlist state (localStorage, cross-dashboard) --- */
+window._watched = (function() {
+    var KEY = 'dashboard_watched_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init watch checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.watch-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._watched.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-watched');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared watch toggle helper for Python-rendered tables */
+window._watchToggle = function(ticker, cb) {
+    window._watched.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-watched');
     var td = cb.closest('td');
     if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
 };
