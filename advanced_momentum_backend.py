@@ -649,12 +649,13 @@ def _fmt_conf(val):
 
 
 TABLE_HEADERS = [
-    "Own", "Symbol", "Price", "1M%", "3M%", "12M%",
+    "Own", "Watch", "Symbol", "Price", "1M%", "3M%", "12M%",
     "Sortino 1M", "Status", "Trajectory", "Signal", "Confidence",
 ]
 
 HEADER_TIPS = {
     "Own":        "Mark tickers you own",
+    "Watch":      "Mark tickers you are watching",
     "Symbol":     "Ticker symbol",
     "Price":      "Current price",
     "1M%":        "1-month return percentage",
@@ -679,6 +680,9 @@ def _build_table_row(r):
     cells.append(
         '<td><input type="checkbox" class="own-cb" data-ticker="{s}"'
         ' onclick="window._ownToggle(\'{s}\', this)" title="Mark as owned"></td>'.format(s=sym))
+    cells.append(
+        '<td><input type="checkbox" class="watch-cb" data-ticker="{s}"'
+        ' onclick="window._watchToggle(\'{s}\', this)" title="Mark as watched"></td>'.format(s=sym))
     cells.append('<td class="ticker" data-val="{s}">{s}</td>'.format(s=sym))
     cells.append(_fmt_price(r["current_price"]))
     cells.append(_fmt_ret(r.get("return_1m")))
@@ -700,7 +704,7 @@ def _build_table(rows, table_id=""):
     id_attr = ' id="{}"'.format(table_id) if table_id else ""
     header_cells = "".join(
         '<th class="{cls}" title="{tip}">{h}</th>'.format(
-            cls='own-th' if h == 'Own' else '', tip=HEADER_TIPS.get(h, ''), h=h)
+            cls='own-th' if h in ('Own', 'Watch') else '', tip=HEADER_TIPS.get(h, ''), h=h)
         for h in TABLE_HEADERS)
     body_rows = "\n".join(_build_table_row(r) for r in rows)
     return (

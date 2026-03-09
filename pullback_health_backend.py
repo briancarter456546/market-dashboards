@@ -713,6 +713,15 @@ def _own_cell(ticker):
     ).format(t=ticker)
 
 
+def _watch_cell(ticker):
+    """Watch checkbox cell with data-val for sorting."""
+    return (
+        '<td data-val="0"><input type="checkbox" class="watch-cb" data-ticker="{t}"'
+        ' onclick="window._watchToggle(\'{t}\', this); window._phApplyFilters();"'
+        ' title="Mark as watched"></td>'
+    ).format(t=ticker)
+
+
 def _health_pill(verdict):
     """Inline health verdict pill."""
     return '<span class="health-pill health-{v}">{v}</span>'.format(v=verdict)
@@ -855,7 +864,7 @@ def build_body_html(results, spy_result, writer):
     pullback_results = [r for r in sorted_results if r['dd_pct'] < -1.0]
 
     headers = [
-        "Own", "Ticker", "Price", "DD%", "DD NATR", "NATR%",
+        "Own", "Watch", "Ticker", "Price", "DD%", "DD NATR", "NATR%",
         "SMAs", "Stg", "VolX", "Beta",
         "Resid", "Recov", "Health", "Verdict",
     ]
@@ -890,6 +899,7 @@ def build_body_html(results, spy_result, writer):
         rows.append(
             '<tr data-verdict="{verdict}">'
             '{own}'
+            '{watch}'
             '<td><strong>{ticker}</strong></td>'
             '<td class="num neutral" data-val="{price}">${price:.2f}</td>'
             '<td class="num {dd_css}" data-val="{dd_pct}">{dd_pct:.1f}%</td>'
@@ -906,6 +916,7 @@ def build_body_html(results, spy_result, writer):
             '</tr>'.format(
                 verdict=r['verdict'],
                 own=_own_cell(r['ticker']),
+                watch=_watch_cell(r['ticker']),
                 ticker=r['ticker'],
                 price=r['price'],
                 dd_pct=r['dd_pct'],

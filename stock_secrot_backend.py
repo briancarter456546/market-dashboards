@@ -285,6 +285,8 @@ def build_body_html(df, high_scorers, scan_date, csv_path, writer):
             "<tr>"
             '<td><input type="checkbox" class="own-cb" data-ticker="{sym}"'
             ' onclick="window._ownToggle(\'{sym}\', this)" title="Mark as owned"></td>'
+            '<td><input type="checkbox" class="watch-cb" data-ticker="{sym}"'
+            ' onclick="window._watchToggle(\'{sym}\', this)" title="Mark as watched"></td>'
             '<td data-sort="{rank}" class="num">{rank}</td>'
             '<td data-sort="{sym}"><span class="ticker">{sym}</span>{metals}</td>'
             '<td data-sort="{co}" style="font-size:0.9em;color:#444;">{co}</td>'
@@ -330,6 +332,7 @@ def build_body_html(df, high_scorers, scan_date, csv_path, writer):
         '<table class="sortable-table">'
         "<thead><tr>"
         '<th class="own-th" title="Mark tickers you own">Own</th>'
+        '<th class="own-th" title="Mark tickers you are watching">Watch</th>'
         '<th title="Overall rank by composite score">Rank</th>'
         '<th title="Ticker symbol">Symbol</th>'
         '<th title="Company name">Company</th>'

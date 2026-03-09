@@ -518,6 +518,14 @@ def _own_cell(ticker):
     ).format(t=ticker)
 
 
+def _watch_cell(ticker):
+    """Watch checkbox cell with data-val for sorting (0=unwatched, 1=watched)."""
+    return (
+        '<td data-val="0"><input type="checkbox" class="watch-cb" data-ticker="{t}"'
+        ' onclick="window._watchToggle(\'{t}\', this)" title="Mark as watched"></td>'
+    ).format(t=ticker)
+
+
 def _score_cell(val):
     """Trend Quality Score cell with color coding."""
     if val is None:
@@ -707,7 +715,7 @@ def build_body_html(results, writer):
     # 4. Entry Signals (Stage 1 -> 2)
     # -----------------------------------------------------------------
     if entry_signals:
-        headers = ["Own", "Ticker", "Transition Date", "Price", "Slope %",
+        headers = ["Own", "Watch", "Ticker", "Transition Date", "Price", "Slope %",
                    "Distance %", "R-sq", "Crash Risk", "TQ Score"]
         rows = []
         for s in entry_signals:
@@ -715,11 +723,13 @@ def build_body_html(results, writer):
             rows.append(
                 '<tr>'
                 '{}'
+                '{}'
                 '<td><strong>{}</strong></td>'
                 '<td data-val="{}">{}</td>'
                 '{}{}{}{}{}{}'
                 '</tr>'.format(
                     _own_cell(s["ticker"]),
+                    _watch_cell(s["ticker"]),
                     s["ticker"],
                     date_sortval, s["date"],
                     _num_cell(s["price"], fmt="${:.2f}", css="neutral"),
@@ -749,18 +759,20 @@ def build_body_html(results, writer):
     # -----------------------------------------------------------------
     # 5. Stage 2 - Sustained Uptrends
     # -----------------------------------------------------------------
-    headers = ["Own", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
+    headers = ["Own", "Watch", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
                "R-sq", "Vol %", "Crash Risk", "TQ Score"]
     rows = []
     for r in stage2:
         rows.append(
             '<tr>'
             '{}'
+            '{}'
             '<td><strong>{}</strong></td>'
             '<td>{}</td>'
             '{}{}{}{}{}{}{}'
             '</tr>'.format(
                 _own_cell(r["ticker"]),
+                _watch_cell(r["ticker"]),
                 r["ticker"],
                 _stage_pill(r["stage"]),
                 _num_cell(r["slope_pct"], fmt="{:.1f}", suffix="%"),
@@ -784,18 +796,20 @@ def build_body_html(results, writer):
     # -----------------------------------------------------------------
     # 6. Stage 3 - Parabolic (Exit Watch)
     # -----------------------------------------------------------------
-    headers = ["Own", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
+    headers = ["Own", "Watch", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
                "R-sq", "Vol %", "Crash Risk", "TQ Score"]
     rows = []
     for r in stage3:
         rows.append(
             '<tr>'
             '{}'
+            '{}'
             '<td><strong>{}</strong></td>'
             '<td>{}</td>'
             '{}{}{}{}{}{}{}'
             '</tr>'.format(
                 _own_cell(r["ticker"]),
+                _watch_cell(r["ticker"]),
                 r["ticker"],
                 _stage_pill(r["stage"]),
                 _num_cell(r["slope_pct"], fmt="{:.1f}", suffix="%"),
@@ -821,18 +835,20 @@ def build_body_html(results, writer):
     # -----------------------------------------------------------------
     all_sorted = sorted(results, key=lambda x: (-x["stage"], -x["slope_pct"]))
 
-    headers = ["Own", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
+    headers = ["Own", "Watch", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
                "R-sq", "Vol %", "Crash Risk", "TQ Score"]
     rows = []
     for r in all_sorted:
         rows.append(
             '<tr>'
             '{}'
+            '{}'
             '<td><strong>{}</strong></td>'
             '<td>{}</td>'
             '{}{}{}{}{}{}{}'
             '</tr>'.format(
                 _own_cell(r["ticker"]),
+                _watch_cell(r["ticker"]),
                 r["ticker"],
                 _stage_pill(r["stage"]),
                 _num_cell(r["slope_pct"], fmt="{:.1f}", suffix="%"),

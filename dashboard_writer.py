@@ -562,6 +562,11 @@ OWNERSHIP_CSS = """
 .row-owned { background: #fff7ed !important; }
 .row-owned:hover { background: #ffedd5 !important; }
 th.own-th { width: 30px; text-align: center; cursor: default; }
+/* --- Shared watchlist checkbox (all dashboards) --- */
+.watch-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #3b82f6; }
+.row-watched:not(.row-owned) { background: #eff6ff !important; }
+.row-watched:not(.row-owned):hover { background: #dbeafe !important; }
+th.watch-th { width: 30px; text-align: center; cursor: default; }
 """
 
 OWNERSHIP_JS = """
@@ -616,6 +621,45 @@ window._ownToggle = function(ticker, cb) {
     var tr = cb.closest('tr');
     if (tr) tr.classList.toggle('row-owned');
     /* Update td data-val so column sorting works (1=owned, 0=not) */
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+/* --- Shared watchlist state (localStorage, cross-dashboard) --- */
+window._watched = (function() {
+    var KEY = 'dashboard_watched_tickers';
+    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            return _set.has(t);
+        },
+        all: function() { return [].concat(Array.from(_set)); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init watch checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.watch-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._watched.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-watched');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared watch toggle helper for Python-rendered tables */
+window._watchToggle = function(ticker, cb) {
+    window._watched.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-watched');
     var td = cb.closest('td');
     if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
 };

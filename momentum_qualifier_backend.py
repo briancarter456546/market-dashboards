@@ -515,6 +515,15 @@ def _own_cell(asset):
     ).format(tk=tk)
 
 
+def _watch_cell(asset):
+    """Build checkbox cell for watch column."""
+    tk = asset['ticker']
+    return (
+        '<input type="checkbox" class="watch-cb" data-ticker="{tk}"'
+        ' onclick="window._watchToggle(\'{tk}\', this)" title="Mark as watched">'
+    ).format(tk=tk)
+
+
 def _build_table(assets, table_id, columns):
     """
     Generic table builder.
@@ -523,7 +532,7 @@ def _build_table(assets, table_id, columns):
     """
     thead_cells = ''.join(
         '<th class="{cls}" title="{tip}">{h}</th>'.format(
-            cls='own-th' if h == 'Own' else '', tip=HEADER_TIPS.get(h, ''), h=h)
+            cls='own-th' if h in ('Own', 'Watch') else '', tip=HEADER_TIPS.get(h, ''), h=h)
         for h, _ in columns
     )
     rows = []
@@ -544,6 +553,7 @@ def _build_table(assets, table_id, columns):
 def _build_safe_table(assets):
     cols = [
         ('Own',          _own_cell),
+        ('Watch',        _watch_cell),
         ('Rank',         lambda a: '<span class="n">{}</span>'.format(a['_rank'])),
         ('Ticker',       lambda a: '<span class="ticker">{}</span>'.format(a['ticker'])),
         ('Score',        lambda a: _score_cell(a['composite_score'])),
@@ -564,6 +574,7 @@ def _build_safe_table(assets):
 def _build_all_table(assets):
     cols = [
         ('Own',          _own_cell),
+        ('Watch',        _watch_cell),
         ('Rank',         lambda a: '<span class="n">{}</span>'.format(a['_rank'])),
         ('Ticker',       lambda a: '<span class="ticker">{}</span>'.format(a['ticker'])),
         ('Safe',         lambda a: _safe_badge(a['is_safe'])),
@@ -588,6 +599,7 @@ def _build_all_table(assets):
 def _build_momentum_table(assets):
     cols = [
         ('Own',          _own_cell),
+        ('Watch',        _watch_cell),
         ('Ticker',       lambda a: '<span class="ticker">{}</span>'.format(a['ticker'])),
         ('%>SMA9',       lambda a: _pct(a['qualification']['pct_above_sma9'])),
         ('Pos Mo',       lambda a: '<span class="n">{}/12</span>'.format(

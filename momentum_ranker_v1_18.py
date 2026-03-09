@@ -1200,7 +1200,7 @@ RENDER_JS_TAIL = """;
         };
 
         let html = `<table class="mr-table"><colgroup>
-  <col class="col-owned"><col class="col-rank"><col class="col-ticker"><col class="col-score">
+  <col class="col-owned"><col class="col-watched"><col class="col-rank"><col class="col-ticker"><col class="col-score">
   <col class="col-top-pole"><col class="col-sma">
   <col class="col-ret"><col class="col-ret"><col class="col-ret">
   <col class="col-ret"><col class="col-ret"><col class="col-ret">
@@ -1210,7 +1210,7 @@ RENDER_JS_TAIL = """;
   <col class="col-mzscore"><col class="col-mflag"><col class="col-mflag"><col class="col-mflag">
 </colgroup><thead>
 <tr class="grp-row">
-  <th class="grp-blank" colspan="6"></th>
+  <th class="grp-blank" colspan="7"></th>
   <th class="grp-returns" colspan="6">Returns</th>
   <th class="grp-blank"></th>
   <th class="grp-vs-spy" colspan="3">vs SPY</th>
@@ -1221,6 +1221,7 @@ RENDER_JS_TAIL = """;
   <th class="grp-ol"     title="${TIP.ol}">OL</th>
 </tr><tr>
   ${th('owned',         '\u2605',  '',        'Click to mark as owned. Sort to group owned tickers. Filter to show only owned.')}
+  ${th('watched',       '\u25C9', '',      'Click to mark as watched. Sort to group watched tickers.')}
   ${th('rank',          'Rank',  '',        TIP.rank)}
   ${th('ticker',        'Ticker','col-left')}
   ${th('score',         'Score', '',        TIP.score)}
@@ -1281,11 +1282,15 @@ RENDER_JS_TAIL = """;
                 : `<td style="color:#ccc;text-align:center;">&#8212;</td>`;
 
             const isOwned = window._owned.has(row.ticker);
+            const isWatched = window._watched.has(row.ticker);
             const ownedClass = isOwned ? ' row-owned' : '';
+            const watchedClass = isWatched ? ' row-watched' : '';
             const ownedTd = `<td><input type="checkbox" class="own-cb" ${isOwned ? 'checked' : ''} onclick="window._mrToggleOwned('${row.ticker}')" title="Mark as owned"></td>`;
+            const watchedTd = `<td><input type="checkbox" class="watch-cb" ${isWatched ? 'checked' : ''} onclick="window._mrToggleWatched('${row.ticker}')" title="Mark as watched"></td>`;
 
-            html += `<tr class="${ownedClass}">
+            html += `<tr class="${ownedClass}${watchedClass}">
   ${ownedTd}
+  ${watchedTd}
   <td>${row.rank}</td>
   <td class="col-left" data-mr-row="${i}" style="cursor:default;">${row.ticker}</td>
   <td><span class="score-badge" style="background:${scBg};color:${scFg};">${sc.toFixed(1)}</span></td>
@@ -1313,6 +1318,11 @@ RENDER_JS_TAIL = """;
     window._mrToggleOwned = function(ticker) {
         toggleOwned(ticker);
         updatePoleCorrRow();
+    };
+
+    window._mrToggleWatched = function(ticker) {
+        window._watched.toggle(ticker);
+        renderTable();
     };
 
     // -------------------------------------------------------------------------
