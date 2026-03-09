@@ -848,8 +848,8 @@ def build_body_html(results, spy_result, writer):
     )
 
     # -- Main table --
-    # Sort by health score ascending (worst first)
-    sorted_results = sorted(results, key=lambda x: x['health'])
+    # Sort by health score descending (healthiest first)
+    sorted_results = sorted(results, key=lambda x: x['health'], reverse=True)
 
     # Only show tickers in pullback (dd < -1%) or all
     pullback_results = [r for r in sorted_results if r['dd_pct'] < -1.0]
