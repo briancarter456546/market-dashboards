@@ -944,9 +944,9 @@ if __name__ == '__main__':
         }
         # Flatten dominant window predictions
         dominant = window_meta.get('dominant_window', '25Y') if window_meta else '25Y'
-        preds = (etf.get('predictions') or {}).get(dominant, {})
+        preds = (etf.get('predictions') or {}).get(dominant) or {}
         for hz in ['3d', '5d', '10d']:
-            p = preds.get(hz, {})
+            p = preds.get(hz) or {}
             row['pred_{}_avg'.format(hz)] = p.get('avg_return')
             row['pred_{}_winrate'.format(hz)] = p.get('pct_positive')
             row['pred_{}_n'.format(hz)] = p.get('count')

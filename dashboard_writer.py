@@ -751,15 +751,7 @@ DASHBOARD_DESCRIPTIONS = {
         "describes rotation, panic, or something else entirely. Based on Morris "
         "et al. (2007): agent metaphors cause investors to expect trend continuance."
     ),
-    "smart-money": (
-        "Volume-based institutional flow detection using six indicators: "
-        "OBV trend (above 20-day MA), MFI oversold (<40), CMF oscillator "
-        "(short EMA vs long EMA of Chaikin Money Flow), relative volume "
-        "(>1.3x 20-day avg), NVI/PVI institutional signal (Fosback's theory "
-        "that institutions trade on low-volume days), and OBV divergence "
-        "(price makes new low but OBV doesn't). Composite 0-6 score. "
-        "PENDING VALIDATION: methods and thresholds not yet scimode-tested."
-    ),
+    # "smart-money" REMOVED 2026-03-09: failed scimode validation against real 13F data
     "pole-rotation": (
         "Visualizes the ~20 ETF poles (out of 43 total) that passed reliability testing "
         "via RSI(2) mean-reversion backtest with Profit Factor >= 1.5. Each pole is a "
@@ -795,8 +787,13 @@ class DashboardWriter(object):
     def __init__(self, slug, title):
         self.slug = slug
         self.title = title
-        self.date_str = datetime.date.today().strftime("%Y-%m-%d")
-        self.date_compact = datetime.date.today().strftime("%Y%m%d")
+        now = datetime.datetime.now()
+        self.date_str = now.strftime("%Y-%m-%d")
+        self.date_compact = now.strftime("%Y%m%d")
+        hour = now.strftime("%I").lstrip("0")
+        self.timestamp_str = "{} {}:{} {} ET".format(
+            self.date_str, hour, now.strftime("%M"), now.strftime("%p")
+        )
 
         self.dash_dir = os.path.join(DOCS_DIR, slug)
         self.archive_dir = os.path.join(self.dash_dir, "archive")
@@ -916,7 +913,7 @@ class DashboardWriter(object):
         return (
             '</div>'  # close .content
             '<div class="dash-footer">'
-            '{base} &mdash; Generated {date} &mdash; For personal research only.'
+            '{base} &mdash; Last updated {timestamp} &mdash; For personal research only.'
             '<div class="dash-footer-links">'
             '<a href="https://sortinoskitchen.substack.com/">Sortino\'s Kitchen</a>'
             ' &middot; '
@@ -924,7 +921,7 @@ class DashboardWriter(object):
             ' &middot; '
             '<a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a>'
             '</div>'
-            '</div>'.format(base=GITHUB_PAGES_BASE, date=self.date_str)
+            '</div>'.format(base=GITHUB_PAGES_BASE, timestamp=self.timestamp_str)
         )
 
     def llm_block(self):
@@ -1200,16 +1197,7 @@ DASHBOARD_REGISTRY = [
         "color":       "#dc2626",
         "tag":         "Sentiment",
     },
-    {
-        "slug":        "smart-money",
-        "title":       "Smart Money Flow",
-        "description": "Volume-based institutional flow indicators: OBV trend, MFI oversold, "
-                       "CMF oscillator, relative volume, NVI/PVI institutional signal, and OBV divergence. "
-                       "Composite 0-6 score with BUY/SELL/HOLD for ~1,400 tickers.",
-        "icon":        "💰",
-        "color":       "#0d9488",
-        "tag":         "Flow",
-    },
+    # smart-money tile REMOVED 2026-03-09: failed validation
     {
         "slug":        "pole-rotation",
         "title":       "Proven Pole Rotation",

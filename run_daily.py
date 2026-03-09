@@ -167,12 +167,9 @@ BACKENDS = [
         'slow': False,
         'required': False,
     },
-    {
-        'script': 'smart_money_backend.py',
-        'name': 'Smart Money Flow',
-        'slow': False,
-        'required': False,
-    },
+    # smart_money_backend.py REMOVED 2026-03-09: all indicators failed
+    # scimode validation (CMF/OBV/MFI = coin flip vs real 13F data).
+    # Archived to perplexity-user-data/archive/. Replaced by institutional_flows_backend.py.
     {
         'script': 'pole_rotation_backend.py',
         'name': 'Proven Pole Rotation',
@@ -359,6 +356,18 @@ def main():
         if dry_run:
             log("Would reseed knowledge base", 'INFO')
         else:
+            # Backup KB before reseeding (preserves manual findings)
+            kb_backup = os.path.join(ROOT_DIR, 'kb_backup_v1_0.py')
+            if os.path.exists(kb_backup):
+                try:
+                    subprocess.run(
+                        [sys.executable, kb_backup],
+                        cwd=ROOT_DIR, capture_output=True, timeout=30
+                    )
+                    log("Knowledge Base: Backup complete", 'INFO')
+                except Exception:
+                    log("Knowledge Base: Backup failed (continuing)", 'WARN')
+
             log("Knowledge Base: Reseeding...", 'START')
             kb_start = time.time()
             try:
