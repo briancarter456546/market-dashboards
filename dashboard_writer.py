@@ -1273,10 +1273,10 @@ DASHBOARD_REGISTRY = [
     },
     {
         "slug":        "sma29-entry",
-        "title":       "SMA29 Entry Quality",
+        "title":       "Enter & Exit Quality",
         "description": "Combo score: momentum quality + pullback health + SMA29 extension positioning. "
-                       "Extension buckets from scimode OOS test (154K obs, 1390 tickers). "
-                       "Sweet spot: 0-10% above SMA29 with strong momentum and healthy pullback.",
+                       "SMA29 entry buckets from scimode OOS test (154K obs). SMA10 exit alerts from "
+                       "dual-window analysis (1.2M obs) -- 25%+ above SMA10 = median -3.16% forward.",
         "icon":        "🎯",
         "color":       "#2563eb",
         "tag":         "Scanner",

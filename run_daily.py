@@ -184,7 +184,7 @@ BACKENDS = [
     },
     {
         'script': 'sma29_entry_backend.py',
-        'name': 'SMA29 Entry Quality',
+        'name': 'Enter & Exit Quality',
         'slow': False,
         'required': False,
     },

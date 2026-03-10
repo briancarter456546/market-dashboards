@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# sma29_entry_backend.py - v1.0
-# Last updated: 2026-03-09
+# sma29_entry_backend.py - v1.1
+# Last updated: 2026-03-10
 # =============================================================================
+# v1.1: Added SMA10 exit alert (scimode dual-window finding)
+#   - SMA10 at 25%+ extension: median -3.16%, win 43% -> EXIT ALERT
+#   - SMA10 at 15-25%: median -0.39%, win 48% -> EXIT WATCH
+#   - Renamed dashboard: "Enter & Exit Quality Scanner"
+#   - Added column header tooltips defining every metric
+#
 # v1.0: Initial build - SMA29 Entry Quality dashboard
 #   Combines 3 scimode-validated signals into one composite score:
 #     1. Momentum quality (from momentum_ranker_data.json)
 #     2. Pullback health (from pullback_health_data.json)
 #     3. SMA29 extension positioning (from price_cache, scimode-validated)
 #
-#   Extension scoring based on exit_signal_test.py OOS results (154,979 obs):
+#   SMA29 extension scoring based on exit_signal_test.py OOS results (154,979 obs):
 #     0-5%:   win=55.2%  median_fwd=+0.69%  -> OPTIMAL
 #     5-10%:  win=54.1%  median_fwd=+0.86%  -> OPTIMAL
 #     10-15%: win=53.1%  median_fwd=+0.85%  -> GOOD
@@ -19,6 +25,12 @@
 #     30-40%: win=52.2%  median_fwd=+1.17%  -> WARNING (lottery tail)
 #     40-60%: win=47.6%  median_fwd=+0.00%  -> DANGER
 #     60%+:   win=43.5%  median_fwd=-2.70%  -> EXTREME
+#
+#   SMA10 exit alert (scimode_sma29_entry_v1_0.py, ~1.2M obs, 467 tickers):
+#     25%+:   win=43%  median_fwd=-3.16%  -> EXIT ALERT (sharp danger)
+#     15-25%: win=48%  median_fwd=-0.39%  -> EXIT WATCH
+#     10-15%: win=51%  median_fwd=+0.60%  -> OK
+#     <10%:   normal range, no alert
 #
 # Run:  python sma29_entry_backend.py
 # =============================================================================
@@ -73,6 +85,20 @@ EXTENSION_BUCKETS = [
 BELOW_SMA29_SCORE = 15
 BELOW_SMA29_LABEL = 'BELOW SMA'
 
+# =============================================================================
+# SMA10 EXIT ALERT BUCKETS
+# From scimode_sma29_entry_v1_0.py test_sma_windows(): ~1.2M obs, 467 tickers
+# SMA10 has 12.7pp win-rate spread (best danger detection of any window)
+# =============================================================================
+
+SMA10_EXIT_THRESHOLDS = [
+    # (lower, upper, label, win_rate, median_fwd)
+    (25.0, 999.0, 'EXIT ALERT',  42.5, -3.16),  # Sharp danger: median -3.16%
+    (15.0,  25.0, 'EXIT WATCH',  48.0, -0.39),   # Caution zone: sub-50% win
+    (10.0,  15.0, 'ELEVATED',    51.0,  0.60),    # Slightly warm
+]
+# Below 10%: no exit alert (normal range)
+
 
 # =============================================================================
 # HELPERS
@@ -104,6 +130,16 @@ def classify_extension(ext_pct):
         if lower <= ext_pct < upper:
             return label, score, win, med_fwd
     return 'EXTREME', 0, 43.5, -2.70
+
+
+def classify_sma10_exit(ext10_pct):
+    """Map SMA10 extension % to exit alert level."""
+    if ext10_pct is None:
+        return '', None, None
+    for lower, upper, label, win, med_fwd in SMA10_EXIT_THRESHOLDS:
+        if ext10_pct >= lower:
+            return label, win, med_fwd
+    return '', None, None
 
 
 # =============================================================================
@@ -157,6 +193,14 @@ def compute_sma29_extension(ticker):
 
         extension_pct = ((latest_close - latest_sma29) / latest_sma29) * 100.0
 
+        # SMA10 for exit alert
+        sma10 = close.rolling(10).mean()
+        latest_sma10 = float(sma10.iloc[-1])
+        if np.isnan(latest_sma10) or latest_sma10 <= 0:
+            ext10_pct = None
+        else:
+            ext10_pct = ((latest_close - latest_sma10) / latest_sma10) * 100.0
+
         # Also compute slope quality (21-day log-price R-squared)
         if len(close) >= 21:
             log_prices = np.log(close.iloc[-21:].values)
@@ -179,6 +223,8 @@ def compute_sma29_extension(ticker):
             'close': round(latest_close, 2),
             'sma29': round(latest_sma29, 2),
             'extension_pct': round(extension_pct, 2),
+            'sma10': round(latest_sma10, 2) if ext10_pct is not None else None,
+            'ext10_pct': round(ext10_pct, 2) if ext10_pct is not None else None,
             'slope_rsq': round(rsq, 3),
             'slope_ann': round(slope_ann, 1),
         }
@@ -271,6 +317,10 @@ def build_universe():
         ext_pct = ext['extension_pct']
         ext_label, ext_score_val, ext_win, ext_fwd = classify_extension(ext_pct)
 
+        # SMA10 exit alert
+        ext10_pct = ext.get('ext10_pct')
+        exit_alert, exit_win, exit_fwd = classify_sma10_exit(ext10_pct)
+
         m_score = score_momentum(mr)
         h_score = score_health(pb)
         e_score = ext_score_val
@@ -286,6 +336,11 @@ def build_universe():
             'extension_score': e_score,
             'extension_win': ext_win,
             'extension_fwd': ext_fwd,
+            'sma10': ext.get('sma10'),
+            'ext10_pct': ext10_pct,
+            'exit_alert': exit_alert,
+            'exit_win': exit_win,
+            'exit_fwd': exit_fwd,
             'slope_rsq': ext['slope_rsq'],
             'slope_ann': ext['slope_ann'],
             'momentum_score': round(m_score, 1),
@@ -330,6 +385,15 @@ EXTRA_CSS = """
 .ext-DANGER   { background: #f87171; color: #fff; }
 .ext-EXTREME  { background: #991b1b; color: #fff; }
 .ext-BELOW    { background: #e5e7eb; color: #6b7280; }
+
+/* SMA10 Exit alert badges */
+.exit-alert   { background: #dc2626; color: #fff; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 0.78em; animation: pulse-exit 1.5s infinite; }
+.exit-watch   { background: #f97316; color: #fff; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 0.78em; }
+.exit-elevated { background: #fbbf24; color: #78350f; font-weight: 600; padding: 2px 8px; border-radius: 4px; font-size: 0.78em; }
+@keyframes pulse-exit { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+/* Tooltip on column headers */
+th[title] { cursor: help; border-bottom: 1px dashed #999; }
 
 /* Score bars */
 .score-bar {
@@ -381,24 +445,31 @@ EXTRA_CSS = """
 """
 
 EXTRA_JS = """
-// Sort table by column
+// Fast sort: pre-extract values, sort in memory, reattach once
 function sortTable(colIdx, numeric) {
     var table = document.getElementById('mainTable');
     var tbody = table.tBodies[0];
     var rows = Array.from(tbody.rows);
     var asc = table.getAttribute('data-sort-col') == colIdx
               && table.getAttribute('data-sort-dir') == 'asc';
-    rows.sort(function(a, b) {
-        var va = a.cells[colIdx].getAttribute('data-val') || a.cells[colIdx].innerText;
-        var vb = b.cells[colIdx].getAttribute('data-val') || b.cells[colIdx].innerText;
-        if (numeric) { va = parseFloat(va) || -9999; vb = parseFloat(vb) || -9999; }
-        if (va < vb) return asc ? 1 : -1;
-        if (va > vb) return asc ? -1 : 1;
+    // Pre-extract sort keys to avoid repeated DOM access
+    var keyed = rows.map(function(r) {
+        var v = r.cells[colIdx].getAttribute('data-val');
+        if (v === null) v = r.cells[colIdx].textContent;
+        if (numeric) v = parseFloat(v) || -9999;
+        return {row: r, val: v};
+    });
+    keyed.sort(function(a, b) {
+        if (a.val < b.val) return asc ? 1 : -1;
+        if (a.val > b.val) return asc ? -1 : 1;
         return 0;
     });
     table.setAttribute('data-sort-col', colIdx);
     table.setAttribute('data-sort-dir', asc ? 'desc' : 'asc');
-    rows.forEach(function(r) { tbody.appendChild(r); });
+    // Single DOM reflow: append fragment
+    var frag = document.createDocumentFragment();
+    keyed.forEach(function(k) { frag.appendChild(k.row); });
+    tbody.appendChild(frag);
 }
 
 // Filter by extension zone
@@ -451,6 +522,18 @@ def _ext_badge(label):
     return '<span class="ext-badge ext-{css}">{lbl}</span>'.format(css=css, lbl=label)
 
 
+def _exit_badge(alert_label):
+    """SMA10 exit alert badge."""
+    if not alert_label:
+        return '<td class="tc" data-val="0">-</td>'
+    css_map = {'EXIT ALERT': 'exit-alert', 'EXIT WATCH': 'exit-watch', 'ELEVATED': 'exit-elevated'}
+    val_map = {'EXIT ALERT': 3, 'EXIT WATCH': 2, 'ELEVATED': 1}
+    css = css_map.get(alert_label, '')
+    val = val_map.get(alert_label, 0)
+    return '<td class="tc" data-val="{v}"><span class="{css}">{lbl}</span></td>'.format(
+        v=val, css=css, lbl=alert_label)
+
+
 def _color_pct(val):
     """Color a percentage value."""
     if val is None:
@@ -474,6 +557,8 @@ def build_html(results):
     above_sma = sum(1 for r in results if r['extension_pct'] >= 0)
     optimal = sum(1 for r in results if r['extension_label'] == 'OPTIMAL')
     danger_plus = sum(1 for r in results if r['extension_label'] in ('DANGER', 'EXTREME'))
+    exit_alerts = sum(1 for r in results if r.get('exit_alert') == 'EXIT ALERT')
+    exit_watches = sum(1 for r in results if r.get('exit_alert') == 'EXIT WATCH')
     avg_combo = np.mean([r['combined_score'] for r in results]) if results else 0
     top50_avg = np.mean([r['combined_score'] for r in results[:50]]) if len(results) >= 50 else avg_combo
 
@@ -511,6 +596,14 @@ def build_html(results):
             <div class="sc-label">Danger / Extreme</div>
         </div>
         <div class="summary-card">
+            <div class="sc-value" style="color:#dc2626">{}</div>
+            <div class="sc-label">Exit Alerts (SMA10)</div>
+        </div>
+        <div class="summary-card">
+            <div class="sc-value" style="color:#f97316">{}</div>
+            <div class="sc-label">Exit Watch (SMA10)</div>
+        </div>
+        <div class="summary-card">
             <div class="sc-value">{:.1f}</div>
             <div class="sc-label">Avg Combined Score</div>
         </div>
@@ -519,7 +612,7 @@ def build_html(results):
             <div class="sc-label">Top 50 Avg Score</div>
         </div>
     </div>
-    """.format(len(results), above_sma, optimal, danger_plus, avg_combo, top50_avg)
+    """.format(len(results), above_sma, optimal, danger_plus, exit_alerts, exit_watches, avg_combo, top50_avg)
 
     # Zone filter buttons
     zone_order = ['OPTIMAL', 'GOOD', 'FAIR', 'CAUTION', 'WARNING', 'DANGER', 'EXTREME', 'BELOW SMA']
@@ -556,32 +649,42 @@ def build_html(results):
     <p><b>Momentum Score</b>: From momentum_ranker_v1_18 composite (returns + ratios + SPY-relative days).</p>
     <p><b>Health Score</b>: From pullback_health (NATR drawdown, SMA structure, slope stage, vol expansion, beta-adjusted DD, historical recovery).</p>
     <p><b>Ideal entry</b>: High momentum + healthy pullback + optimal SMA29 zone (0-10% extension). These are stocks trending up with room to run.</p>
+    <p style="margin-top:10px"><b>SMA10 Exit Alert</b> (scimode dual-window analysis, ~1.2M obs, 467 tickers):</p>
+    <p>SMA10 detects overextension faster than SMA29 (12.7pp win-rate spread vs 7.8pp).</p>
+    <table style="font-size:0.9em;border-collapse:collapse;margin:6px 0">
+    <tr><th style="padding:2px 8px;text-align:left">Alert</th><th style="padding:2px 8px">SMA10 Ext</th><th style="padding:2px 8px">Win Rate</th><th style="padding:2px 8px">Median 21d Fwd</th></tr>
+    <tr><td style="padding:2px 8px"><span class="exit-alert">EXIT ALERT</span></td><td style="padding:2px 8px;text-align:center">25%+</td><td style="padding:2px 8px;text-align:center">42.5%</td><td style="padding:2px 8px;text-align:center;color:#dc2626">-3.16%</td></tr>
+    <tr><td style="padding:2px 8px"><span class="exit-watch">EXIT WATCH</span></td><td style="padding:2px 8px;text-align:center">15-25%</td><td style="padding:2px 8px;text-align:center">48.0%</td><td style="padding:2px 8px;text-align:center;color:#f97316">-0.39%</td></tr>
+    <tr><td style="padding:2px 8px"><span class="exit-elevated">ELEVATED</span></td><td style="padding:2px 8px;text-align:center">10-15%</td><td style="padding:2px 8px;text-align:center">51.0%</td><td style="padding:2px 8px;text-align:center">+0.60%</td></tr>
+    </table>
+    <p><b>Key insight</b>: Use SMA29 for entry scoring (stable optimal zone), SMA10 for exit alerts (sharper overextension detection).</p>
     </div>
     </details>
     """
 
-    # Table
+    # Table - all headers have title tooltips
     header = """<table id="mainTable" class="dash-table" data-sort-col="0" data-sort-dir="desc">
     <thead><tr>
         <th>Own</th>
         <th>Watch</th>
-        <th onclick="sortTable(2,false)" style="cursor:pointer">Ticker</th>
-        <th onclick="sortTable(3,true)" style="cursor:pointer">Price</th>
-        <th onclick="sortTable(4,true)" style="cursor:pointer">Combined</th>
-        <th onclick="sortTable(5,true)" style="cursor:pointer">Ext %</th>
-        <th onclick="sortTable(6,false)" style="cursor:pointer">Zone</th>
-        <th onclick="sortTable(7,true)" style="cursor:pointer">Momentum</th>
-        <th onclick="sortTable(8,true)" style="cursor:pointer">Health</th>
-        <th onclick="sortTable(9,true)" style="cursor:pointer">Ext Score</th>
-        <th onclick="sortTable(10,true)" style="cursor:pointer">Win %</th>
-        <th onclick="sortTable(11,true)" style="cursor:pointer">Med Fwd</th>
-        <th onclick="sortTable(12,true)" style="cursor:pointer">R-sq</th>
-        <th onclick="sortTable(13,true)" style="cursor:pointer">Slope %</th>
-        <th onclick="sortTable(14,true)" style="cursor:pointer">DD %</th>
-        <th onclick="sortTable(15,false)" style="cursor:pointer">Stage</th>
-        <th onclick="sortTable(16,true)" style="cursor:pointer">1W</th>
-        <th onclick="sortTable(17,true)" style="cursor:pointer">1M</th>
-        <th>Pole</th>
+        <th onclick="sortTable(2,false)" style="cursor:pointer" title="Stock ticker symbol + momentum rank (#1 = highest scored)">Ticker</th>
+        <th onclick="sortTable(3,true)" style="cursor:pointer" title="Latest closing price (adjusted for splits)">Price</th>
+        <th onclick="sortTable(4,true)" style="cursor:pointer" title="Weighted composite: 35% Momentum + 30% Pullback Health + 35% SMA29 Extension. Higher = better entry quality. 0-100 scale.">Combined</th>
+        <th onclick="sortTable(5,true)" style="cursor:pointer" title="SMA10 exit alert based on scimode dual-window analysis (~1.2M obs). EXIT ALERT = 25%+ above SMA10 (median -3.16%, win 43%). EXIT WATCH = 15-25% (median -0.39%, win 48%).">Exit</th>
+        <th onclick="sortTable(6,true)" style="cursor:pointer" title="% distance of close above 29-day SMA. Positive = above SMA29, negative = below.">Ext %</th>
+        <th onclick="sortTable(7,false)" style="cursor:pointer" title="SMA29 extension zone from scimode OOS test (154K trending obs, 1390 tickers). OPTIMAL = 0-10% above SMA29 (sweet spot). Zones scored by 21-day forward win rate.">Zone</th>
+        <th onclick="sortTable(8,true)" style="cursor:pointer" title="Momentum ranker composite score (0-100). Blend of: multi-period returns (1d-1y), ratio quality (acceleration checks), and bad-SPY-day resilience. Gated by SMA structure.">Momentum</th>
+        <th onclick="sortTable(9,true)" style="cursor:pointer" title="Pullback health score (0-100). Blend of: drawdown severity (NATR-adjusted), SMA structure (30/50/100/200), slope stage, vol expansion, beta-adjusted DD, and historical recovery rate.">Health</th>
+        <th onclick="sortTable(10,true)" style="cursor:pointer" title="Extension bucket score (0-95). From SMA29 zone: OPTIMAL=90-95, GOOD=75, FAIR=55, CAUTION=40, WARNING=20-25, DANGER=10, EXTREME=0.">Ext Score</th>
+        <th onclick="sortTable(11,true)" style="cursor:pointer" title="Historical 21-day forward win rate for this SMA29 extension zone. From scimode OOS test (154,979 trending observations). Higher = more likely to be positive 21 days later.">Win %</th>
+        <th onclick="sortTable(12,true)" style="cursor:pointer" title="Median 21-day forward return for this SMA29 extension zone. From scimode OOS test. Negative in DANGER/EXTREME zones.">Med Fwd</th>
+        <th onclick="sortTable(13,true)" style="cursor:pointer" title="R-squared of 21-day log-price regression. Measures trend quality: 1.0 = perfectly linear move, 0.0 = random walk. Above 0.70 = strong trend.">R-sq</th>
+        <th onclick="sortTable(14,true)" style="cursor:pointer" title="Annualized slope from 21-day log-price regression. Shows how fast the stock is trending (% per year). Higher = steeper uptrend.">Slope %</th>
+        <th onclick="sortTable(15,true)" style="cursor:pointer" title="Current drawdown from 63-day (3-month) rolling high. Shows how far the stock has pulled back from its recent peak. 0% = at high, -10% = pulled back 10%.">DD %</th>
+        <th onclick="sortTable(16,false)" style="cursor:pointer" title="Trend stage from slope analysis. Decline = falling, Basing = bottoming, Uptrend = sustained rise, Parabolic = late-stage acceleration.">Stage</th>
+        <th onclick="sortTable(17,true)" style="cursor:pointer" title="Total return over the past 5 trading days (1 week).">1W</th>
+        <th onclick="sortTable(18,true)" style="cursor:pointer" title="Total return over the past 21 trading days (1 month).">1M</th>
+        <th title="Highest-correlated asset from 20-asset correlation universe (63-day window). Shows what this stock moves most like. Only shown if correlation >= 0.30.">Pole</th>
     </tr></thead>
     <tbody>"""
 
@@ -610,6 +713,7 @@ def build_html(results):
         row += '<td class="tr" data-val="{v}" style="font-weight:700;color:{c}">{v:.1f}</td>'.format(
             v=r['combined_score'],
             c='#166534' if r['combined_score'] >= 70 else '#854d0e' if r['combined_score'] >= 45 else '#991b1b')
+        row += _exit_badge(r.get('exit_alert', ''))
         row += '<td class="tr" data-val="{}" style="color:{}">{}</td>'.format(r['extension_pct'], ext_color, ext_pct_str)
         row += '<td class="tc">{}</td>'.format(_ext_badge(r['extension_label']))
         row += '<td class="tr" data-val="{}">{:.0f}</td>'.format(r['momentum_score'], r['momentum_score'])
@@ -630,14 +734,14 @@ def build_html(results):
     table_html = header + '\n'.join(rows_html) + '</tbody></table>'
 
     # Assemble using DashboardWriter API
-    dw = DashboardWriter('sma29-entry', 'SMA29 Entry Quality Scanner')
+    dw = DashboardWriter('sma29-entry', 'Enter & Exit Quality Scanner')
 
     # Stat bar
     stat_bar_data = [
         ('Universe', '{:,}'.format(len(results)), 'neutral'),
         ('Above SMA29', '{:,}'.format(above_sma), 'pos' if above_sma > len(results) * 0.4 else 'neg'),
         ('Optimal Zone', '{:,}'.format(optimal), 'pos' if optimal > 50 else 'warn'),
-        ('Danger+', '{:,}'.format(danger_plus), 'neg' if danger_plus > 20 else 'neutral'),
+        ('Exit Alerts', '{:,}'.format(exit_alerts), 'neg' if exit_alerts > 10 else 'neutral'),
         ('Top 50 Avg', '{:.1f}'.format(top50_avg), 'pos' if top50_avg >= 65 else 'warn'),
     ]
 
@@ -652,7 +756,7 @@ def build_html(results):
         int(W_MOMENTUM * 100), int(W_HEALTH * 100), int(W_EXTENSION * 100))
 
     parts = []
-    parts.append(dw.build_header(subtitle='SMA29 Extension | Scimode-Validated'))
+    parts.append(dw.build_header(subtitle='SMA29 Entry + SMA10 Exit | Scimode-Validated'))
     parts.append(dw.stat_bar(stat_bar_data))
     parts.append(dw.regime_banner(banner_text, banner_score, color=banner_color))
     parts.append(dw.section('Methodology', methodology, hint='Scimode exit_signal_test.py'))
@@ -677,7 +781,7 @@ def build_html(results):
 
 def main():
     print("=" * 70)
-    print("SMA29 ENTRY QUALITY SCANNER v1.0")
+    print("ENTER & EXIT QUALITY SCANNER v1.1")
     print("=" * 70)
 
     results = build_universe()
