@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proven Pole Rotation - 2026-03-10</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a2e;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* --- Top stat bar (dark anchor) --- */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    background: #1e1e2e;
+    border-bottom: 3px solid #2d2d4a;
+}
+
+.stat-bar .stat {
+    padding: 20px 26px;
+    border-right: 1px solid #2d2d4a;
+}
+.stat-bar .stat:last-child { border-right: none; }
+
+.stat .stat-label {
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #8888aa;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+}
+
+.stat .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.1em;
+    font-weight: 600;
+    color: #f0f0f0;
+    line-height: 1.1;
+}
+
+.stat .stat-value.pos     { color: #22c55e; }
+.stat .stat-value.neg     { color: #ef4444; }
+.stat .stat-value.warn    { color: #f59e0b; }
+.stat .stat-value.neutral { color: #f0f0f0; }
+
+/* --- Page header --- */
+.page-header {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.page-header .meta {
+    font-size: 0.88em;
+    color: #888;
+}
+
+.page-header .meta a { color: #4f46e5; text-decoration: none; }
+
+/* --- Nav bar --- */
+.page-nav {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 0 30px;
+    display: flex;
+}
+
+.page-nav a {
+    display: inline-block;
+    padding: 13px 20px;
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+.page-nav a:hover  { color: #1a1a2e; }
+.page-nav a.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+/* --- Content area --- */
+.content { padding: 26px 30px; }
+
+/* --- Regime banner --- */
+.regime-banner {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-left: 6px solid #22c55e;
+    border-radius: 8px;
+    padding: 18px 26px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.regime-label {
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.regime-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    color: #888;
+    border-left: 1px solid #e2e4e8;
+    padding-left: 28px;
+    line-height: 1.8;
+}
+
+/* --- Stat/force cards --- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    padding: 18px 22px;
+    border-top: 5px solid #ccc;
+}
+
+.card .label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.9em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.card .sub {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #888;
+}
+
+/* --- Table section wrapper --- */
+.table-section {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.table-section-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid #e2e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.table-section-header h2 {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* --- Tables --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95em;
+}
+
+thead th {
+    background: #f8f9fb;
+    color: #555;
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e2e4e8;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+thead th:hover { background: #f0f2f5; color: #1a1a2e; }
+thead th.sorted-asc  { color: #16a34a; }
+thead th.sorted-desc { color: #dc2626; }
+
+tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbfd; }
+
+/* Numbers and tickers use mono font */
+.num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92em;
+}
+
+.ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #1a1a2e;
+}
+
+/* Color classes */
+.pos   { color: #16a34a; font-weight: 600; }
+.neg   { color: #dc2626; font-weight: 600; }
+.warn  { color: #d97706; font-weight: 600; }
+.muted { color: #aaa; }
+.accent { color: #4f46e5; }
+
+/* Score badges - pill shaped */
+.badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-align: center;
+    min-width: 52px;
+}
+
+.badge-2  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-1  { background: #f0fdf4; color: #16a34a; border: 1px solid #d1fae5; }
+.badge-n1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge-n2 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+/* Qualifier pills */
+.qualifier {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.q-confirmed { background: #dcfce7; color: #15803d; }
+.q-fading    { background: #fff7ed; color: #c2410c; }
+.q-diverging { background: #eff6ff; color: #1d4ed8; }
+.q-holding   { background: #f1f5f9; color: #64748b; }
+
+/* Trend pills */
+.trend-above {
+    background: #dcfce7; color: #15803d;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+.trend-below {
+    background: #fee2e2; color: #b91c1c;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+
+/* --- Playbook text blocks --- */
+.pb-header {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e4e8;
+}
+.pb-header:first-child { margin-top: 0; }
+
+.pb-body {
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.7;
+    margin: 4px 0;
+}
+
+.pb-item {
+    font-size: 0.9em;
+    color: #4f46e5;
+    margin: 5px 0 5px 16px;
+    border-left: 3px solid #c7d2fe;
+    padding-left: 12px;
+    line-height: 1.65;
+}
+
+/* --- Footer --- */
+.dash-footer {
+    padding: 22px 30px;
+    font-size: 0.82em;
+    color: #aaa;
+    border-top: 1px solid #e2e4e8;
+    text-align: center;
+    background: #fff;
+    margin-top: 8px;
+}
+.dash-footer-links {
+    margin-top: 8px;
+}
+.dash-footer-links a {
+    color: #6b7280;
+    text-decoration: none;
+}
+.dash-footer-links a:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    body { font-size: 15px; }
+    .stat-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-bar .stat { padding: 14px 16px; }
+    .stat .stat-value { font-size: 1.5em; }
+    .stat .stat-label { font-size: 0.72em; }
+    .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 6px; }
+    .page-header h1 { font-size: 1.2em; }
+    .page-nav { padding: 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .page-nav a { padding: 10px 14px; font-size: 0.82em; white-space: nowrap; }
+    .content { padding: 16px 12px; }
+    .regime-banner { flex-direction: column; padding: 14px 16px; gap: 12px; }
+    .regime-label { font-size: 1.2em; }
+    .regime-score { border-left: none; padding-left: 0; border-top: 1px solid #e2e4e8; padding-top: 10px; }
+    .cards { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 14px 16px; }
+    .card .value { font-size: 1.5em; }
+    .table-section { border-radius: 0; margin-left: -12px; margin-right: -12px; }
+    .table-section-header { padding: 12px 16px; }
+    table { font-size: 0.85em; }
+    thead th { padding: 8px 10px; font-size: 0.75em; }
+    tbody td { padding: 8px 10px; }
+    .badge { padding: 3px 10px; font-size: 0.82em; min-width: 44px; }
+    .qualifier { padding: 3px 9px; font-size: 0.75em; }
+    .pb-item { margin-left: 8px; padding-left: 10px; }
+    .dash-footer { padding: 16px 12px; font-size: 0.78em; }
+}
+
+/* --- LLM description block (collapsible, matches table-section) --- */
+.llm-block {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    margin-bottom: 22px;
+    overflow: hidden;
+}
+.llm-block summary {
+    padding: 16px 22px;
+    background: #fafafa;
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+}
+.llm-block summary::-webkit-details-marker { display: none; }
+.llm-block summary::after {
+    content: '\25B8';
+    font-size: 0.8em;
+    color: #888;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.llm-block[open] summary::after {
+    transform: rotate(90deg);
+}
+.llm-block[open] summary {
+    border-bottom: 1px solid #e2e4e8;
+}
+.llm-block summary:hover {
+    background: #f0f2f5;
+}
+.llm-block-body {
+    padding: 18px 22px 16px;
+}
+.llm-section-label {
+    font-size: 0.82em;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+}
+.llm-static {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+.llm-dynamic {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 14px 18px;
+    background: #f8f9fb;
+    border-left: 4px solid #4f46e5;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 18px;
+}
+.llm-dynamic .llm-section-label {
+    color: #4f46e5;
+}
+.llm-disclaimer {
+    font-size: 0.78em;
+    color: #999;
+    font-style: italic;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 10px;
+}
+
+
+/* --- Shared ownership checkbox (all dashboards) --- */
+.own-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #f59e0b; }
+.row-owned { background: #fff7ed !important; }
+.row-owned:hover { background: #ffedd5 !important; }
+th.own-th { width: 30px; text-align: center; cursor: default; }
+/* --- Shared watchlist checkbox (all dashboards) --- */
+.watch-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #3b82f6; }
+.row-watched:not(.row-owned) { background: #eff6ff !important; }
+.row-watched:not(.row-owned):hover { background: #dbeafe !important; }
+th.watch-th { width: 30px; text-align: center; cursor: default; }
+
+
+/* Heatmap card grid */
+.pole-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.pole-card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    padding: 16px 18px;
+    border-top: 5px solid #ccc;
+    position: relative;
+}
+
+.pole-card .pole-name {
+    font-size: 0.82em;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.pole-card .pole-members {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72em;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.pole-card .pole-returns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.pole-card .ret-cell {
+    text-align: center;
+    padding: 6px 4px;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78em;
+    font-weight: 600;
+}
+
+.pole-card .ret-label {
+    font-size: 0.65em;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.pole-card .pf-badge {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+.pole-card .pf-badge.elite {
+    background: #fef3c7;
+    color: #d97706;
+    border-color: #fde68a;
+}
+
+/* Beta badge */
+.pole-card .beta-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68em;
+    color: #888;
+    margin-top: 8px;
+}
+
+/* Return color cells */
+.ret-hot-3  { background: #14532d; color: #fff; }
+.ret-hot-2  { background: #166534; color: #fff; }
+.ret-hot-1  { background: #22c55e; color: #fff; }
+.ret-warm   { background: #dcfce7; color: #166534; }
+.ret-flat   { background: #f5f5f5; color: #888; }
+.ret-cool   { background: #fee2e2; color: #991b1b; }
+.ret-cold-1 { background: #ef4444; color: #fff; }
+.ret-cold-2 { background: #991b1b; color: #fff; }
+.ret-cold-3 { background: #450a0a; color: #fff; }
+
+/* Performance table */
+.perf-table td, .perf-table th {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.90em;
+}
+.perf-table th {
+    background: #f8f9fb;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.78em;
+    color: #555;
+    border-bottom: 2px solid #e2e4e8;
+}
+.perf-table td:not(:first-child):not(:nth-child(2)) {
+    font-family: 'IBM Plex Mono', monospace;
+    text-align: right;
+}
+.perf-table td:first-child {
+    font-weight: 600;
+    color: #1a1a2e;
+}
+.perf-table td:nth-child(2) {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78em;
+    color: #888;
+}
+
+</style>
+</head><body>
+<div class="stat-bar"><div class="stat"><div class="stat-label">Date</div><div class="stat-value neutral">2026-03-09</div></div><div class="stat"><div class="stat-label">Proven Poles</div><div class="stat-value neutral">21</div></div><div class="stat"><div class="stat-label">Hot (1M+)</div><div class="stat-value pos">10</div></div><div class="stat"><div class="stat-label">Cold (1M-)</div><div class="stat-value neg">11</div></div><div class="stat"><div class="stat-label">Min PF</div><div class="stat-value warn">1.5</div></div></div>
+<div class="page-header">
+  <h1>Proven Pole Rotation</h1>
+  <div class="meta">
+    RSI(2) Backtest Validated | PF >= 1.5 | 21 of 43 poles &nbsp;|&nbsp;
+    <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
+  </div>
+</div>
+<div class="page-nav">
+  <a href="#spreads" class="active">Dashboard</a>
+  <a href="archive/dashboard_20260310.html">Archive: 2026-03-10</a>
+  <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
+</div>
+<div class="content">
+<div class="regime-banner" style="border-left-color:#ef4444;"><div class="regime-label" style="color:#ef4444;">10 OF 21 HOT</div><div class="regime-score">Hottest 1M: <b>Energy & Oil</b> (+30.0%)<br>Coldest 1M: <b>Financials & Banking</b> (-7.9%)<br>Top PF: <b>Momentum</b> (3.56)</div></div>
+<div class="table-section"><div class="table-section-header"><h2>Pole Rotation Heatmap</h2><span style="font-size:0.85em;color:#888;">Sorted by Profit Factor | Cards colored by 1M return</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div class="pole-grid"><div class="pole-card" style="border-top-color:#86efac;">
+  <div class="pf-badge elite">PF 3.56</div>
+  <div class="pole-name">Momentum</div>
+  <div class="pole-members">SPMO MTUM</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -3.2%
+    </div>
+    <div class="ret-cell ret-warm">
+      <div class="ret-label">1M</div>
+      +0.4%
+    </div>
+    <div class="ret-cell ret-cool">
+      <div class="ret-label">3M</div>
+      -2.7%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 0.99 | WR 74%</div>
+</div>
+<div class="pole-card" style="border-top-color:#16a34a;">
+  <div class="pf-badge elite">PF 3.21</div>
+  <div class="pole-name">Lithium & Battery Materials</div>
+  <div class="pole-members">LITP REMX LIT</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-2">
+      <div class="ret-label">1W</div>
+      -10.4%
+    </div>
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">1M</div>
+      +5.3%
+    </div>
+    <div class="ret-cell ret-hot-3">
+      <div class="ret-label">3M</div>
+      +19.5%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 1.19 | WR 72%</div>
+</div>
+<div class="pole-card" style="border-top-color:#86efac;">
+  <div class="pf-badge elite">PF 2.74</div>
+  <div class="pole-name">Gold Leverage / Inverse</div>
+  <div class="pole-members">IGLD SPY</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -3.3%
+    </div>
+    <div class="ret-cell ret-warm">
+      <div class="ret-label">1M</div>
+      +2.1%
+    </div>
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">3M</div>
+      +7.6%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 0.88 | WR 76%</div>
+</div>
+<div class="pole-card" style="border-top-color:#fca5a5;">
+  <div class="pf-badge elite">PF 2.58</div>
+  <div class="pole-name">Quality Factor</div>
+  <div class="pole-members">QUAL QLTY</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -3.1%
+    </div>
+    <div class="ret-cell ret-cool">
+      <div class="ret-label">1M</div>
+      -1.8%
+    </div>
+    <div class="ret-cell ret-cool">
+      <div class="ret-label">3M</div>
+      -1.4%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 0.94 | WR 77%</div>
+</div>
+<div class="pole-card" style="border-top-color:#fca5a5;">
+  <div class="pf-badge elite">PF 2.46</div>
+  <div class="pole-name">Consumer Discretionary</div>
+  <div class="pole-members">XLY VCR</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cool">
+      <div class="ret-label">1W</div>
+      -2.8%
+    </div>
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1M</div>
+      -4.8%
+    </div>
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">3M</div>
+      -5.8%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 1.03 | WR 75%</div>
+</div>
+<div class="pole-card" style="border-top-color:#16a34a;">
+  <div class="pf-badge elite">PF 2.33</div>
+  <div class="pole-name">Volatility Complex</div>
+  <div class="pole-members">VIXY VIXM VXX UVXY VXZ</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-hot-2">
+      <div class="ret-label">1W</div>
+      +14.8%
+    </div>
+    <div class="ret-cell ret-hot-2">
+      <div class="ret-label">1M</div>
+      +14.6%
+    </div>
+    <div class="ret-cell ret-hot-2">
+      <div class="ret-label">3M</div>
+      +9.1%
+    </div>
+  </div>
+  <div class="beta-badge">Beta -2.81 | WR 75%</div>
+</div>
+<div class="pole-card" style="border-top-color:#fca5a5;">
+  <div class="pf-badge elite">PF 2.33</div>
+  <div class="pole-name">Uranium & Nuclear</div>
+  <div class="pole-members">URA URNJ URNM NLR</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-2">
+      <div class="ret-label">1W</div>
+      -13.9%
+    </div>
+    <div class="ret-cell ret-cool">
+      <div class="ret-label">1M</div>
+      -0.4%
+    </div>
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">3M</div>
+      +7.3%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 1.10 | WR 70%</div>
+</div>
+<div class="pole-card" style="border-top-color:#86efac;">
+  <div class="pf-badge elite">PF 2.24</div>
+  <div class="pole-name">Cybersecurity & Cloud</div>
+  <div class="pole-members">CIBR HACK CLOU SKYY</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">1W</div>
+      +3.5%
+    </div>
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">1M</div>
+      +4.1%
+    </div>
+    <div class="ret-cell ret-cold-2">
+      <div class="ret-label">3M</div>
+      -12.0%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 1.10 | WR 75%</div>
+</div>
+<div class="pole-card" style="border-top-color:#fca5a5;">
+  <div class="pf-badge elite">PF 2.20</div>
+  <div class="pole-name">Cannabis</div>
+  <div class="pole-members">MSOS CNBS</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">1W</div>
+      +6.9%
+    </div>
+    <div class="ret-cell ret-cool">
+      <div class="ret-label">1M</div>
+      -1.9%
+    </div>
+    <div class="ret-cell ret-warm">
+      <div class="ret-label">3M</div>
+      +0.3%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 0.91 | WR 54%</div>
+</div>
+<div class="pole-card" style="border-top-color:#fca5a5;">
+  <div class="pf-badge elite">PF 2.05</div>
+  <div class="pole-name">Developed International Equity</div>
+  <div class="pole-members">IEUR IEV GSEU VGK SPEU</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -5.6%
+    </div>
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1M</div>
+      -4.0%
+    </div>
+    <div class="ret-cell ret-warm">
+      <div class="ret-label">3M</div>
+      +2.6%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 0.92 | WR 65%</div>
+</div>
+<div class="pole-card" style="border-top-color:#dc2626;">
+  <div class="pf-badge elite">PF 2.03</div>
+  <div class="pole-name">Financials & Banking</div>
+  <div class="pole-members">XLF VFH KBE IAI</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -4.2%
+    </div>
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1M</div>
+      -7.9%
+    </div>
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">3M</div>
+      -6.2%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 1.26 | WR 69%</div>
+</div>
+<div class="pole-card" style="border-top-color:#fca5a5;">
+  <div class="pf-badge ">PF 1.88</div>
+  <div class="pole-name">Healthcare & Biotech</div>
+  <div class="pole-members">PJP IHE VHT IYH XPH</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -4.1%
+    </div>
+    <div class="ret-cell ret-cool">
+      <div class="ret-label">1M</div>
+      -1.7%
+    </div>
+    <div class="ret-cell ret-warm">
+      <div class="ret-label">3M</div>
+      +0.6%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 0.75 | WR 71%</div>
+</div>
+<div class="pole-card" style="border-top-color:#16a34a;">
+  <div class="pf-badge ">PF 1.86</div>
+  <div class="pole-name">Gold & Precious Metals</div>
+  <div class="pole-members">CEF SGOL PHYS SIL RING</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-2">
+      <div class="ret-label">1W</div>
+      -9.1%
+    </div>
+    <div class="ret-cell ret-hot-2">
+      <div class="ret-label">1M</div>
+      +8.1%
+    </div>
+    <div class="ret-cell ret-hot-3">
+      <div class="ret-label">3M</div>
+      +24.3%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 0.26 | WR 62%</div>
+</div>
+<div class="pole-card" style="border-top-color:#16a34a;">
+  <div class="pf-badge ">PF 1.86</div>
+  <div class="pole-name">Defense & Aerospace</div>
+  <div class="pole-members">PPA ITA XAR MISL</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -4.2%
+    </div>
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">1M</div>
+      +5.3%
+    </div>
+    <div class="ret-cell ret-hot-3">
+      <div class="ret-label">3M</div>
+      +17.7%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 0.91 | WR 71%</div>
+</div>
+<div class="pole-card" style="border-top-color:#fca5a5;">
+  <div class="pf-badge ">PF 1.84</div>
+  <div class="pole-name">Currency-Hedged Europe</div>
+  <div class="pole-members">HEZU ESGD SPGM KBA</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -4.5%
+    </div>
+    <div class="ret-cell ret-cool">
+      <div class="ret-label">1M</div>
+      -2.2%
+    </div>
+    <div class="ret-cell ret-warm">
+      <div class="ret-label">3M</div>
+      +1.2%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 0.81 | WR 68%</div>
+</div>
+<div class="pole-card" style="border-top-color:#16a34a;">
+  <div class="pf-badge ">PF 1.83</div>
+  <div class="pole-name">Energy & Oil</div>
+  <div class="pole-members">USO BNO GSG PDBC DBC</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-hot-3">
+      <div class="ret-label">1W</div>
+      +16.7%
+    </div>
+    <div class="ret-cell ret-hot-3">
+      <div class="ret-label">1M</div>
+      +30.0%
+    </div>
+    <div class="ret-cell ret-hot-3">
+      <div class="ret-label">3M</div>
+      +38.9%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 0.51 | WR 71%</div>
+</div>
+<div class="pole-card" style="border-top-color:#fca5a5;">
+  <div class="pf-badge ">PF 1.81</div>
+  <div class="pole-name">US Small & Mid Cap</div>
+  <div class="pole-members">IJR MDY IWM IJH VB</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -6.1%
+    </div>
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1M</div>
+      -3.2%
+    </div>
+    <div class="ret-cell ret-warm">
+      <div class="ret-label">3M</div>
+      +1.0%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 1.07 | WR 70%</div>
+</div>
+<div class="pole-card" style="border-top-color:#16a34a;">
+  <div class="pf-badge ">PF 1.73</div>
+  <div class="pole-name">Crypto & Digital Assets</div>
+  <div class="pole-members">BITQ DAPP FDIG STCE BKCH</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -5.6%
+    </div>
+    <div class="ret-cell ret-hot-2">
+      <div class="ret-label">1M</div>
+      +10.0%
+    </div>
+    <div class="ret-cell ret-cold-3">
+      <div class="ret-label">3M</div>
+      -22.4%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 2.32 | WR 68%</div>
+</div>
+<div class="pole-card" style="border-top-color:#fca5a5;">
+  <div class="pf-badge ">PF 1.73</div>
+  <div class="pole-name">Semiconductors & Tech Hardware</div>
+  <div class="pole-members">SOXX SMH PSI FTXL TDIV</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -7.0%
+    </div>
+    <div class="ret-cell ret-cool">
+      <div class="ret-label">1M</div>
+      -1.0%
+    </div>
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">3M</div>
+      +6.6%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 1.30 | WR 64%</div>
+</div>
+<div class="pole-card" style="border-top-color:#16a34a;">
+  <div class="pf-badge ">PF 1.70</div>
+  <div class="pole-name">Grains & Agriculture</div>
+  <div class="pole-members">CORN WEAT SOYB DBA</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">1W</div>
+      +3.4%
+    </div>
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">1M</div>
+      +6.1%
+    </div>
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">3M</div>
+      +5.5%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 0.15 | WR 65%</div>
+</div>
+<div class="pole-card" style="border-top-color:#fca5a5;">
+  <div class="pf-badge ">PF 1.67</div>
+  <div class="pole-name">Latin America</div>
+  <div class="pole-members">EWZS FLBR EWZ ILF</div>
+  <div class="pole-returns">
+    <div class="ret-cell ret-cold-1">
+      <div class="ret-label">1W</div>
+      -6.4%
+    </div>
+    <div class="ret-cell ret-cool">
+      <div class="ret-label">1M</div>
+      -2.2%
+    </div>
+    <div class="ret-cell ret-hot-1">
+      <div class="ret-label">3M</div>
+      +7.2%
+    </div>
+  </div>
+  <div class="beta-badge">Beta 1.10 | WR 67%</div>
+</div></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Performance Table</h2><span style="font-size:0.85em;color:#888;">Click headers to sort</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="perf-table sortable-table"><thead><tr><th title="Factor-Mimicking Portfolio pole name (equal-weighted top 5 ETF constituents)">Pole</th><th title="Top ETF constituents in this pole by correlation strength">Top ETFs</th><th title="1-week return of the pole portfolio">1W</th><th title="1-month return of the pole portfolio">1M</th><th title="3-month return of the pole portfolio">3M</th><th title="6-month return of the pole portfolio">6M</th><th title="Year-to-date return of the pole portfolio">YTD</th><th title="RSI(2) mean-reversion backtest Profit Factor. PF >= 1.5 = reliable pole. Higher = stronger mean-reversion edge.">PF</th><th title="RSI(2) backtest win rate. % of trades that were profitable.">Win Rate</th><th title="6-month regression beta vs SPY. Shows how much this pole moves with the market.">Beta</th></tr></thead><tbody><tr>
+  <td>Momentum</td>
+  <td>SPMO MTUM</td>
+<td class="num neg" data-sort="-3.2066">-3.2%</td>
+<td class="num pos" data-sort="0.3965">+0.4%</td>
+<td class="num neg" data-sort="-2.7124">-2.7%</td>
+<td class="num pos" data-sort="0.3753">+0.4%</td>
+<td class="num neg" data-sort="-2.2313">-2.2%</td>
+  <td class="num" data-sort="3.56" style="font-weight:700;color:#d97706;">3.56</td>
+  <td class="num" data-sort="74.3">74.3%</td>
+  <td class="num" data-sort="0.99">0.99</td>
+</tr>
+<tr>
+  <td>Lithium & Battery Materials</td>
+  <td>LITP REMX LIT</td>
+<td class="num neg" data-sort="-10.3520">-10.4%</td>
+<td class="num pos" data-sort="5.2758">+5.3%</td>
+<td class="num pos" data-sort="19.4738">+19.5%</td>
+<td class="num pos" data-sort="50.6114">+50.6%</td>
+<td class="num pos" data-sort="10.8234">+10.8%</td>
+  <td class="num" data-sort="3.21" style="font-weight:700;color:#d97706;">3.21</td>
+  <td class="num" data-sort="72.0">72.0%</td>
+  <td class="num" data-sort="1.19">1.19</td>
+</tr>
+<tr>
+  <td>Gold Leverage / Inverse</td>
+  <td>IGLD SPY</td>
+<td class="num neg" data-sort="-3.3197">-3.3%</td>
+<td class="num pos" data-sort="2.0631">+2.1%</td>
+<td class="num pos" data-sort="7.5877">+7.6%</td>
+<td class="num pos" data-sort="17.7432">+17.7%</td>
+<td class="num pos" data-sort="6.2060">+6.2%</td>
+  <td class="num" data-sort="2.74" style="font-weight:700;color:#d97706;">2.74</td>
+  <td class="num" data-sort="76.2">76.2%</td>
+  <td class="num" data-sort="0.88">0.88</td>
+</tr>
+<tr>
+  <td>Quality Factor</td>
+  <td>QUAL QLTY</td>
+<td class="num neg" data-sort="-3.0786">-3.1%</td>
+<td class="num neg" data-sort="-1.8020">-1.8%</td>
+<td class="num neg" data-sort="-1.3786">-1.4%</td>
+<td class="num pos" data-sort="5.9371">+5.9%</td>
+<td class="num neg" data-sort="-1.6744">-1.7%</td>
+  <td class="num" data-sort="2.58" style="font-weight:700;color:#d97706;">2.58</td>
+  <td class="num" data-sort="76.6">76.6%</td>
+  <td class="num" data-sort="0.94">0.94</td>
+</tr>
+<tr>
+  <td>Consumer Discretionary</td>
+  <td>XLY VCR</td>
+<td class="num neg" data-sort="-2.8154">-2.8%</td>
+<td class="num neg" data-sort="-4.7841">-4.8%</td>
+<td class="num neg" data-sort="-5.8464">-5.8%</td>
+<td class="num neg" data-sort="-4.8934">-4.9%</td>
+<td class="num neg" data-sort="-6.1859">-6.2%</td>
+  <td class="num" data-sort="2.46" style="font-weight:700;color:#d97706;">2.46</td>
+  <td class="num" data-sort="74.9">74.9%</td>
+  <td class="num" data-sort="1.03">1.03</td>
+</tr>
+<tr>
+  <td>Volatility Complex</td>
+  <td>VIXY VIXM VXX</td>
+<td class="num pos" data-sort="14.7930">+14.8%</td>
+<td class="num pos" data-sort="14.6451">+14.6%</td>
+<td class="num pos" data-sort="9.0823">+9.1%</td>
+<td class="num neg" data-sort="-2.5124">-2.5%</td>
+<td class="num pos" data-sort="23.8959">+23.9%</td>
+  <td class="num" data-sort="2.33" style="font-weight:700;color:#d97706;">2.33</td>
+  <td class="num" data-sort="75.0">75.0%</td>
+  <td class="num" data-sort="-2.81">-2.81</td>
+</tr>
+<tr>
+  <td>Uranium & Nuclear</td>
+  <td>URA URNJ URNM</td>
+<td class="num neg" data-sort="-13.8992">-13.9%</td>
+<td class="num neg" data-sort="-0.3947">-0.4%</td>
+<td class="num pos" data-sort="7.2586">+7.3%</td>
+<td class="num pos" data-sort="26.4589">+26.5%</td>
+<td class="num pos" data-sort="15.6285">+15.6%</td>
+  <td class="num" data-sort="2.33" style="font-weight:700;color:#d97706;">2.33</td>
+  <td class="num" data-sort="70.4">70.4%</td>
+  <td class="num" data-sort="1.10">1.10</td>
+</tr>
+<tr>
+  <td>Cybersecurity & Cloud</td>
+  <td>CIBR HACK CLOU</td>
+<td class="num pos" data-sort="3.4993">+3.5%</td>
+<td class="num pos" data-sort="4.0955">+4.1%</td>
+<td class="num neg" data-sort="-12.0184">-12.0%</td>
+<td class="num neg" data-sort="-11.3299">-11.3%</td>
+<td class="num neg" data-sort="-9.4647">-9.5%</td>
+  <td class="num" data-sort="2.24" style="font-weight:700;color:#d97706;">2.24</td>
+  <td class="num" data-sort="75.0">75.0%</td>
+  <td class="num" data-sort="1.10">1.10</td>
+</tr>
+<tr>
+  <td>Cannabis</td>
+  <td>MSOS CNBS</td>
+<td class="num pos" data-sort="6.8509">+6.9%</td>
+<td class="num neg" data-sort="-1.8623">-1.9%</td>
+<td class="num pos" data-sort="0.3446">+0.3%</td>
+<td class="num neg" data-sort="-18.2528">-18.3%</td>
+<td class="num neg" data-sort="-16.7365">-16.7%</td>
+  <td class="num" data-sort="2.20" style="font-weight:700;color:#d97706;">2.20</td>
+  <td class="num" data-sort="53.9">53.9%</td>
+  <td class="num" data-sort="0.91">0.91</td>
+</tr>
+<tr>
+  <td>Developed International Equity</td>
+  <td>IEUR IEV GSEU</td>
+<td class="num neg" data-sort="-5.5990">-5.6%</td>
+<td class="num neg" data-sort="-3.9672">-4.0%</td>
+<td class="num pos" data-sort="2.5657">+2.6%</td>
+<td class="num pos" data-sort="7.2610">+7.3%</td>
+<td class="num neg" data-sort="-0.4597">-0.5%</td>
+  <td class="num" data-sort="2.05" style="font-weight:700;color:#d97706;">2.05</td>
+  <td class="num" data-sort="65.2">65.2%</td>
+  <td class="num" data-sort="0.92">0.92</td>
+</tr>
+<tr>
+  <td>Financials & Banking</td>
+  <td>XLF VFH KBE</td>
+<td class="num neg" data-sort="-4.2451">-4.2%</td>
+<td class="num neg" data-sort="-7.8655">-7.9%</td>
+<td class="num neg" data-sort="-6.1696">-6.2%</td>
+<td class="num neg" data-sort="-4.6218">-4.6%</td>
+<td class="num neg" data-sort="-7.7291">-7.7%</td>
+  <td class="num" data-sort="2.03" style="font-weight:700;color:#d97706;">2.03</td>
+  <td class="num" data-sort="69.3">69.3%</td>
+  <td class="num" data-sort="1.26">1.26</td>
+</tr>
+<tr>
+  <td>Healthcare & Biotech</td>
+  <td>PJP IHE VHT</td>
+<td class="num neg" data-sort="-4.0672">-4.1%</td>
+<td class="num neg" data-sort="-1.7274">-1.7%</td>
+<td class="num pos" data-sort="0.6014">+0.6%</td>
+<td class="num pos" data-sort="14.5052">+14.5%</td>
+<td class="num neg" data-sort="-0.6913">-0.7%</td>
+  <td class="num" data-sort="1.88" style="font-weight:700;color:#16a34a;">1.88</td>
+  <td class="num" data-sort="70.9">70.9%</td>
+  <td class="num" data-sort="0.75">0.75</td>
+</tr>
+<tr>
+  <td>Gold & Precious Metals</td>
+  <td>CEF SGOL PHYS</td>
+<td class="num neg" data-sort="-9.0632">-9.1%</td>
+<td class="num pos" data-sort="8.1444">+8.1%</td>
+<td class="num pos" data-sort="24.3150">+24.3%</td>
+<td class="num pos" data-sort="50.2740">+50.3%</td>
+<td class="num pos" data-sort="16.9057">+16.9%</td>
+  <td class="num" data-sort="1.86" style="font-weight:700;color:#16a34a;">1.86</td>
+  <td class="num" data-sort="62.0">62.0%</td>
+  <td class="num" data-sort="0.26">0.26</td>
+</tr>
+<tr>
+  <td>Defense & Aerospace</td>
+  <td>PPA ITA XAR</td>
+<td class="num neg" data-sort="-4.1722">-4.2%</td>
+<td class="num pos" data-sort="5.3355">+5.3%</td>
+<td class="num pos" data-sort="17.6993">+17.7%</td>
+<td class="num pos" data-sort="24.0699">+24.1%</td>
+<td class="num pos" data-sort="13.5085">+13.5%</td>
+  <td class="num" data-sort="1.86" style="font-weight:700;color:#16a34a;">1.86</td>
+  <td class="num" data-sort="70.7">70.7%</td>
+  <td class="num" data-sort="0.91">0.91</td>
+</tr>
+<tr>
+  <td>Currency-Hedged Europe</td>
+  <td>HEZU ESGD SPGM</td>
+<td class="num neg" data-sort="-4.4760">-4.5%</td>
+<td class="num neg" data-sort="-2.2273">-2.2%</td>
+<td class="num pos" data-sort="1.2416">+1.2%</td>
+<td class="num pos" data-sort="7.2095">+7.2%</td>
+<td class="num neg" data-sort="-0.4719">-0.5%</td>
+  <td class="num" data-sort="1.84" style="font-weight:700;color:#16a34a;">1.84</td>
+  <td class="num" data-sort="67.5">67.5%</td>
+  <td class="num" data-sort="0.81">0.81</td>
+</tr>
+<tr>
+  <td>Energy & Oil</td>
+  <td>USO BNO GSG</td>
+<td class="num pos" data-sort="16.6835">+16.7%</td>
+<td class="num pos" data-sort="30.0356">+30.0%</td>
+<td class="num pos" data-sort="38.8620">+38.9%</td>
+<td class="num pos" data-sort="41.9973">+42.0%</td>
+<td class="num pos" data-sort="41.2388">+41.2%</td>
+  <td class="num" data-sort="1.83" style="font-weight:700;color:#16a34a;">1.83</td>
+  <td class="num" data-sort="70.7">70.7%</td>
+  <td class="num" data-sort="0.51">0.51</td>
+</tr>
+<tr>
+  <td>US Small & Mid Cap</td>
+  <td>IJR MDY IWM</td>
+<td class="num neg" data-sort="-6.1492">-6.1%</td>
+<td class="num neg" data-sort="-3.1836">-3.2%</td>
+<td class="num pos" data-sort="0.9779">+1.0%</td>
+<td class="num pos" data-sort="3.5943">+3.6%</td>
+<td class="num pos" data-sort="1.7798">+1.8%</td>
+  <td class="num" data-sort="1.81" style="font-weight:700;color:#16a34a;">1.81</td>
+  <td class="num" data-sort="69.5">69.5%</td>
+  <td class="num" data-sort="1.07">1.07</td>
+</tr>
+<tr>
+  <td>Crypto & Digital Assets</td>
+  <td>BITQ DAPP FDIG</td>
+<td class="num neg" data-sort="-5.6409">-5.6%</td>
+<td class="num pos" data-sort="10.0051">+10.0%</td>
+<td class="num neg" data-sort="-22.4091">-22.4%</td>
+<td class="num neg" data-sort="-5.1504">-5.2%</td>
+<td class="num neg" data-sort="-6.8164">-6.8%</td>
+  <td class="num" data-sort="1.73" style="font-weight:700;color:#16a34a;">1.73</td>
+  <td class="num" data-sort="68.1">68.1%</td>
+  <td class="num" data-sort="2.32">2.32</td>
+</tr>
+<tr>
+  <td>Semiconductors & Tech Hardware</td>
+  <td>SOXX SMH PSI</td>
+<td class="num neg" data-sort="-7.0213">-7.0%</td>
+<td class="num neg" data-sort="-1.0002">-1.0%</td>
+<td class="num pos" data-sort="6.6300">+6.6%</td>
+<td class="num pos" data-sort="29.4457">+29.4%</td>
+<td class="num pos" data-sort="7.6789">+7.7%</td>
+  <td class="num" data-sort="1.73" style="font-weight:700;color:#16a34a;">1.73</td>
+  <td class="num" data-sort="64.0">64.0%</td>
+  <td class="num" data-sort="1.30">1.30</td>
+</tr>
+<tr>
+  <td>Grains & Agriculture</td>
+  <td>CORN WEAT SOYB</td>
+<td class="num pos" data-sort="3.3518">+3.4%</td>
+<td class="num pos" data-sort="6.1022">+6.1%</td>
+<td class="num pos" data-sort="5.5182">+5.5%</td>
+<td class="num pos" data-sort="7.0076">+7.0%</td>
+<td class="num pos" data-sort="8.6677">+8.7%</td>
+  <td class="num" data-sort="1.70" style="font-weight:700;color:#16a34a;">1.70</td>
+  <td class="num" data-sort="65.2">65.2%</td>
+  <td class="num" data-sort="0.15">0.15</td>
+</tr>
+<tr>
+  <td>Latin America</td>
+  <td>EWZS FLBR EWZ</td>
+<td class="num neg" data-sort="-6.3677">-6.4%</td>
+<td class="num neg" data-sort="-2.1805">-2.2%</td>
+<td class="num pos" data-sort="7.2051">+7.2%</td>
+<td class="num pos" data-sort="19.3302">+19.3%</td>
+<td class="num pos" data-sort="13.5063">+13.5%</td>
+  <td class="num" data-sort="1.67" style="font-weight:700;color:#16a34a;">1.67</td>
+  <td class="num" data-sort="67.2">67.2%</td>
+  <td class="num" data-sort="1.10">1.10</td>
+</tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Methodology</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div style="font-size:0.88em;color:#666;line-height:1.7;"><b>Methodology:</b> 43 ETF poles were tested using an RSI(2) mean-reversion pullback strategy across full history. Poles with Profit Factor >= 1.5 after excluding regression-excluded poles (US Large Cap Core, US Dollar, Cash, Dow, S&P Variants) are shown here as "proven." Returns are computed from equal-weighted FMP (Factor-Mimicking Portfolio) log returns of each pole's top 5 ETF constituents.<br><br><b>PF Tiers:</b> <span style="color:#d97706;font-weight:700;">Gold (PF >= 2.0)</span> = Elite reliability. <span style="color:#16a34a;font-weight:700;">Green (PF 1.5-2.0)</span> = Proven reliability.</div></div></div>
+<details class="llm-block">
+<summary>About This Dashboard</summary>
+<div class="llm-block-body">
+<div class="llm-section-label">What It Does</div>
+<div class="llm-static">Visualizes the ~20 ETF poles (out of 43 total) that passed reliability testing via RSI(2) mean-reversion backtest with Profit Factor >= 1.5. Each pole is a Factor-Mimicking Portfolio (equal-weighted top 5 ETF constituents). Heatmap cards show 1W/1M/3M returns color-coded by momentum. Performance table includes 6M and YTD returns plus backtest trust scores (PF, win rate) and SPY beta. Poles excluded from regression (US Large Cap Core, US Dollar, Cash, Dow, S&P Variants) are removed.</div>
+<div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div>
+</div></details>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-10 3:30 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+<script>
+
+/* --- Shared ownership state (localStorage, cross-dashboard) --- */
+/* Defensive JSON parse: never lose data on corruption */
+function _safeLoadArray(key) {
+    try {
+        var raw = localStorage.getItem(key);
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+        return [];
+    } catch(e) {
+        console.warn('[ownership] Corrupt localStorage key: ' + key, e);
+        return [];
+    }
+}
+function _safeSaveArray(key, setObj) {
+    try {
+        localStorage.setItem(key, JSON.stringify(Array.from(setObj)));
+    } catch(e) {
+        console.error('[ownership] Failed to save ' + key, e);
+    }
+}
+
+window._owned = (function() {
+    var KEY = 'dashboard_owned_tickers';
+    var _set = new Set(_safeLoadArray(KEY));
+
+    /* Migration: copy old momentum-ranker-only key if it exists */
+    try {
+        var OLD_KEY = 'mr_owned_tickers_v1';
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+            var oldArr = JSON.parse(old);
+            if (Array.isArray(oldArr) && oldArr.length) {
+                oldArr.forEach(function(t) { _set.add(t); });
+                _safeSaveArray(KEY, _set);
+            }
+            localStorage.removeItem(OLD_KEY);
+        }
+    } catch(e) {}
+
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            _safeSaveArray(KEY, _set);
+            return _set.has(t);
+        },
+        all: function() { return Array.from(_set); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.own-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._owned.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-owned');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared toggle helper for Python-rendered tables */
+window._ownToggle = function(ticker, cb) {
+    window._owned.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-owned');
+    /* Update td data-val so column sorting works (1=owned, 0=not) */
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+/* --- Shared watchlist state (localStorage, cross-dashboard) --- */
+window._watched = (function() {
+    var KEY = 'dashboard_watched_tickers';
+    var _set = new Set(_safeLoadArray(KEY));
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            _safeSaveArray(KEY, _set);
+            return _set.has(t);
+        },
+        all: function() { return Array.from(_set); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init watch checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.watch-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._watched.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-watched');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared watch toggle helper for Python-rendered tables */
+window._watchToggle = function(ticker, cb) {
+    window._watched.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-watched');
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+
+function getGradientColor(score) {
+    var clamped = Math.max(0, Math.min(1, score));
+    var r, g, b;
+    if (clamped < 0.25) {
+        var t = clamped * 4;
+        r = Math.round(211 + (255 - 211) * t);
+        g = Math.round(47 + (152 - 47) * t);
+        b = Math.round(47 + (0 - 47) * t);
+    } else if (clamped < 0.5) {
+        var t = (clamped - 0.25) * 4;
+        r = 255;
+        g = Math.round(152 + (235 - 152) * t);
+        b = Math.round(0 + (59 - 0) * t);
+    } else if (clamped < 0.75) {
+        var t = (clamped - 0.5) * 4;
+        r = Math.round(255 + (139 - 255) * t);
+        g = Math.round(235 + (195 - 235) * t);
+        b = Math.round(59 + (74 - 59) * t);
+    } else {
+        var t = (clamped - 0.75) * 4;
+        r = Math.round(139 + (0 - 139) * t);
+        g = Math.round(195 + (200 - 195) * t);
+        b = Math.round(74 + (83 - 74) * t);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+
+document.querySelectorAll('.sortable-table thead th').forEach(function(th, colIdx) {
+    th.addEventListener('click', function() {
+        var table = th.closest('table');
+        var tbody = table.querySelector('tbody');
+        var rows = Array.from(tbody.querySelectorAll('tr'));
+        var asc = !th.classList.contains('sorted-asc');
+
+        table.querySelectorAll('th').forEach(function(h) {
+            h.classList.remove('sorted-asc', 'sorted-desc');
+        });
+        th.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
+
+        rows.sort(function(a, b) {
+            var aVal = a.cells[colIdx].getAttribute('data-sort') || a.cells[colIdx].textContent.trim();
+            var bVal = b.cells[colIdx].getAttribute('data-sort') || b.cells[colIdx].textContent.trim();
+            var aNum = parseFloat(aVal);
+            var bNum = parseFloat(bVal);
+            if (!isNaN(aNum) && !isNaN(bNum)) {
+                return asc ? aNum - bNum : bNum - aNum;
+            }
+            return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        });
+
+        rows.forEach(function(row) { tbody.appendChild(row); });
+    });
+});
+
+</script>
+</body></html>

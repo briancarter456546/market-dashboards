@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# sma29_entry_backend.py - v1.1
+# sma29_entry_backend.py - v1.2
 # Last updated: 2026-03-10
 # =============================================================================
+# v1.2: Replace Win% with Profit Factor (scimode PF validation)
+#   - PF = sum(wins) / sum(|losses|) per extension bucket
+#   - PF validated via scimode_pf_validation_v1_0.py (468 tickers, trending filter)
+#   - PF captures both win rate AND payoff asymmetry in one number
+#   - High-extension PF (30%+) inflated by lottery tails; PF_median tells real story
+#   - SMA10 exit thresholds now include PF
+#
 # v1.1: Added SMA10 exit alert (scimode dual-window finding)
 #   - SMA10 at 25%+ extension: median -3.16%, win 43% -> EXIT ALERT
 #   - SMA10 at 15-25%: median -0.39%, win 48% -> EXIT WATCH
@@ -15,22 +22,22 @@
 #     2. Pullback health (from pullback_health_data.json)
 #     3. SMA29 extension positioning (from price_cache, scimode-validated)
 #
-#   SMA29 extension scoring based on exit_signal_test.py OOS results (154,979 obs):
-#     0-5%:   win=55.2%  median_fwd=+0.69%  -> OPTIMAL
-#     5-10%:  win=54.1%  median_fwd=+0.86%  -> OPTIMAL
-#     10-15%: win=53.1%  median_fwd=+0.85%  -> GOOD
-#     15-20%: win=51.9%  median_fwd=+0.71%  -> FAIR
-#     20-25%: win=51.5%  median_fwd=+0.60%  -> CAUTION
-#     25-30%: win=50.7%  median_fwd=+0.66%  -> WARNING
-#     30-40%: win=52.2%  median_fwd=+1.17%  -> WARNING (lottery tail)
-#     40-60%: win=47.6%  median_fwd=+0.00%  -> DANGER
-#     60%+:   win=43.5%  median_fwd=-2.70%  -> EXTREME
+#   SMA29 extension PF + median fwd (scimode_pf_validation, trending filter):
+#     0-5%:   PF=1.48  median_fwd=+0.90%  -> OPTIMAL
+#     5-10%:  PF=1.50  median_fwd=+1.11%  -> OPTIMAL
+#     10-15%: PF=1.52  median_fwd=+1.24%  -> GOOD
+#     15-20%: PF=1.67  median_fwd=+1.01%  -> FAIR
+#     20-25%: PF=1.58  median_fwd=+0.49%  -> CAUTION
+#     25-30%: PF=1.66  median_fwd=+2.33%  -> WARNING (n=321, noisy)
+#     30-40%: PF=1.87  median_fwd=+1.46%  -> WARNING (lottery tail inflates PF)
+#     40-60%: PF=1.44  median_fwd=-2.21%  -> DANGER (PF_median=1.14, tail-driven)
+#     60%+:   PF=1.52  median_fwd=+2.38%  -> EXTREME (n=84, PF_median=0.91)
 #
-#   SMA10 exit alert (scimode_sma29_entry_v1_0.py, ~1.2M obs, 467 tickers):
-#     25%+:   win=43%  median_fwd=-3.16%  -> EXIT ALERT (sharp danger)
-#     15-25%: win=48%  median_fwd=-0.39%  -> EXIT WATCH
-#     10-15%: win=51%  median_fwd=+0.60%  -> OK
-#     <10%:   normal range, no alert
+#   SMA10 exit alert (scimode PF validation, 468 tickers):
+#     25%+:   PF=1.11  median_fwd=-2.21%  -> EXIT ALERT (PF_median=0.90)
+#     15-25%: PF=1.59  median_fwd=+0.49%  -> EXIT WATCH (PF_median=1.07)
+#     10-15%: PF=1.51  median_fwd=+0.60%  -> OK
+#     <10%:   PF=1.46  normal range, no alert
 #
 # Run:  python sma29_entry_backend.py
 # =============================================================================
@@ -64,21 +71,22 @@ OUTPUT_JSON   = os.path.join(_DATA_DIR, 'sma29_entry_data.json')
 
 # =============================================================================
 # SCIMODE-VALIDATED EXTENSION BUCKETS
-# From exit_signal_test.py: 154,979 trending observations, 1390 tickers
-# Forward = 21-day returns for stocks with slope>0, rsq>0.10, close>SMA29
+# From scimode_pf_validation_v1_0.py: 468 tickers, trending filter
+# (slope>0, rsq>0.10, close>SMA29), 21-day non-overlapping forward returns
+# PF = sum(wins) / sum(|losses|) -- captures win rate + payoff asymmetry
 # =============================================================================
 
 EXTENSION_BUCKETS = [
-    # (lower, upper, win_rate, median_fwd, label, score)
-    (0.0,   5.0,  55.2,  0.69, 'OPTIMAL',  95),
-    (5.0,  10.0,  54.1,  0.86, 'OPTIMAL',  90),
-    (10.0, 15.0,  53.1,  0.85, 'GOOD',     75),
-    (15.0, 20.0,  51.9,  0.71, 'FAIR',     55),
-    (20.0, 25.0,  51.5,  0.60, 'CAUTION',  40),
-    (25.0, 30.0,  50.7,  0.66, 'WARNING',  25),
-    (30.0, 40.0,  52.2,  1.17, 'WARNING',  20),  # lottery tail inflates mean
-    (40.0, 60.0,  47.6,  0.00, 'DANGER',   10),
-    (60.0, 999.0, 43.5, -2.70, 'EXTREME',   0),
+    # (lower, upper, pf, median_fwd, label, score)
+    (0.0,   5.0,  1.48,  0.90, 'OPTIMAL',  95),
+    (5.0,  10.0,  1.50,  1.11, 'OPTIMAL',  90),
+    (10.0, 15.0,  1.52,  1.24, 'GOOD',     75),
+    (15.0, 20.0,  1.67,  1.01, 'FAIR',     55),
+    (20.0, 25.0,  1.58,  0.49, 'CAUTION',  40),
+    (25.0, 30.0,  1.66,  2.33, 'WARNING',  25),   # n=321, noisy
+    (30.0, 40.0,  1.87,  1.46, 'WARNING',  20),   # lottery tail inflates PF
+    (40.0, 60.0,  1.44, -2.21, 'DANGER',   10),   # PF_median=1.14, tail-driven
+    (60.0, 999.0, 1.52,  2.38, 'EXTREME',   0),   # n=84, PF_median=0.91
 ]
 
 # Stocks below SMA29 get a fixed low score (not trending)
@@ -87,17 +95,17 @@ BELOW_SMA29_LABEL = 'BELOW SMA'
 
 # =============================================================================
 # SMA10 EXIT ALERT BUCKETS
-# From scimode_sma29_entry_v1_0.py test_sma_windows(): ~1.2M obs, 467 tickers
+# From scimode_pf_validation_v1_0.py: 468 tickers, trending filter
 # SMA10 has 12.7pp win-rate spread (best danger detection of any window)
 # =============================================================================
 
 SMA10_EXIT_THRESHOLDS = [
-    # (lower, upper, label, win_rate, median_fwd)
-    (25.0, 999.0, 'EXIT ALERT',  42.5, -3.16),  # Sharp danger: median -3.16%
-    (15.0,  25.0, 'EXIT WATCH',  48.0, -0.39),   # Caution zone: sub-50% win
-    (10.0,  15.0, 'ELEVATED',    51.0,  0.60),    # Slightly warm
+    # (lower, upper, label, pf, median_fwd)
+    (25.0, 999.0, 'EXIT ALERT',  1.11, -2.21),   # PF_median=0.90, losing bucket
+    (15.0,  25.0, 'EXIT WATCH',  1.59,  0.49),    # PF_median=1.07, barely positive
+    (10.0,  15.0, 'ELEVATED',    1.51,  0.60),     # Slightly warm
 ]
-# Below 10%: no exit alert (normal range)
+# Below 10%: PF=1.46, no exit alert (normal range)
 
 
 # =============================================================================
@@ -123,22 +131,22 @@ def clean_nan(obj):
 
 
 def classify_extension(ext_pct):
-    """Map extension % to bucket label and score."""
+    """Map extension % to bucket label, score, PF, and median fwd."""
     if ext_pct < 0:
         return BELOW_SMA29_LABEL, BELOW_SMA29_SCORE, None, None
-    for lower, upper, win, med_fwd, label, score in EXTENSION_BUCKETS:
+    for lower, upper, pf, med_fwd, label, score in EXTENSION_BUCKETS:
         if lower <= ext_pct < upper:
-            return label, score, win, med_fwd
-    return 'EXTREME', 0, 43.5, -2.70
+            return label, score, pf, med_fwd
+    return 'EXTREME', 0, 1.52, 2.38
 
 
 def classify_sma10_exit(ext10_pct):
     """Map SMA10 extension % to exit alert level."""
     if ext10_pct is None:
         return '', None, None
-    for lower, upper, label, win, med_fwd in SMA10_EXIT_THRESHOLDS:
+    for lower, upper, label, pf, med_fwd in SMA10_EXIT_THRESHOLDS:
         if ext10_pct >= lower:
-            return label, win, med_fwd
+            return label, pf, med_fwd
     return '', None, None
 
 
@@ -315,11 +323,11 @@ def build_universe():
             continue  # need at least price data
 
         ext_pct = ext['extension_pct']
-        ext_label, ext_score_val, ext_win, ext_fwd = classify_extension(ext_pct)
+        ext_label, ext_score_val, ext_pf, ext_fwd = classify_extension(ext_pct)
 
         # SMA10 exit alert
         ext10_pct = ext.get('ext10_pct')
-        exit_alert, exit_win, exit_fwd = classify_sma10_exit(ext10_pct)
+        exit_alert, exit_pf, exit_fwd = classify_sma10_exit(ext10_pct)
 
         m_score = score_momentum(mr)
         h_score = score_health(pb)
@@ -334,12 +342,12 @@ def build_universe():
             'extension_pct': ext_pct,
             'extension_label': ext_label,
             'extension_score': e_score,
-            'extension_win': ext_win,
+            'extension_pf': ext_pf,
             'extension_fwd': ext_fwd,
             'sma10': ext.get('sma10'),
             'ext10_pct': ext10_pct,
             'exit_alert': exit_alert,
-            'exit_win': exit_win,
+            'exit_pf': exit_pf,
             'exit_fwd': exit_fwd,
             'slope_rsq': ext['slope_rsq'],
             'slope_ann': ext['slope_ann'],
@@ -671,29 +679,31 @@ def build_html(results):
     <summary style="cursor:pointer;font-weight:600;color:#4a5568">Methodology (scimode-validated)</summary>
     <div style="padding:8px 12px;font-size:0.82em;color:#555;line-height:1.6">
     <p><b>Combined Score</b> = 35% Momentum + 30% Pullback Health + 35% SMA29 Extension</p>
-    <p><b>SMA29 Extension</b> = (Close - SMA29) / SMA29. Buckets from scimode exit_signal_test.py (154,979 trending observations, 1390 tickers):</p>
+    <p><b>Profit Factor</b> = sum(winning trades) / sum(|losing trades|). PF &gt; 1.0 = profitable edge, PF &lt; 1.0 = losing. Captures both win rate and payoff asymmetry in one number.</p>
+    <p><b>SMA29 Extension</b> = (Close - SMA29) / SMA29. PF from scimode_pf_validation (468 tickers, trending filter):</p>
     <table style="font-size:0.9em;border-collapse:collapse;margin:6px 0">
-    <tr><th style="padding:2px 8px;text-align:left">Zone</th><th style="padding:2px 8px">Extension</th><th style="padding:2px 8px">Win Rate</th><th style="padding:2px 8px">Median 21d Fwd</th><th style="padding:2px 8px">Score</th></tr>
-    <tr><td style="padding:2px 8px"><span class="ext-badge ext-OPTIMAL">OPTIMAL</span></td><td style="padding:2px 8px;text-align:center">0-10%</td><td style="padding:2px 8px;text-align:center">54-55%</td><td style="padding:2px 8px;text-align:center">+0.69 to +0.86%</td><td style="padding:2px 8px;text-align:center">90-95</td></tr>
-    <tr><td style="padding:2px 8px"><span class="ext-badge ext-GOOD">GOOD</span></td><td style="padding:2px 8px;text-align:center">10-15%</td><td style="padding:2px 8px;text-align:center">53.1%</td><td style="padding:2px 8px;text-align:center">+0.85%</td><td style="padding:2px 8px;text-align:center">75</td></tr>
-    <tr><td style="padding:2px 8px"><span class="ext-badge ext-FAIR">FAIR</span></td><td style="padding:2px 8px;text-align:center">15-20%</td><td style="padding:2px 8px;text-align:center">51.9%</td><td style="padding:2px 8px;text-align:center">+0.71%</td><td style="padding:2px 8px;text-align:center">55</td></tr>
-    <tr><td style="padding:2px 8px"><span class="ext-badge ext-CAUTION">CAUTION</span></td><td style="padding:2px 8px;text-align:center">20-25%</td><td style="padding:2px 8px;text-align:center">51.5%</td><td style="padding:2px 8px;text-align:center">+0.60%</td><td style="padding:2px 8px;text-align:center">40</td></tr>
-    <tr><td style="padding:2px 8px"><span class="ext-badge ext-WARNING">WARNING</span></td><td style="padding:2px 8px;text-align:center">25-40%</td><td style="padding:2px 8px;text-align:center">50-52%</td><td style="padding:2px 8px;text-align:center">+0.66 to +1.17%</td><td style="padding:2px 8px;text-align:center">20-25</td></tr>
-    <tr><td style="padding:2px 8px"><span class="ext-badge ext-DANGER">DANGER</span></td><td style="padding:2px 8px;text-align:center">40-60%</td><td style="padding:2px 8px;text-align:center">47.6%</td><td style="padding:2px 8px;text-align:center">0.00%</td><td style="padding:2px 8px;text-align:center">10</td></tr>
-    <tr><td style="padding:2px 8px"><span class="ext-badge ext-EXTREME">EXTREME</span></td><td style="padding:2px 8px;text-align:center">60%+</td><td style="padding:2px 8px;text-align:center">43.5%</td><td style="padding:2px 8px;text-align:center">-2.70%</td><td style="padding:2px 8px;text-align:center">0</td></tr>
+    <tr><th style="padding:2px 8px;text-align:left">Zone</th><th style="padding:2px 8px">Extension</th><th style="padding:2px 8px">PF</th><th style="padding:2px 8px">Median 21d Fwd</th><th style="padding:2px 8px">Score</th></tr>
+    <tr><td style="padding:2px 8px"><span class="ext-badge ext-OPTIMAL">OPTIMAL</span></td><td style="padding:2px 8px;text-align:center">0-10%</td><td style="padding:2px 8px;text-align:center">1.48-1.50</td><td style="padding:2px 8px;text-align:center">+0.90 to +1.11%</td><td style="padding:2px 8px;text-align:center">90-95</td></tr>
+    <tr><td style="padding:2px 8px"><span class="ext-badge ext-GOOD">GOOD</span></td><td style="padding:2px 8px;text-align:center">10-15%</td><td style="padding:2px 8px;text-align:center">1.52</td><td style="padding:2px 8px;text-align:center">+1.24%</td><td style="padding:2px 8px;text-align:center">75</td></tr>
+    <tr><td style="padding:2px 8px"><span class="ext-badge ext-FAIR">FAIR</span></td><td style="padding:2px 8px;text-align:center">15-20%</td><td style="padding:2px 8px;text-align:center">1.67</td><td style="padding:2px 8px;text-align:center">+1.01%</td><td style="padding:2px 8px;text-align:center">55</td></tr>
+    <tr><td style="padding:2px 8px"><span class="ext-badge ext-CAUTION">CAUTION</span></td><td style="padding:2px 8px;text-align:center">20-25%</td><td style="padding:2px 8px;text-align:center">1.58</td><td style="padding:2px 8px;text-align:center">+0.49%</td><td style="padding:2px 8px;text-align:center">40</td></tr>
+    <tr><td style="padding:2px 8px"><span class="ext-badge ext-WARNING">WARNING</span></td><td style="padding:2px 8px;text-align:center">25-40%</td><td style="padding:2px 8px;text-align:center">1.66-1.87*</td><td style="padding:2px 8px;text-align:center">+1.46 to +2.33%</td><td style="padding:2px 8px;text-align:center">20-25</td></tr>
+    <tr><td style="padding:2px 8px"><span class="ext-badge ext-DANGER">DANGER</span></td><td style="padding:2px 8px;text-align:center">40-60%</td><td style="padding:2px 8px;text-align:center">1.44*</td><td style="padding:2px 8px;text-align:center">-2.21%</td><td style="padding:2px 8px;text-align:center">10</td></tr>
+    <tr><td style="padding:2px 8px"><span class="ext-badge ext-EXTREME">EXTREME</span></td><td style="padding:2px 8px;text-align:center">60%+</td><td style="padding:2px 8px;text-align:center">1.52*</td><td style="padding:2px 8px;text-align:center">+2.38%</td><td style="padding:2px 8px;text-align:center">0</td></tr>
     </table>
+    <p style="font-size:0.85em;color:#888">* WARNING/DANGER/EXTREME PF inflated by lottery-tail winners. PF_median (typical trader): WARNING 0.64-1.47, DANGER 1.14, EXTREME 0.91. Small samples (n=84-357).</p>
     <p><b>Momentum Score</b>: From momentum_ranker_v1_18 composite (returns + ratios + SPY-relative days).</p>
     <p><b>Health Score</b>: From pullback_health (NATR drawdown, SMA structure, slope stage, vol expansion, beta-adjusted DD, historical recovery).</p>
-    <p><b>Ideal entry</b>: High momentum + healthy pullback + optimal SMA29 zone (0-10% extension). These are stocks trending up with room to run.</p>
-    <p style="margin-top:10px"><b>SMA10 Exit Alert</b> (scimode dual-window analysis, ~1.2M obs, 467 tickers):</p>
-    <p>SMA10 detects overextension faster than SMA29 (12.7pp win-rate spread vs 7.8pp).</p>
+    <p><b>Ideal entry</b>: High momentum + healthy pullback + optimal SMA29 zone (0-10% extension, PF ~1.5). These are stocks trending up with room to run.</p>
+    <p style="margin-top:10px"><b>SMA10 Exit Alert</b> (scimode PF validation, 468 tickers):</p>
+    <p>SMA10 detects overextension faster than SMA29. PF validates exit signals.</p>
     <table style="font-size:0.9em;border-collapse:collapse;margin:6px 0">
-    <tr><th style="padding:2px 8px;text-align:left">Alert</th><th style="padding:2px 8px">SMA10 Ext</th><th style="padding:2px 8px">Win Rate</th><th style="padding:2px 8px">Median 21d Fwd</th></tr>
-    <tr><td style="padding:2px 8px"><span class="exit-alert">EXIT ALERT</span></td><td style="padding:2px 8px;text-align:center">25%+</td><td style="padding:2px 8px;text-align:center">42.5%</td><td style="padding:2px 8px;text-align:center;color:#dc2626">-3.16%</td></tr>
-    <tr><td style="padding:2px 8px"><span class="exit-watch">EXIT WATCH</span></td><td style="padding:2px 8px;text-align:center">15-25%</td><td style="padding:2px 8px;text-align:center">48.0%</td><td style="padding:2px 8px;text-align:center;color:#f97316">-0.39%</td></tr>
-    <tr><td style="padding:2px 8px"><span class="exit-elevated">ELEVATED</span></td><td style="padding:2px 8px;text-align:center">10-15%</td><td style="padding:2px 8px;text-align:center">51.0%</td><td style="padding:2px 8px;text-align:center">+0.60%</td></tr>
+    <tr><th style="padding:2px 8px;text-align:left">Alert</th><th style="padding:2px 8px">SMA10 Ext</th><th style="padding:2px 8px">PF</th><th style="padding:2px 8px">Median 21d Fwd</th></tr>
+    <tr><td style="padding:2px 8px"><span class="exit-alert">EXIT ALERT</span></td><td style="padding:2px 8px;text-align:center">25%+</td><td style="padding:2px 8px;text-align:center;color:#dc2626">1.11 (med: 0.90)</td><td style="padding:2px 8px;text-align:center;color:#dc2626">-2.21%</td></tr>
+    <tr><td style="padding:2px 8px"><span class="exit-watch">EXIT WATCH</span></td><td style="padding:2px 8px;text-align:center">15-25%</td><td style="padding:2px 8px;text-align:center;color:#f97316">1.59 (med: 1.07)</td><td style="padding:2px 8px;text-align:center;color:#f97316">+0.49%</td></tr>
+    <tr><td style="padding:2px 8px"><span class="exit-elevated">ELEVATED</span></td><td style="padding:2px 8px;text-align:center">10-15%</td><td style="padding:2px 8px;text-align:center">1.51</td><td style="padding:2px 8px;text-align:center">+0.60%</td></tr>
     </table>
-    <p><b>Key insight</b>: Use SMA29 for entry scoring (stable optimal zone), SMA10 for exit alerts (sharper overextension detection).</p>
+    <p><b>Key insight</b>: Use SMA29 for entry scoring (stable optimal zone), SMA10 for exit alerts (sharper overextension detection). PF confirms median return signals -- EXIT ALERT at 25%+ SMA10 has PF_median &lt; 1.0 (losing bucket for typical trader).</p>
     </div>
     </details>
     """
@@ -706,13 +716,13 @@ def build_html(results):
         <th onclick="sortTable(2,false)" style="cursor:pointer" title="Stock ticker symbol + momentum rank (#1 = highest scored)">Ticker</th>
         <th onclick="sortTable(3,true)" style="cursor:pointer" title="Latest closing price (adjusted for splits)">Price</th>
         <th onclick="sortTable(4,true)" style="cursor:pointer" title="Weighted composite: 35% Momentum + 30% Pullback Health + 35% SMA29 Extension. Higher = better entry quality. 0-100 scale.">Combined</th>
-        <th onclick="sortTable(5,true)" style="cursor:pointer" title="SMA10 exit alert based on scimode dual-window analysis (~1.2M obs). EXIT ALERT = 25%+ above SMA10 (median -3.16%, win 43%). EXIT WATCH = 15-25% (median -0.39%, win 48%).">Exit</th>
+        <th onclick="sortTable(5,true)" style="cursor:pointer" title="SMA10 exit alert based on scimode PF validation (468 tickers). EXIT ALERT = 25%+ above SMA10 (PF=1.11, PF_median=0.90). EXIT WATCH = 15-25% (PF=1.59, PF_median=1.07).">Exit</th>
         <th onclick="sortTable(6,true)" style="cursor:pointer" title="% distance of close above 29-day SMA. Positive = above SMA29, negative = below.">Ext %</th>
-        <th onclick="sortTable(7,false)" style="cursor:pointer" title="SMA29 extension zone from scimode OOS test (154K trending obs, 1390 tickers). OPTIMAL = 0-10% above SMA29 (sweet spot). Zones scored by 21-day forward win rate.">Zone</th>
+        <th onclick="sortTable(7,false)" style="cursor:pointer" title="SMA29 extension zone from scimode PF validation (468 tickers, trending filter). OPTIMAL = 0-10% above SMA29 (PF ~1.5). Zones scored by profit factor and median forward return.">Zone</th>
         <th onclick="sortTable(8,true)" style="cursor:pointer" title="Momentum ranker composite score (0-100). Blend of: multi-period returns (1d-1y), ratio quality (acceleration checks), and bad-SPY-day resilience. Gated by SMA structure.">Momentum</th>
         <th onclick="sortTable(9,true)" style="cursor:pointer" title="Pullback health score (0-100). Blend of: drawdown severity (NATR-adjusted), SMA structure (30/50/100/200), slope stage, vol expansion, beta-adjusted DD, and historical recovery rate.">Health</th>
         <th onclick="sortTable(10,true)" style="cursor:pointer" title="Extension bucket score (0-95). From SMA29 zone: OPTIMAL=90-95, GOOD=75, FAIR=55, CAUTION=40, WARNING=20-25, DANGER=10, EXTREME=0.">Ext Score</th>
-        <th onclick="sortTable(11,true)" style="cursor:pointer" title="Historical 21-day forward win rate for this SMA29 extension zone. From scimode OOS test (154,979 trending observations). Higher = more likely to be positive 21 days later.">Win %</th>
+        <th onclick="sortTable(11,true)" style="cursor:pointer" title="Profit Factor for this SMA29 extension zone = sum(wins)/sum(|losses|). From scimode PF validation (468 tickers, trending filter). PF>1.0 = profitable, PF<1.0 = losing. High-extension PF inflated by lottery tails.">PF</th>
         <th onclick="sortTable(12,true)" style="cursor:pointer" title="Median 21-day forward return for this SMA29 extension zone. From scimode OOS test. Negative in DANGER/EXTREME zones.">Med Fwd</th>
         <th onclick="sortTable(13,true)" style="cursor:pointer" title="R-squared of 21-day log-price regression. Measures trend quality: 1.0 = perfectly linear move, 0.0 = random walk. Above 0.70 = strong trend.">R-sq</th>
         <th onclick="sortTable(14,true)" style="cursor:pointer" title="Annualized slope from 21-day log-price regression. Shows how fast the stock is trending (% per year). Higher = steeper uptrend.">Slope %</th>
@@ -730,7 +740,8 @@ def build_html(results):
         ext_pct_str = '{:+.1f}%'.format(r['extension_pct'])
         ext_color = '#22c55e' if r['extension_pct'] >= 0 else '#ef4444'
 
-        win_str = '{:.1f}%'.format(r['extension_win']) if r['extension_win'] is not None else '-'
+        pf_str = '{:.2f}'.format(r['extension_pf']) if r['extension_pf'] is not None else '-'
+        pf_color = '#22c55e' if (r['extension_pf'] or 0) >= 1.3 else '#f59e0b' if (r['extension_pf'] or 0) >= 1.0 else '#ef4444'
         fwd_str = '{:+.2f}%'.format(r['extension_fwd']) if r['extension_fwd'] is not None else '-'
         fwd_color = '#22c55e' if (r['extension_fwd'] or 0) > 0 else '#ef4444' if (r['extension_fwd'] or 0) < 0 else '#888'
 
@@ -755,7 +766,7 @@ def build_html(results):
         row += '<td class="tr" data-val="{}">{:.0f}</td>'.format(r['momentum_score'], r['momentum_score'])
         row += '<td class="tr" data-val="{}">{:.0f}</td>'.format(r['health_score'], r['health_score'])
         row += '<td class="tr" data-val="{}">{}</td>'.format(r['extension_score'], r['extension_score'])
-        row += '<td class="tr" data-val="{}">{}</td>'.format(r['extension_win'] or 0, win_str)
+        row += '<td class="tr" data-val="{}" style="color:{}">{}</td>'.format(r['extension_pf'] or 0, pf_color, pf_str)
         row += '<td class="tr" data-val="{}" style="color:{}">{}</td>'.format(r['extension_fwd'] or 0, fwd_color, fwd_str)
         row += '<td class="tr" data-val="{}">{:.2f}</td>'.format(r['slope_rsq'], r['slope_rsq'])
         row += '<td class="tr" data-val="{}">{:.0f}%</td>'.format(r['slope_ann'], r['slope_ann'])
@@ -817,7 +828,7 @@ def build_html(results):
 
 def main():
     print("=" * 70)
-    print("ENTER & EXIT QUALITY SCANNER v1.1")
+    print("ENTER & EXIT QUALITY SCANNER v1.2")
     print("=" * 70)
 
     results = build_universe()
