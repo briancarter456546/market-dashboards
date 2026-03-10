@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# sma29_entry_backend.py - v1.2
+# sma29_entry_backend.py - v1.3
 # Last updated: 2026-03-10
 # =============================================================================
+# v1.3: Per-asset-class extension scoring via pole assignments
+#   - Each ticker's primary pole maps to an asset class
+#   - Asset-class-specific score adjustments from scimode task #145:
+#     Miners: INVERTED behavior (overextension is bullish) -> +30 bonus at 15%+
+#     Indexes: danger 3x worse than equities -> -20 penalty at 10%+
+#     Bonds: danger threshold at 10% not 25% -> -15 penalty at 10%+
+#     Commodities: poor win rate at all extensions -> -10 penalty at 10%+
+#     Sector ETFs: slightly better than universal -> +5 bonus at 10%+
+#   - Pole-adjusted PF + median_fwd shown per ticker (not universal)
+#   - Asset class column added to dashboard
+#
 # v1.2: Replace Win% with Profit Factor (scimode PF validation)
 #   - PF = sum(wins) / sum(|losses|) per extension bucket
 #   - PF validated via scimode_pf_validation_v1_0.py (468 tickers, trending filter)
@@ -109,6 +120,134 @@ SMA10_EXIT_THRESHOLDS = [
 
 
 # =============================================================================
+# POLE-TO-ASSET-CLASS MAPPING (from taxonomy_stock_regression_v1_45.py)
+# Scimode task #145 proved extension behavior differs by asset class.
+# =============================================================================
+
+POLE_DIAGNOSTICS_CSV = os.path.normpath(os.path.join(
+    _DATA_DIR, 'output', 'taxonomy', 'stock_polar_diagnostics.csv'))
+
+# Map pole IDs to asset classes for extension scoring
+# Based on fmp_pole_metadata.json pole labels
+POLE_TO_ASSET_CLASS = {
+    # Equity poles
+    2: 'equity', 7: 'equity', 8: 'equity', 11: 'equity',
+    16: 'equity', 18: 'equity', 19: 'equity', 24: 'equity',
+    27: 'equity', 30: 'equity', 37: 'equity', 38: 'equity',
+    # Miner poles
+    5: 'miner', 22: 'miner', 29: 'miner',
+    # Commodity poles
+    9: 'commodity', 21: 'commodity', 35: 'commodity', 45: 'commodity',
+    # Bond poles
+    4: 'bond', 20: 'bond', 26: 'bond',
+    # Index/International poles
+    1: 'index', 3: 'index', 6: 'index', 10: 'index', 13: 'index',
+    15: 'index', 28: 'index', 31: 'index', 33: 'index', 39: 'index',
+    42: 'index',
+    # Sector ETF poles
+    14: 'sector', 32: 'sector', 34: 'sector',
+    # Market proxy poles (treat as index)
+    17: 'index', 25: 'index', 36: 'index', 41: 'index',
+    # Special (treat as equity default)
+    12: 'equity', 23: 'equity', 44: 'equity',
+}
+
+# Asset-class-specific score adjustments by extension bucket
+# From scimode task #145: win_rate and median_fwd per asset class
+# Format: {asset_class: {bucket_label: (score_delta, adj_win_rate, adj_median_fwd)}}
+#   score_delta: added to universal extension score
+#   adj_win_rate: class-specific 21d win rate for this bucket
+#   adj_median_fwd: class-specific 21d median forward return
+ASSET_CLASS_ADJUSTMENTS = {
+    'equity': {
+        # Universal buckets are calibrated to equity -- no adjustment
+    },
+    'miner': {
+        # INVERTED: overextension is bullish for miners
+        # 15-25%: win 64%, median +3.82% (vs equity 52%, +0.92%)
+        # 25-40%: win 61%, median +2.92% (vs equity 50%, +0.22%)
+        'OPTIMAL':  (0,  50.7, 0.12),
+        'GOOD':     (15, 59.3, 2.55),   # 10-15% = great for miners
+        'FAIR':     (30, 64.0, 3.82),   # 15-20% = best zone for miners
+        'CAUTION':  (35, 64.0, 3.82),   # 20-25% = still great
+        'WARNING':  (40, 61.4, 2.92),   # 25-40% = still bullish
+        'DANGER':   (30, 61.4, 2.92),   # 40-60% = treat like warning
+        'EXTREME':  (20, 61.4, 2.92),   # 60%+ = treat like caution
+    },
+    'index': {
+        # Danger 3x worse than equities
+        # 10-15%: win 40%, median -5.49% (vs equity 53%, +0.96%)
+        # 25-40%: win 27%, median -14.83% (vs equity 50%, +0.22%)
+        'GOOD':     (-20, 40.0, -5.49),  # 10-15% = already dangerous
+        'FAIR':     (-30, 30.8, -10.60), # 15-20% = very dangerous
+        'CAUTION':  (-30, 30.8, -10.60), # 20-25%
+        'WARNING':  (-20, 27.3, -14.83), # already low score
+        'DANGER':   (-10, 27.5, -17.90),
+        'EXTREME':  (0,   27.5, -17.90),
+    },
+    'bond': {
+        # Danger threshold at 10% not 25%
+        # 10-15%: win 40%, median -0.65% (vs equity 53%, +0.96%)
+        # Bonds rarely get to 15%+ (only 52 obs at 10-15%)
+        'GOOD':     (-25, 40.4, -0.65),  # 10-15% = danger for bonds
+        'FAIR':     (-30, 40.4, -0.65),  # 15%+ extremely rare
+        'CAUTION':  (-30, 40.4, -0.65),
+        'WARNING':  (-20, 40.4, -0.65),
+        'DANGER':   (-10, 40.4, -0.65),
+    },
+    'commodity': {
+        # Poor win rate at extensions, needs SMA10 window
+        # 10-15%: win 46%, median -0.90% (vs equity 53%, +0.96%)
+        # 15-25%: win 48%, median -1.24%
+        'GOOD':     (-15, 46.2, -0.90),  # 10-15%
+        'FAIR':     (-20, 47.8, -1.24),  # 15-20%
+        'CAUTION':  (-20, 47.8, -1.24),  # 20-25%
+        'WARNING':  (-15, 44.4, -0.88),  # 25-40%
+        'DANGER':   (-10, 44.4, -0.88),
+    },
+    'sector': {
+        # Slightly better than universal at all levels
+        # 10-15%: win 56%, median +1.96% (vs equity 53%, +0.96%)
+        # 15-25%: win 62%, median +3.44%
+        'GOOD':     (5,  56.2, 1.96),
+        'FAIR':     (10, 61.8, 3.44),
+        'CAUTION':  (10, 61.8, 3.44),
+        'WARNING':  (15, 70.8, 6.84),  # n=24, small but positive
+    },
+}
+
+ASSET_CLASS_LABELS = {
+    'equity': 'Equity',
+    'miner': 'Miner',
+    'commodity': 'Commodity',
+    'bond': 'Bond',
+    'index': 'Index',
+    'sector': 'Sector',
+}
+
+
+def load_pole_assignments():
+    """Load pole assignments from taxonomy CSV -> {ticker: asset_class}."""
+    if not os.path.exists(POLE_DIAGNOSTICS_CSV):
+        print("[WARN] Pole diagnostics not found: {}".format(POLE_DIAGNOSTICS_CSV))
+        return {}
+    try:
+        df = pd.read_csv(POLE_DIAGNOSTICS_CSV, encoding='utf-8')
+        result = {}
+        for _, row in df.iterrows():
+            ticker = row['ticker']
+            pole_id = row['primary_pole']
+            if pd.isna(pole_id):
+                result[ticker] = 'equity'  # default
+            else:
+                result[ticker] = POLE_TO_ASSET_CLASS.get(int(pole_id), 'equity')
+        return result
+    except Exception as e:
+        print("[WARN] Could not load pole assignments: {}".format(e))
+        return {}
+
+
+# =============================================================================
 # HELPERS
 # =============================================================================
 
@@ -130,13 +269,29 @@ def clean_nan(obj):
     return obj
 
 
-def classify_extension(ext_pct):
-    """Map extension % to bucket label, score, PF, and median fwd."""
+def classify_extension(ext_pct, asset_class='equity'):
+    """Map extension % to bucket label, score, PF, and median fwd.
+
+    If asset_class is provided and has adjustments, applies:
+      - score_delta to the universal score (clamped 0-100)
+      - class-specific win_rate and median_fwd override
+    """
     if ext_pct < 0:
         return BELOW_SMA29_LABEL, BELOW_SMA29_SCORE, None, None
     for lower, upper, pf, med_fwd, label, score in EXTENSION_BUCKETS:
         if lower <= ext_pct < upper:
+            # Apply asset-class adjustment if available
+            adj = ASSET_CLASS_ADJUSTMENTS.get(asset_class, {}).get(label)
+            if adj:
+                score_delta, adj_wr, adj_fwd = adj
+                score = max(0, min(100, score + score_delta))
+                med_fwd = adj_fwd
             return label, score, pf, med_fwd
+    # EXTREME fallback
+    adj = ASSET_CLASS_ADJUSTMENTS.get(asset_class, {}).get('EXTREME')
+    if adj:
+        score_delta, adj_wr, adj_fwd = adj
+        return 'EXTREME', max(0, min(100, 0 + score_delta)), 1.52, adj_fwd
     return 'EXTREME', 0, 1.52, 2.38
 
 
@@ -284,18 +439,22 @@ def combined_score(momentum_score, health_score, extension_score):
 # =============================================================================
 
 def build_universe():
-    """Build scored universe from all 3 data sources."""
-    print("[1/4] Loading momentum ranker data...")
+    """Build scored universe from all 3 data sources + pole assignments."""
+    print("[1/5] Loading momentum ranker data...")
     mr_data = load_momentum_data()
     print("  {} tickers".format(len(mr_data)))
 
-    print("[2/4] Loading pullback health data...")
+    print("[2/5] Loading pullback health data...")
     pb_data = load_pullback_data()
     print("  {} tickers".format(len(pb_data)))
 
+    print("[3/5] Loading pole assignments...")
+    pole_map = load_pole_assignments()
+    print("  {} tickers with pole data".format(len(pole_map)))
+
     # Universe = union of momentum ranker + pullback health tickers
     all_tickers = sorted(set(list(mr_data.keys()) + list(pb_data.keys())))
-    print("[3/4] Computing SMA29 extensions for {} tickers...".format(len(all_tickers)))
+    print("[4/5] Computing SMA29 extensions for {} tickers...".format(len(all_tickers)))
 
     # Parallel SMA29 computation
     ext_data = {}
@@ -312,7 +471,9 @@ def build_universe():
                 print("  ... computed {}/{}".format(done, len(all_tickers)))
     print("  {} tickers with valid SMA29 data".format(len(ext_data)))
 
-    print("[4/4] Scoring...")
+    print("[5/5] Scoring with per-asset-class adjustments...")
+    # Count asset class distribution
+    ac_counts = {}
     results = []
     for ticker in all_tickers:
         mr = mr_data.get(ticker)
@@ -322,8 +483,12 @@ def build_universe():
         if ext is None:
             continue  # need at least price data
 
+        # Look up asset class from pole assignment
+        asset_class = pole_map.get(ticker, 'equity')
+        ac_counts[asset_class] = ac_counts.get(asset_class, 0) + 1
+
         ext_pct = ext['extension_pct']
-        ext_label, ext_score_val, ext_pf, ext_fwd = classify_extension(ext_pct)
+        ext_label, ext_score_val, ext_pf, ext_fwd = classify_extension(ext_pct, asset_class)
 
         # SMA10 exit alert
         ext10_pct = ext.get('ext10_pct')
@@ -363,9 +528,16 @@ def build_universe():
             'ret_1m': round(float(mr.get('ret_1m', 0) or 0), 2) if mr else None,
             'ret_3m': round(float(mr.get('ret_3m', 0) or 0), 2) if mr else None,
             'top_pole': mr.get('top_pole', '') if mr else '',
+            'asset_class': asset_class,
+            'asset_class_label': ASSET_CLASS_LABELS.get(asset_class, 'Equity'),
             'combined_score': combo,
         }
         results.append(row)
+
+    # Print asset class distribution
+    print("  Asset class distribution:")
+    for ac, cnt in sorted(ac_counts.items(), key=lambda x: -x[1]):
+        print("    {:12s} {:,}".format(ASSET_CLASS_LABELS.get(ac, ac), cnt))
 
     results.sort(key=lambda r: r['combined_score'], reverse=True)
     return results
@@ -703,6 +875,17 @@ def build_html(results):
     <tr><td style="padding:2px 8px"><span class="exit-watch">EXIT WATCH</span></td><td style="padding:2px 8px;text-align:center">15-25%</td><td style="padding:2px 8px;text-align:center;color:#f97316">1.59 (med: 1.07)</td><td style="padding:2px 8px;text-align:center;color:#f97316">+0.49%</td></tr>
     <tr><td style="padding:2px 8px"><span class="exit-elevated">ELEVATED</span></td><td style="padding:2px 8px;text-align:center">10-15%</td><td style="padding:2px 8px;text-align:center">1.51</td><td style="padding:2px 8px;text-align:center">+0.60%</td></tr>
     </table>
+    <p style="margin-top:10px"><b>Per-Asset-Class Scoring</b> (scimode task #145, 1,376 tickers):</p>
+    <p>Extension scores are adjusted by asset class from taxonomy pole assignments. Key differences from universal buckets:</p>
+    <table style="font-size:0.9em;border-collapse:collapse;margin:6px 0">
+    <tr><th style="padding:2px 8px;text-align:left">Class</th><th style="padding:2px 8px">Key Difference</th><th style="padding:2px 8px">Score Effect</th></tr>
+    <tr><td style="padding:2px 8px;color:#a855f7"><b>Miner</b></td><td style="padding:2px 8px">INVERTED: overextension is bullish (64% WR at 15-25%)</td><td style="padding:2px 8px">+30 to +40 at 15%+</td></tr>
+    <tr><td style="padding:2px 8px;color:#6366f1"><b>Index</b></td><td style="padding:2px 8px">Danger 3x worse (27% WR, -15% median at 25%+)</td><td style="padding:2px 8px">-20 to -30 at 10%+</td></tr>
+    <tr><td style="padding:2px 8px;color:#3b82f6"><b>Bond</b></td><td style="padding:2px 8px">Danger starts at 10% not 25% (40% WR at 10-15%)</td><td style="padding:2px 8px">-25 to -30 at 10%+</td></tr>
+    <tr><td style="padding:2px 8px;color:#f59e0b"><b>Commodity</b></td><td style="padding:2px 8px">Poor win rate at all extensions (46-48% at 10%+)</td><td style="padding:2px 8px">-10 to -20 at 10%+</td></tr>
+    <tr><td style="padding:2px 8px;color:#14b8a6"><b>Sector</b></td><td style="padding:2px 8px">Slightly better than universal (56-62% at 10%+)</td><td style="padding:2px 8px">+5 to +15 at 10%+</td></tr>
+    <tr><td style="padding:2px 8px;color:#6b7280"><b>Equity</b></td><td style="padding:2px 8px">Universal buckets calibrated to equity (no change)</td><td style="padding:2px 8px">None</td></tr>
+    </table>
     <p><b>Key insight</b>: Use SMA29 for entry scoring (stable optimal zone), SMA10 for exit alerts (sharper overextension detection). PF confirms median return signals -- EXIT ALERT at 25%+ SMA10 has PF_median &lt; 1.0 (losing bucket for typical trader).</p>
     </div>
     </details>
@@ -731,6 +914,7 @@ def build_html(results):
         <th onclick="sortTable(17,true)" style="cursor:pointer" title="Total return over the past 5 trading days (1 week).">1W</th>
         <th onclick="sortTable(18,true)" style="cursor:pointer" title="Total return over the past 21 trading days (1 month).">1M</th>
         <th title="Highest-correlated asset from 20-asset correlation universe (63-day window). Shows what this stock moves most like. Only shown if correlation >= 0.30.">Pole</th>
+        <th onclick="sortTable(20,false)" style="cursor:pointer" title="Asset class from pole assignment (taxonomy regression). Extension scores are adjusted per class: Miners get bonus (overextension is bullish), Indexes/Bonds get penalty (danger starts earlier).">Class</th>
     </tr></thead>
     <tbody>"""
 
@@ -775,6 +959,11 @@ def build_html(results):
         row += _color_pct(r['ret_1w'])
         row += _color_pct(r['ret_1m'])
         row += '<td class="tc" style="font-size:0.78em">{}</td>'.format(r['top_pole'] or '-')
+        ac_colors = {'Miner': '#a855f7', 'Bond': '#3b82f6', 'Index': '#6366f1',
+                     'Commodity': '#f59e0b', 'Sector': '#14b8a6', 'Equity': '#6b7280'}
+        ac_label = r.get('asset_class_label', 'Equity')
+        ac_color = ac_colors.get(ac_label, '#6b7280')
+        row += '<td class="tc" style="font-size:0.72em;color:{}">{}</td>'.format(ac_color, ac_label)
         row += '</tr>'
         rows_html.append(row)
 
@@ -828,7 +1017,7 @@ def build_html(results):
 
 def main():
     print("=" * 70)
-    print("ENTER & EXIT QUALITY SCANNER v1.2")
+    print("ENTER & EXIT QUALITY SCANNER v1.3")
     print("=" * 70)
 
     results = build_universe()
