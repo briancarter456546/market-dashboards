@@ -593,7 +593,7 @@ th[title] { cursor: help; border-bottom: 1px dashed #999; }
     </div>
     </details>
     </div></div>
-<div style="margin-bottom:14px"><button class="zone-btn" onclick="filterZone('ALL')" style="margin:2px 4px;padding:4px 12px;border:1px solid #ccc;border-radius:4px;cursor:pointer;background:#f3f4f6">ALL</button><button id="btn-OPTIMAL" class="zone-btn ext-badge ext-OPTIMAL" onclick="filterZone('OPTIMAL')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">OPTIMAL (294)</button><button id="btn-GOOD" class="zone-btn ext-badge ext-GOOD" onclick="filterZone('GOOD')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">GOOD (41)</button><button id="btn-FAIR" class="zone-btn ext-badge ext-FAIR" onclick="filterZone('FAIR')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">FAIR (17)</button><button id="btn-CAUTION" class="zone-btn ext-badge ext-CAUTION" onclick="filterZone('CAUTION')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">CAUTION (13)</button><button id="btn-WARNING" class="zone-btn ext-badge ext-WARNING" onclick="filterZone('WARNING')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">WARNING (12)</button><button id="btn-DANGER" class="zone-btn ext-badge ext-DANGER" onclick="filterZone('DANGER')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">DANGER (4)</button><button id="btn-EXTREME" class="zone-btn ext-badge ext-EXTREME" onclick="filterZone('EXTREME')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">EXTREME (2)</button><button id="btn-BELOW SMA" class="zone-btn ext-badge ext-BELOW" onclick="filterZone('BELOW SMA')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">BELOW SMA (1031)</button></div>
+<div style="margin-bottom:14px"><button class="zone-btn" onclick="filterZone('ALL')" style="margin:2px 4px;padding:4px 12px;border:1px solid #ccc;border-radius:4px;cursor:pointer;background:#f3f4f6">ALL</button><button id="btn-OPTIMAL" class="zone-btn ext-badge ext-OPTIMAL" onclick="filterZone('OPTIMAL')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">OPTIMAL (294)</button><button id="btn-GOOD" class="zone-btn ext-badge ext-GOOD" onclick="filterZone('GOOD')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">GOOD (41)</button><button id="btn-FAIR" class="zone-btn ext-badge ext-FAIR" onclick="filterZone('FAIR')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">FAIR (17)</button><button id="btn-CAUTION" class="zone-btn ext-badge ext-CAUTION" onclick="filterZone('CAUTION')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">CAUTION (13)</button><button id="btn-WARNING" class="zone-btn ext-badge ext-WARNING" onclick="filterZone('WARNING')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">WARNING (12)</button><button id="btn-DANGER" class="zone-btn ext-badge ext-DANGER" onclick="filterZone('DANGER')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">DANGER (4)</button><button id="btn-EXTREME" class="zone-btn ext-badge ext-EXTREME" onclick="filterZone('EXTREME')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">EXTREME (2)</button><button id="btn-BELOW SMA" class="zone-btn ext-badge ext-BELOW" onclick="filterZone('BELOW SMA')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">BELOW SMA (1031)</button> <label style="margin-left:16px;font-size:0.85em">Show: <select id="filter-owned" onchange="filterOwned(this.value)" style="padding:3px 8px;border:1px solid #ccc;border-radius:4px"><option value="all">All Stocks</option><option value="owned">Owned Only</option><option value="watched">Watched Only</option><option value="not-owned">Not Owned</option></select></label></div>
 <div class="table-section"><div class="table-section-header"><h2>Entry Quality Rankings</h2><span style="font-size:0.85em;color:#888;">Click headers to sort</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table id="mainTable" class="dash-table" data-sort-col="0" data-sort-dir="desc">
     <thead><tr>
         <th>Own</th>
@@ -2031,7 +2031,7 @@ th[title] { cursor: help; border-bottom: 1px dashed #999; }
 <tr data-zone="BELOW SMA"><td class="tc"><input type="checkbox" class="own-cb" data-ticker="LC"  onchange="window._ownToggle('LC', this)"></td><td class="tc"><input type="checkbox" class="watch-cb" data-ticker="LC"  onchange="window._watchToggle('LC', this)"></td><td class="tl"><b>LC</b> <span style="font-size:0.72em;color:#999">-</span></td><td class="tr" data-val="14.29">$14.29</td><td class="tr" data-val="7.6" style="font-weight:700;color:#991b1b">7.6</td><td class="tc" data-val="0">-</td><td class="tr" data-val="-11.64" style="color:#ef4444">-11.6%</td><td class="tc"><span class="ext-badge ext-BELOW">BELOW SMA</span></td><td class="tr" data-val="0">0</td><td class="tr" data-val="7.9">8</td><td class="tr" data-val="15">15</td><td class="tr" data-val="0">-</td><td class="tr" data-val="0" style="color:#888">-</td><td class="tr" data-val="0.544">0.54</td><td class="tr" data-val="-176.8">-177%</td><td class="tr" data-val="-34.1">-34.1%</td><td class="tc">Decline</td><td class="tr">-</td><td class="tr">-</td><td class="tc" style="font-size:0.78em">-</td></tr>
 <tr data-zone="BELOW SMA"><td class="tc"><input type="checkbox" class="own-cb" data-ticker="PHAT"  onchange="window._ownToggle('PHAT', this)"></td><td class="tc"><input type="checkbox" class="watch-cb" data-ticker="PHAT"  onchange="window._watchToggle('PHAT', this)"></td><td class="tl"><b>PHAT</b> <span style="font-size:0.72em;color:#999">-</span></td><td class="tr" data-val="11.01">$11.01</td><td class="tr" data-val="7.5" style="font-weight:700;color:#991b1b">7.5</td><td class="tc" data-val="0">-</td><td class="tr" data-val="-10.86" style="color:#ef4444">-10.9%</td><td class="tc"><span class="ext-badge ext-BELOW">BELOW SMA</span></td><td class="tr" data-val="0">0</td><td class="tr" data-val="7.4">7</td><td class="tr" data-val="15">15</td><td class="tr" data-val="0">-</td><td class="tr" data-val="0" style="color:#888">-</td><td class="tr" data-val="0.45">0.45</td><td class="tr" data-val="-183.9">-184%</td><td class="tr" data-val="-39.9">-39.9%</td><td class="tc">Decline</td><td class="tr">-</td><td class="tr">-</td><td class="tc" style="font-size:0.78em">-</td></tr>
 <tr data-zone="BELOW SMA"><td class="tc"><input type="checkbox" class="own-cb" data-ticker="SE"  onchange="window._ownToggle('SE', this)"></td><td class="tc"><input type="checkbox" class="watch-cb" data-ticker="SE"  onchange="window._watchToggle('SE', this)"></td><td class="tl"><b>SE</b> <span style="font-size:0.72em;color:#999">#261</span></td><td class="tr" data-val="88.22">$88.22</td><td class="tr" data-val="6.6" style="font-weight:700;color:#991b1b">6.6</td><td class="tc" data-val="0">-</td><td class="tr" data-val="-18.54" style="color:#ef4444">-18.5%</td><td class="tc"><span class="ext-badge ext-BELOW">BELOW SMA</span></td><td class="tr" data-val="0">0</td><td class="tr" data-val="4.6">5</td><td class="tr" data-val="15">15</td><td class="tr" data-val="0">-</td><td class="tr" data-val="0" style="color:#888">-</td><td class="tr" data-val="0.554">0.55</td><td class="tr" data-val="-272.6">-273%</td><td class="tr" data-val="-40.5">-40.5%</td><td class="tc">Decline</td><td class="tr" style="color:#ef4444" data-val="-16.14">-16.1%</td><td class="tr" style="color:#ef4444" data-val="-18.74">-18.7%</td><td class="tc" style="font-size:0.78em">VXUS</td></tr></tbody></table></div></div>
-</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-10 9:15 AM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-10 9:19 AM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
 
 /* --- Shared ownership state (localStorage, cross-dashboard) --- */
@@ -2186,23 +2186,48 @@ function sortTable(colIdx, numeric) {
 
 // Filter by extension zone
 function filterZone(zone) {
-    var table = document.getElementById('mainTable');
-    var rows = table.tBodies[0].rows;
     var btn = document.getElementById('btn-' + zone);
     var active = btn && btn.classList.contains('active');
 
     // Toggle all buttons off
     document.querySelectorAll('.zone-btn').forEach(function(b) { b.classList.remove('active'); });
 
-    for (var i = 0; i < rows.length; i++) {
-        if (zone === 'ALL' || active) {
-            rows[i].style.display = '';
-        } else {
-            var rowZone = rows[i].getAttribute('data-zone') || '';
-            rows[i].style.display = (rowZone === zone) ? '' : 'none';
-        }
-    }
     if (!active && zone !== 'ALL' && btn) { btn.classList.add('active'); }
+    applyFilters();
+}
+
+// Filter by ownership/watchlist
+var _ownedFilter = 'all';
+function filterOwned(mode) {
+    _ownedFilter = mode;
+    applyFilters();
+}
+function applyFilters() {
+    var table = document.getElementById('mainTable');
+    var rows = table.tBodies[0].rows;
+    var activeZone = null;
+    document.querySelectorAll('.zone-btn.active').forEach(function(b) {
+        activeZone = b.id ? b.id.replace('btn-', '') : null;
+    });
+    for (var i = 0; i < rows.length; i++) {
+        var show = true;
+        // Zone filter
+        if (activeZone) {
+            var rowZone = rows[i].getAttribute('data-zone') || '';
+            if (rowZone !== activeZone) show = false;
+        }
+        // Ownership filter
+        if (show && _ownedFilter !== 'all') {
+            var ticker = rows[i].querySelector('.own-cb');
+            if (ticker) ticker = ticker.getAttribute('data-ticker');
+            var isOwned = ticker && window._owned && window._owned.has(ticker);
+            var isWatched = ticker && window._watched && window._watched.has(ticker);
+            if (_ownedFilter === 'owned' && !isOwned) show = false;
+            if (_ownedFilter === 'watched' && !isWatched) show = false;
+            if (_ownedFilter === 'not-owned' && isOwned) show = false;
+        }
+        rows[i].style.display = show ? '' : 'none';
+    }
 }
 
 </script>

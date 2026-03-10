@@ -478,23 +478,48 @@ function sortTable(colIdx, numeric) {
 
 // Filter by extension zone
 function filterZone(zone) {
-    var table = document.getElementById('mainTable');
-    var rows = table.tBodies[0].rows;
     var btn = document.getElementById('btn-' + zone);
     var active = btn && btn.classList.contains('active');
 
     // Toggle all buttons off
     document.querySelectorAll('.zone-btn').forEach(function(b) { b.classList.remove('active'); });
 
-    for (var i = 0; i < rows.length; i++) {
-        if (zone === 'ALL' || active) {
-            rows[i].style.display = '';
-        } else {
-            var rowZone = rows[i].getAttribute('data-zone') || '';
-            rows[i].style.display = (rowZone === zone) ? '' : 'none';
-        }
-    }
     if (!active && zone !== 'ALL' && btn) { btn.classList.add('active'); }
+    applyFilters();
+}
+
+// Filter by ownership/watchlist
+var _ownedFilter = 'all';
+function filterOwned(mode) {
+    _ownedFilter = mode;
+    applyFilters();
+}
+function applyFilters() {
+    var table = document.getElementById('mainTable');
+    var rows = table.tBodies[0].rows;
+    var activeZone = null;
+    document.querySelectorAll('.zone-btn.active').forEach(function(b) {
+        activeZone = b.id ? b.id.replace('btn-', '') : null;
+    });
+    for (var i = 0; i < rows.length; i++) {
+        var show = true;
+        // Zone filter
+        if (activeZone) {
+            var rowZone = rows[i].getAttribute('data-zone') || '';
+            if (rowZone !== activeZone) show = false;
+        }
+        // Ownership filter
+        if (show && _ownedFilter !== 'all') {
+            var ticker = rows[i].querySelector('.own-cb');
+            if (ticker) ticker = ticker.getAttribute('data-ticker');
+            var isOwned = ticker && window._owned && window._owned.has(ticker);
+            var isWatched = ticker && window._watched && window._watched.has(ticker);
+            if (_ownedFilter === 'owned' && !isOwned) show = false;
+            if (_ownedFilter === 'watched' && !isWatched) show = false;
+            if (_ownedFilter === 'not-owned' && isOwned) show = false;
+        }
+        rows[i].style.display = show ? '' : 'none';
+    }
 }
 """
 
@@ -631,6 +656,13 @@ def build_html(results):
             css = 'BELOW'
         zone_btns += '<button id="btn-{z}" class="zone-btn ext-badge ext-{css}" onclick="filterZone(\'{z}\')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">{z} ({cnt})</button>'.format(
             z=z, css=css, cnt=cnt)
+    zone_btns += ' <label style="margin-left:16px;font-size:0.85em">Show: '
+    zone_btns += '<select id="filter-owned" onchange="filterOwned(this.value)" style="padding:3px 8px;border:1px solid #ccc;border-radius:4px">'
+    zone_btns += '<option value="all">All Stocks</option>'
+    zone_btns += '<option value="owned">Owned Only</option>'
+    zone_btns += '<option value="watched">Watched Only</option>'
+    zone_btns += '<option value="not-owned">Not Owned</option>'
+    zone_btns += '</select></label>'
     zone_btns += '</div>'
 
     # Methodology note
