@@ -161,6 +161,36 @@ body {
     letter-spacing: 0.08em;
 }
 
+/* ── Under repair cards ── */
+.repair-card {
+    background: #f5f5f5 !important;
+    border: 1px solid #d8d8dc !important;
+    border-top: 3px solid #ccc !important;
+    opacity: 0.55;
+    cursor: default !important;
+    pointer-events: none;
+}
+.repair-card:hover {
+    box-shadow: none !important;
+    transform: none !important;
+}
+.repair-card .dash-icon { filter: grayscale(100%); }
+.repair-card .dash-tag {
+    background: #eee;
+    color: #999;
+    border-color: #ddd;
+}
+.repair-card .dash-card-title { color: #999; }
+.repair-card .dash-card-desc  { color: #aaa; }
+.repair-badge {
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #b0b0b0;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-style: italic;
+}
+
 /* ── Footer ── */
 .footer {
     border-top: 1px solid #e2e4e8;
@@ -189,7 +219,7 @@ body {
     <h1>Market Dashboards</h1>
     <div class="header-meta">
       <span class="date">Updated 2026-03-10</span>
-      <span class="count">22 live dashboards</span>
+      <span class="count">20 live dashboards</span>
       <a href="https://briancarter456546.github.io/market-dashboards" class="gh-link">https://briancarter456546.github.io/market-dashboards &rarr;</a>
     </div>
   </div>
@@ -203,11 +233,9 @@ body {
     <a href="./momentum-ranker/index.html" class="dash-card" style="--accent:#10b981;"><div class="dash-card-top"><span class="dash-icon">📈</span><span class="dash-tag">Momentum</span></div><div class="dash-card-title">Momentum Ranker</div><div class="dash-card-desc">700+ tickers ranked by composite momentum score. Returns across 6 periods, SMA gate, ratio consistency, and bad-SPY-day resilience. Live filter and sort.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
     <a href="./momentum-ranker-long/index.html" class="dash-card" style="--accent:#059669;"><div class="dash-card-top"><span class="dash-icon">📈</span><span class="dash-tag">Momentum</span></div><div class="dash-card-title">Momentum Ranker (Long)</div><div class="dash-card-desc">Long timeframe momentum ranker. Returns: 1m, 3m, 6m, 1y, 5y, 10y. vs SPY: 1y, 5y, 10y. Same scoring engine, longer horizon.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
     <a href="./similar-days/index.html" class="dash-card" style="--accent:#0ea5e9;"><div class="dash-card-top"><span class="dash-icon">🔍</span><span class="dash-tag">Pattern</span></div><div class="dash-card-title">Similar Days Analyzer</div><div class="dash-card-desc">Pattern-matched historical days with similar momentum profiles to today. Before vs after analysis for sectors, indexes, style factors, and risk regime across 25Y / 5Y / 1Y windows.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
-    <a href="./historical-mirror/index.html" class="dash-card" style="--accent:#06b6d4;"><div class="dash-card-top"><span class="dash-icon">🪞</span><span class="dash-tag">Pattern</span></div><div class="dash-card-title">Historical Mirror</div><div class="dash-card-desc">25-year x 25-period similarity heatmap comparing today's market fingerprint against every historical bi-weekly period. Momentum correlation, spread state matching, top analog periods, and forward outcome distributions.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
     <a href="./stock-secrot/index.html" class="dash-card" style="--accent:#f59e0b;"><div class="dash-card-top"><span class="dash-icon">🏭</span><span class="dash-tag">Stocks</span></div><div class="dash-card-title">Stock Sector Rotation</div><div class="dash-card-desc">Individual stocks scored across 9 momentum and sector rotation patterns. High scorers (7/9+) with returns, RSI, ADX, and relative strength.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
     <a href="./hyglqd-credit/index.html" class="dash-card" style="--accent:#ec4899;"><div class="dash-card-top"><span class="dash-icon">💳</span><span class="dash-tag">Credit</span></div><div class="dash-card-title">HYG/LQD Credit Spread</div><div class="dash-card-desc">Credit spread regime via HYG/LQD ratio. Historical percentile, expected SPY forward returns at current spread level, and win rates.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
     <a href="./crash-detection/index.html" class="dash-card" style="--accent:#ef4444;"><div class="dash-card-top"><span class="dash-icon">💥</span><span class="dash-tag">Risk</span></div><div class="dash-card-title">Crash Detection (RMT + Ising)</div><div class="dash-card-desc">Random Matrix Theory eigenvalue analysis and Ising magnetization. Composite crash probability score with component breakdown.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
-    <a href="./advanced-momentum/index.html" class="dash-card" style="--accent:#6366f1;"><div class="dash-card-top"><span class="dash-icon">🚀</span><span class="dash-tag">Momentum</span></div><div class="dash-card-title">Advanced Momentum Analyzer</div><div class="dash-card-desc">OBV divergence, Sortino ratios, slope acceleration, and trajectory detection for 700+ assets. Signals from STRONG_BUY to SELL with confidence scores.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
     <a href="./conservative-momentum/index.html" class="dash-card" style="--accent:#0d9488;"><div class="dash-card-top"><span class="dash-icon">🛡️</span><span class="dash-tag">Momentum</span></div><div class="dash-card-title">Conservative Momentum Qualifier</div><div class="dash-card-desc">Pattern-based momentum qualification: trend persistence, dip structure, sustainability scoring. Safe plays filtered for 40-300% 12M returns.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
     <a href="./macro/index.html" class="dash-card" style="--accent:#7c3aed;"><div class="dash-card-top"><span class="dash-icon">🌍</span><span class="dash-tag">Macro</span></div><div class="dash-card-title">Macro Dashboard</div><div class="dash-card-desc">VIX, treasury yield curve, credit spreads, sector performance, commodities, currencies, and breadth. Overall regime classification with 5-day trends and alerts.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
     <a href="./regime-changepoint/index.html" class="dash-card" style="--accent:#dc2626;"><div class="dash-card-top"><span class="dash-icon">🔬</span><span class="dash-tag">Regime</span></div><div class="dash-card-title">Regime Changepoint Detector</div><div class="dash-card-desc">Cosine distance between consecutive regime fingerprints + CUSUM changepoint detection. Drift rate, pole flip analysis, similarity to historical macro windows, and multi-window pole fingerprints.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
@@ -222,6 +250,11 @@ body {
     <a href="./sma29-entry/index.html" class="dash-card" style="--accent:#2563eb;"><div class="dash-card-top"><span class="dash-icon">🎯</span><span class="dash-tag">Scanner</span></div><div class="dash-card-title">Enter & Exit Quality</div><div class="dash-card-desc">Combo score: momentum quality + pullback health + SMA29 extension positioning. SMA29 entry buckets from scimode OOS test (154K obs). SMA10 exit alerts from dual-window analysis (1.2M obs) -- 25%+ above SMA10 = median -3.16% forward.</div><div class="dash-card-cta">Open dashboard &rarr;</div></a>
   </div>
 
+  <div class="section-label" style="margin-top:12px;">Under Repair</div>
+  <div class="grid">
+    <div class="dash-card repair-card"><div class="dash-card-top"><span class="dash-icon">🚀</span><span class="dash-tag">Momentum</span></div><div class="dash-card-title">Advanced Momentum Analyzer</div><div class="dash-card-desc">OBV divergence, Sortino ratios, slope acceleration, and trajectory detection for 700+ assets. Under repair -- timing out on pipeline runs.</div><div class="dash-card-cta repair-badge">Under repair</div></div>
+    <div class="dash-card repair-card"><div class="dash-card-top"><span class="dash-icon">🪞</span><span class="dash-tag">Pattern</span></div><div class="dash-card-title">Historical Mirror</div><div class="dash-card-desc">25-year x 25-period similarity heatmap comparing today's market fingerprint against every historical bi-weekly period. Under repair -- exceeding memory on droplet.</div><div class="dash-card-cta repair-badge">Under repair</div></div>
+  </div>
   <div class="footer">
     https://briancarter456546.github.io/market-dashboards &mdash; Generated 2026-03-10 &mdash; For personal research only.
     <div style="margin-top:8px;">
