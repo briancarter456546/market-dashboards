@@ -395,6 +395,10 @@ EXTRA_CSS = """
 /* Tooltip on column headers */
 th[title] { cursor: help; border-bottom: 1px dashed #999; }
 
+/* Compact table to prevent horizontal overflow */
+#mainTable { font-size: 0.82em; }
+#mainTable th, #mainTable td { padding: 4px 6px; white-space: nowrap; }
+
 /* Score bars */
 .score-bar {
     display: inline-block;
@@ -456,7 +460,7 @@ function sortTable(colIdx, numeric) {
     var keyed = rows.map(function(r) {
         var v = r.cells[colIdx].getAttribute('data-val');
         if (v === null) v = r.cells[colIdx].textContent;
-        if (numeric) v = parseFloat(v) || -9999;
+        if (numeric) { var p = parseFloat(v); v = isNaN(p) ? -9999 : p; }
         return {row: r, val: v};
     });
     keyed.sort(function(a, b) {
