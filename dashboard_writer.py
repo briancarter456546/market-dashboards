@@ -1127,16 +1127,7 @@ DASHBOARD_REGISTRY = [
         "color":       "#0ea5e9",
         "tag":         "Pattern",
     },
-    {
-        "slug":        "historical-mirror",
-        "title":       "Historical Mirror",
-        "description": "25-year x 25-period similarity heatmap comparing today's market fingerprint "
-                       "against every historical bi-weekly period. Momentum correlation, spread state "
-                       "matching, top analog periods, and forward outcome distributions.",
-        "icon":        "🪞",
-        "color":       "#06b6d4",
-        "tag":         "Pattern",
-    },
+    # historical-mirror: DISABLED 2026-03-10 -- OOM crash on droplet, moved to UNDER_REPAIR
     {
         "slug":        "stock-secrot",
         "title":       "Stock Sector Rotation",
@@ -1164,15 +1155,7 @@ DASHBOARD_REGISTRY = [
         "color":       "#ef4444",
         "tag":         "Risk",
     },
-    {
-        "slug":        "advanced-momentum",
-        "title":       "Advanced Momentum Analyzer",
-        "description": "OBV divergence, Sortino ratios, slope acceleration, and trajectory detection "
-                       "for 700+ assets. Signals from STRONG_BUY to SELL with confidence scores.",
-        "icon":        "🚀",
-        "color":       "#6366f1",
-        "tag":         "Momentum",
-    },
+    # advanced-momentum: DISABLED 2026-03-10 -- 10min timeout on droplet, moved to UNDER_REPAIR
     {
         "slug":        "conservative-momentum",
         "title":       "Conservative Momentum Qualifier",
@@ -1292,6 +1275,26 @@ DASHBOARD_REGISTRY = [
 ]
 
 
+UNDER_REPAIR = [
+    {
+        "slug":        "advanced-momentum",
+        "title":       "Advanced Momentum Analyzer",
+        "description": "OBV divergence, Sortino ratios, slope acceleration, and trajectory detection "
+                       "for 700+ assets. Under repair -- timing out on pipeline runs.",
+        "icon":        "🚀",
+        "tag":         "Momentum",
+    },
+    {
+        "slug":        "historical-mirror",
+        "title":       "Historical Mirror",
+        "description": "25-year x 25-period similarity heatmap comparing today's market fingerprint "
+                       "against every historical bi-weekly period. Under repair -- exceeding memory on droplet.",
+        "icon":        "🪞",
+        "tag":         "Pattern",
+    },
+]
+
+
 def write_landing_page():
     """Write docs/index.html - the main navigation page."""
     os.makedirs(DOCS_DIR, exist_ok=True)
@@ -1318,6 +1321,27 @@ def write_landing_page():
             tag_html=tag_html, title=d["title"], description=d["description"]
         )
         cards_html.append(card)
+
+    # Build "under repair" cards (grayed out, no link, at bottom)
+    repair_html = []
+    for d in UNDER_REPAIR:
+        tag   = d.get("tag", "")
+        tag_html = '<span class="dash-tag">{}</span>'.format(tag) if tag else ""
+        card = (
+            '<div class="dash-card repair-card">'
+            '<div class="dash-card-top">'
+            '<span class="dash-icon">{icon}</span>'
+            '{tag_html}'
+            '</div>'
+            '<div class="dash-card-title">{title}</div>'
+            '<div class="dash-card-desc">{description}</div>'
+            '<div class="dash-card-cta repair-badge">Under repair</div>'
+            '</div>'
+        ).format(
+            icon=d["icon"], tag_html=tag_html,
+            title=d["title"], description=d["description"]
+        )
+        repair_html.append(card)
 
     n = len(DASHBOARD_REGISTRY)
     html = """<!DOCTYPE html>
@@ -1483,6 +1507,36 @@ body {{
     letter-spacing: 0.08em;
 }}
 
+/* ── Under repair cards ── */
+.repair-card {{
+    background: #f5f5f5 !important;
+    border: 1px solid #d8d8dc !important;
+    border-top: 3px solid #ccc !important;
+    opacity: 0.55;
+    cursor: default !important;
+    pointer-events: none;
+}}
+.repair-card:hover {{
+    box-shadow: none !important;
+    transform: none !important;
+}}
+.repair-card .dash-icon {{ filter: grayscale(100%); }}
+.repair-card .dash-tag {{
+    background: #eee;
+    color: #999;
+    border-color: #ddd;
+}}
+.repair-card .dash-card-title {{ color: #999; }}
+.repair-card .dash-card-desc  {{ color: #aaa; }}
+.repair-badge {{
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #b0b0b0;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-style: italic;
+}}
+
 /* ── Footer ── */
 .footer {{
     border-top: 1px solid #e2e4e8;
@@ -1523,6 +1577,7 @@ body {{
     {cards}
   </div>
 
+  {repair_section}
   <div class="footer">
     {base_url} &mdash; Generated {date} &mdash; For personal research only.
     <div style="margin-top:8px;">
@@ -1539,6 +1594,12 @@ body {{
         date=date_str,
         n=n,
         cards="\n    ".join(cards_html),
+        repair_section=(
+            '<div class="section-label" style="margin-top:12px;">Under Repair</div>\n'
+            '  <div class="grid">\n    '
+            + "\n    ".join(repair_html)
+            + "\n  </div>"
+        ) if repair_html else "",
         base_url=GITHUB_PAGES_BASE,
     )
 

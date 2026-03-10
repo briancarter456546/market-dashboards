@@ -82,12 +82,13 @@ BACKENDS = [
         'slow': False,
         'required': True,
     },
-    {
-        'script': 'mirror_backend.py',
-        'name': 'Historical Mirror',
-        'slow': True,
-        'required': False,
-    },
+    # Historical Mirror: DISABLED 2026-03-10 -- OOM crash on droplet
+    # {
+    #     'script': 'mirror_backend.py',
+    #     'name': 'Historical Mirror',
+    #     'slow': True,
+    #     'required': False,
+    # },
     {
         'script': 'stock_secrot_backend.py',
         'name': 'Stock Sector Rotation',
@@ -106,12 +107,13 @@ BACKENDS = [
         'slow': False,
         'required': False,
     },
-    {
-        'script': 'advanced_momentum_backend.py',
-        'name': 'Advanced Momentum Analyzer',
-        'slow': True,
-        'required': False,
-    },
+    # Advanced Momentum Analyzer: DISABLED 2026-03-10 -- 10min timeout on droplet
+    # {
+    #     'script': 'advanced_momentum_backend.py',
+    #     'name': 'Advanced Momentum Analyzer',
+    #     'slow': True,
+    #     'required': False,
+    # },
     {
         'script': 'momentum_qualifier_backend.py',
         'name': 'Conservative Momentum Qualifier',
