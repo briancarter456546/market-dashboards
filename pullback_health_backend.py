@@ -863,11 +863,25 @@ def build_body_html(results, spy_result, writer):
     # Only show tickers in pullback (dd < -1%) or all
     pullback_results = [r for r in sorted_results if r['dd_pct'] < -1.0]
 
-    headers = [
-        "Own", "Watch", "Ticker", "Price", "DD%", "DD NATR", "NATR%",
-        "SMAs", "Stg", "VolX", "Beta",
-        "Resid", "Recov", "Health", "Verdict",
+    # (label, tooltip) pairs for column headers
+    header_defs = [
+        ("Own", ""),
+        ("Watch", ""),
+        ("Ticker", "Stock ticker symbol"),
+        ("Price", "Latest closing price"),
+        ("DD%", "Current drawdown from 63-day (3-month) rolling high. 0% = at high, -10% = pulled back 10% from peak."),
+        ("DD NATR", "Drawdown magnitude divided by NATR (normalized ATR). Unitless severity score: 0.5 = mild, 3.0 = severe, 5.0+ = extreme."),
+        ("NATR%", "Normalized Average True Range: ATR(14) / close * 100. Measures daily volatility as % of price. Higher = more volatile stock."),
+        ("SMAs", "Number of SMAs (30/50/100/200) above current price. Dots show which ones: green = above, red = below. 4/4 = strongest structure."),
+        ("Stg", "Slope stage: 0=Decline, 1=Basing, 2=Sustained Uptrend, 3=Late Stage/Parabolic. From 21-day log-price regression slope and R-squared."),
+        ("VolX", "Volume expansion ratio: 10-day realized volatility / 63-day realized volatility. >1.5 = vol expanding (risk), <0.8 = vol contracting (calm)."),
+        ("Beta", "6-month regression beta vs SPY. Clamped 0.0-5.0. Measures how much the stock moves relative to the market."),
+        ("Resid", "Residual drawdown: stock DD minus (beta * SPY DD). Positive = stock fell more than beta predicts. 0 = fair, 5+ = idiosyncratic weakness."),
+        ("Recov", "Median 21-day forward return from similar past drawdown episodes (matched +/-0.5 NATR units). Hover for sample count (n)."),
+        ("Health", "Composite health score 0-100. Weights: 25% NATR DD, 25% SMA structure, 20% slope stage, 10% vol expansion, 10% residual DD, 10% recovery."),
+        ("Verdict", "HEALTHY (>=80), CAUTION (>=50), WARNING (>=20), BREAKDOWN (<20). Capped at 60 if vol or residual score is dangerously low."),
     ]
+    headers = [h[0] for h in header_defs]
 
     rows = []
     for r in pullback_results:
@@ -942,7 +956,10 @@ def build_body_html(results, spy_result, writer):
             )
         )
 
-    header_cells = "".join('<th>{}</th>'.format(h) for h in headers)
+    header_cells = "".join(
+        '<th title="{}">{}</th>'.format(tip, label) if tip else '<th>{}</th>'.format(label)
+        for label, tip in header_defs
+    )
     table_html = (
         '<table class="ph-table">'
         '<thead><tr>{hdr}</tr></thead>'

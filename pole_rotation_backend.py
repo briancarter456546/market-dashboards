@@ -415,16 +415,16 @@ def build_performance_table(proven_df, pole_meta, pole_returns):
 
     header = (
         '<thead><tr>'
-        '<th>Pole</th>'
-        '<th>Top ETFs</th>'
-        '<th>1W</th>'
-        '<th>1M</th>'
-        '<th>3M</th>'
-        '<th>6M</th>'
-        '<th>YTD</th>'
-        '<th>PF</th>'
-        '<th>Win Rate</th>'
-        '<th>Beta</th>'
+        '<th title="Factor-Mimicking Portfolio pole name (equal-weighted top 5 ETF constituents)">Pole</th>'
+        '<th title="Top ETF constituents in this pole by correlation strength">Top ETFs</th>'
+        '<th title="1-week return of the pole portfolio">1W</th>'
+        '<th title="1-month return of the pole portfolio">1M</th>'
+        '<th title="3-month return of the pole portfolio">3M</th>'
+        '<th title="6-month return of the pole portfolio">6M</th>'
+        '<th title="Year-to-date return of the pole portfolio">YTD</th>'
+        '<th title="RSI(2) mean-reversion backtest Profit Factor. PF >= 1.5 = reliable pole. Higher = stronger mean-reversion edge.">PF</th>'
+        '<th title="RSI(2) backtest win rate. % of trades that were profitable.">Win Rate</th>'
+        '<th title="6-month regression beta vs SPY. Shows how much this pole moves with the market.">Beta</th>'
         '</tr></thead>'
     )
 

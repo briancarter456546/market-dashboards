@@ -214,7 +214,7 @@ def build_signals_section(entries, exits):
 
     return (
         '<table class="data-table" style="width:100%;">'
-        '<thead><tr><th>Signal</th><th>Ticker</th><th>RSI(2)</th><th>Close</th><th>SMA200</th></tr></thead>'
+        '<thead><tr><th title="BUY = RSI(2) dropped below 10 while above SMA200. EXIT = close crossed above SMA5.">Signal</th><th>Ticker</th><th title="2-period RSI. Below 10 = deeply oversold (entry trigger). Above 50 = mean-reverted.">RSI(2)</th><th title="Latest closing price">Close</th><th title="200-day simple moving average. Stock must be above SMA200 to qualify (long-term uptrend filter).">SMA200</th></tr></thead>'
         '<tbody>{}</tbody></table>'.format('\n'.join(rows))
     )
 
@@ -265,8 +265,8 @@ def build_positions_section(positions_list):
 
     return (
         '<table class="data-table" style="width:100%;">'
-        '<thead><tr><th>Ticker</th><th>Entry Date</th><th>Entry Price</th>'
-        '<th>Current</th><th>P/L</th><th>Days</th></tr></thead>'
+        '<thead><tr><th>Ticker</th><th title="Date the RSI(2) buy signal triggered">Entry Date</th><th title="Closing price on entry date">Entry Price</th>'
+        '<th title="Latest closing price">Current</th><th title="Unrealized profit/loss percentage">P/L</th><th title="Trading days since entry">Days</th></tr></thead>'
         '<tbody>{}</tbody></table>'.format('\n'.join(rows))
     )
 
@@ -303,8 +303,8 @@ def build_trade_log_section(trade_log, limit=10):
 
     return (
         '<table class="data-table" style="width:100%;">'
-        '<thead><tr><th>Ticker</th><th>Entry</th><th>Exit</th>'
-        '<th>Entry $</th><th>Exit $</th><th>Return</th><th>Days</th></tr></thead>'
+        '<thead><tr><th>Ticker</th><th title="Date RSI(2) buy signal fired">Entry</th><th title="Date close crossed above SMA5 (exit trigger)">Exit</th>'
+        '<th title="Closing price on entry date">Entry $</th><th title="Closing price on exit date">Exit $</th><th title="Realized return percentage">Return</th><th title="Trading days held">Days</th></tr></thead>'
         '<tbody>{}</tbody></table>'.format('\n'.join(rows))
     )
 
@@ -397,8 +397,8 @@ def build_watchlist_section(watchlist):
 
     return (
         '<table class="data-table" style="width:100%;">'
-        '<thead><tr><th>Ticker</th><th>Close</th><th>RSI(2)</th>'
-        '<th>&gt; SMA200</th><th>Status</th></tr></thead>'
+        '<thead><tr><th>Ticker</th><th title="Latest closing price">Close</th><th title="2-period RSI value. Below 10 = deeply oversold. Below 5 = extreme.">RSI(2)</th>'
+        '<th title="Whether close is above the 200-day SMA (required for entry)">&gt; SMA200</th><th title="Current watchlist status: approaching entry zone, in position, or cooling off">Status</th></tr></thead>'
         '<tbody>{}</tbody></table>'.format('\n'.join(rows))
     )
 

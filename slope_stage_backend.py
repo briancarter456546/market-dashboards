@@ -595,8 +595,18 @@ def _build_distribution_bar(stage_counts, total):
 
 
 def _build_table(headers, rows_html):
-    """Build a sortable HTML table."""
-    header_cells = "".join('<th>{}</th>'.format(h) for h in headers)
+    """Build a sortable HTML table. Headers can be strings or (label, tooltip) tuples."""
+    parts = []
+    for h in headers:
+        if isinstance(h, tuple):
+            label, tip = h
+            if tip:
+                parts.append('<th title="{}">{}</th>'.format(tip, label))
+            else:
+                parts.append('<th>{}</th>'.format(label))
+        else:
+            parts.append('<th>{}</th>'.format(h))
+    header_cells = "".join(parts)
     return (
         '<table>'
         '<thead><tr>{hdr}</tr></thead>'
@@ -715,8 +725,16 @@ def build_body_html(results, writer):
     # 4. Entry Signals (Stage 1 -> 2)
     # -----------------------------------------------------------------
     if entry_signals:
-        headers = ["Own", "Watch", "Ticker", "Transition Date", "Price", "Slope %",
-                   "Distance %", "R-sq", "Crash Risk", "TQ Score"]
+        headers = [
+            "Own", "Watch", "Ticker",
+            ("Transition Date", "Date the stock transitioned from Stage 1 (Basing) to Stage 2 (Sustained Uptrend)"),
+            ("Price", "Latest closing price"),
+            ("Slope %", "Annualized slope from 21-day log-price regression. Higher = steeper uptrend."),
+            ("Distance %", "% distance from SMA29 trendline. Higher = more extended above the trend."),
+            ("R-sq", "R-squared of 21-day log-price regression. 1.0 = perfectly linear, 0.0 = random walk."),
+            ("Crash Risk", "Composite crash probability from RMT eigenvalue + Ising magnetization model."),
+            ("TQ Score", "Trend Quality score 0-100. Blend of slope strength, R-squared, and stage persistence."),
+        ]
         rows = []
         for s in entry_signals:
             date_sortval = s["date"].replace("-", "")
@@ -759,8 +777,17 @@ def build_body_html(results, writer):
     # -----------------------------------------------------------------
     # 5. Stage 2 - Sustained Uptrends
     # -----------------------------------------------------------------
-    headers = ["Own", "Watch", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
-               "R-sq", "Vol %", "Crash Risk", "TQ Score"]
+    headers = [
+        "Own", "Watch", "Ticker",
+        ("Stage", "Current slope stage: 0=Decline, 1=Basing, 2=Sustained Uptrend, 3=Late Stage/Parabolic"),
+        ("Slope %", "Annualized slope from 21-day log-price regression. Higher = steeper uptrend."),
+        ("Days in Stage", "Number of trading days the stock has been in its current stage."),
+        ("Distance %", "% distance from SMA29 trendline. Higher = more extended above the trend."),
+        ("R-sq", "R-squared of 21-day log-price regression. 1.0 = perfectly linear, 0.0 = random walk."),
+        ("Vol %", "Annualized realized volatility (21-day). Lower = smoother trend."),
+        ("Crash Risk", "Composite crash probability from RMT eigenvalue + Ising magnetization model."),
+        ("TQ Score", "Trend Quality score 0-100. Blend of slope strength, R-squared, and stage persistence."),
+    ]
     rows = []
     for r in stage2:
         rows.append(
@@ -796,8 +823,17 @@ def build_body_html(results, writer):
     # -----------------------------------------------------------------
     # 6. Stage 3 - Parabolic (Exit Watch)
     # -----------------------------------------------------------------
-    headers = ["Own", "Watch", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
-               "R-sq", "Vol %", "Crash Risk", "TQ Score"]
+    headers = [
+        "Own", "Watch", "Ticker",
+        ("Stage", "Current slope stage. Stage 3 = Late Stage/Parabolic (slope >80% annualized). Exit watch zone."),
+        ("Slope %", "Annualized slope from 21-day log-price regression. >80% = parabolic territory."),
+        ("Days in Stage", "Number of trading days in current stage. Longer parabolic runs = higher crash risk."),
+        ("Distance %", "% distance from SMA29 trendline. Very high = extremely extended."),
+        ("R-sq", "R-squared of 21-day log-price regression. High R-sq + high slope = clean parabolic move."),
+        ("Vol %", "Annualized realized volatility (21-day)."),
+        ("Crash Risk", "Composite crash probability from RMT eigenvalue + Ising magnetization model."),
+        ("TQ Score", "Trend Quality score 0-100."),
+    ]
     rows = []
     for r in stage3:
         rows.append(
@@ -835,8 +871,17 @@ def build_body_html(results, writer):
     # -----------------------------------------------------------------
     all_sorted = sorted(results, key=lambda x: (-x["stage"], -x["slope_pct"]))
 
-    headers = ["Own", "Watch", "Ticker", "Stage", "Slope %", "Days in Stage", "Distance %",
-               "R-sq", "Vol %", "Crash Risk", "TQ Score"]
+    headers = [
+        "Own", "Watch", "Ticker",
+        ("Stage", "Slope stage: 0=Decline, 1=Basing, 2=Sustained Uptrend, 3=Late Stage/Parabolic"),
+        ("Slope %", "Annualized slope from 21-day log-price regression."),
+        ("Days in Stage", "Trading days in current stage."),
+        ("Distance %", "% distance from SMA29 trendline."),
+        ("R-sq", "R-squared of 21-day log-price regression. 1.0 = linear, 0.0 = random."),
+        ("Vol %", "Annualized realized volatility (21-day)."),
+        ("Crash Risk", "Composite crash probability (RMT + Ising)."),
+        ("TQ Score", "Trend Quality score 0-100."),
+    ]
     rows = []
     for r in all_sorted:
         rows.append(

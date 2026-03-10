@@ -130,8 +130,8 @@ def build_13f_panel(df_13f):
         '<h3>13F Institutional Conviction (Top 30)</h3>'
         '<p>Quarterly 13F filings: how many institutional holders added vs reduced positions.</p>'
         '<table class="data-table"><thead><tr>'
-        '<th>Ticker</th><th>Net Conv.</th><th>Adding</th><th>Reducing</th>'
-        '<th>Total Holders</th><th>% Adding</th><th>Total Shares</th>'
+        '<th>Ticker</th><th title="Net conviction = holders adding minus holders reducing. Positive = institutional accumulation.">Net Conv.</th><th title="Number of 13F filers who increased their position this quarter">Adding</th><th title="Number of 13F filers who decreased their position this quarter">Reducing</th>'
+        '<th title="Total number of institutional holders reporting this stock in 13F filings">Total Holders</th><th title="Percentage of reporting holders who increased position (adding / total)">% Adding</th><th title="Total shares held across all reporting institutions">Total Shares</th>'
         '</tr></thead><tbody>'
         + '\n'.join(rows_html) +
         '</tbody></table>'
@@ -262,8 +262,8 @@ def build_cot_panel(df_cot):
         '<p>CFTC Commitment of Traders (Traders in Financial Futures). '
         'Leveraged Money = hedge funds. Extremes are contrarian signals.</p>'
         '<table class="data-table"><thead><tr>'
-        '<th>Contract</th><th>Lev Net</th><th>Lev % OI</th>'
-        '<th>AM Net</th><th>Report Date</th>'
+        '<th title="Futures contract (e.g. ES = S&P 500 E-mini, NQ = Nasdaq 100)">Contract</th><th title="Leveraged Money (hedge funds) net position: long minus short contracts. Extremes are contrarian.">Lev Net</th><th title="Leveraged Money net as % of total open interest. Extreme readings signal crowded positioning.">Lev % OI</th>'
+        '<th title="Asset Manager (pension/mutual funds) net position. Typically trend-following, not contrarian.">AM Net</th><th title="CFTC report date (published Friday, data as of Tuesday)">Report Date</th>'
         '</tr></thead><tbody>'
         + '\n'.join(rows_html) +
         '</tbody></table>'
@@ -320,7 +320,7 @@ def build_short_volume_panel(df_short):
         '<p>FINRA Reg SHO daily short volume. Tickers with >50% short ratio '
         'and >100K volume. High short ratio may indicate squeeze potential.</p>'
         '<table class="data-table"><thead><tr>'
-        '<th>Ticker</th><th>Short Ratio</th><th>Short Vol</th><th>Total Vol</th>'
+        '<th>Ticker</th><th title="Short volume / total volume for most recent trading day. Above 50% = heavily shorted. Potential squeeze candidate.">Short Ratio</th><th title="Number of shares sold short on most recent day">Short Vol</th><th title="Total shares traded on most recent day">Total Vol</th>'
         '</tr></thead><tbody>'
         + '\n'.join(rows_html) +
         '</tbody></table>'
@@ -395,8 +395,8 @@ def build_insider_panel(df_insider):
         '<p>Form 4 filings: P-Purchase transactions only (excludes grants, '
         'exercises, awards). Sorted by dollar value.</p>'
         '<table class="data-table"><thead><tr>'
-        '<th>Ticker</th><th>Insider</th><th>Role</th><th>Date</th>'
-        '<th>Price</th><th>Shares</th><th>Value</th>'
+        '<th>Ticker</th><th title="Name of the insider making the purchase">Insider</th><th title="Corporate role (CEO, CFO, Director, 10% Owner, etc.)">Role</th><th title="Transaction date from SEC Form 4 filing">Date</th>'
+        '<th title="Purchase price per share">Price</th><th title="Number of shares purchased">Shares</th><th title="Total dollar value of the purchase (price x shares)">Value</th>'
         '</tr></thead><tbody>'
         + '\n'.join(rows_html) +
         '</tbody></table>'
