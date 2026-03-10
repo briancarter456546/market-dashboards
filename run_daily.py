@@ -183,6 +183,12 @@ BACKENDS = [
         'required': False,
     },
     {
+        'script': 'sma29_entry_backend.py',
+        'name': 'SMA29 Entry Quality',
+        'slow': False,
+        'required': False,
+    },
+    {
         'script': 'dashboard_llm_descriptions.py',
         'name': 'LLM Dashboard Descriptions',
         'slow': False,

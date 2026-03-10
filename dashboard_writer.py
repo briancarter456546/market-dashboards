@@ -1271,6 +1271,16 @@ DASHBOARD_REGISTRY = [
         "color":       "#7c3aed",
         "tag":         "Taxonomy",
     },
+    {
+        "slug":        "sma29-entry",
+        "title":       "SMA29 Entry Quality",
+        "description": "Combo score: momentum quality + pullback health + SMA29 extension positioning. "
+                       "Extension buckets from scimode OOS test (154K obs, 1390 tickers). "
+                       "Sweet spot: 0-10% above SMA29 with strong momentum and healthy pullback.",
+        "icon":        "🎯",
+        "color":       "#2563eb",
+        "tag":         "Scanner",
+    },
 ]
 
 
