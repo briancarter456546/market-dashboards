@@ -571,19 +571,40 @@ th.watch-th { width: 30px; text-align: center; cursor: default; }
 
 OWNERSHIP_JS = """
 /* --- Shared ownership state (localStorage, cross-dashboard) --- */
+/* Defensive JSON parse: never lose data on corruption */
+function _safeLoadArray(key) {
+    try {
+        var raw = localStorage.getItem(key);
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+        return [];
+    } catch(e) {
+        console.warn('[ownership] Corrupt localStorage key: ' + key, e);
+        return [];
+    }
+}
+function _safeSaveArray(key, setObj) {
+    try {
+        localStorage.setItem(key, JSON.stringify(Array.from(setObj)));
+    } catch(e) {
+        console.error('[ownership] Failed to save ' + key, e);
+    }
+}
+
 window._owned = (function() {
     var KEY = 'dashboard_owned_tickers';
-    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+    var _set = new Set(_safeLoadArray(KEY));
 
     /* Migration: copy old momentum-ranker-only key if it exists */
-    var OLD_KEY = 'mr_owned_tickers_v1';
     try {
+        var OLD_KEY = 'mr_owned_tickers_v1';
         var old = localStorage.getItem(OLD_KEY);
         if (old) {
             var oldArr = JSON.parse(old);
-            if (oldArr && oldArr.length) {
+            if (Array.isArray(oldArr) && oldArr.length) {
                 oldArr.forEach(function(t) { _set.add(t); });
-                localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+                _safeSaveArray(KEY, _set);
             }
             localStorage.removeItem(OLD_KEY);
         }
@@ -593,10 +614,10 @@ window._owned = (function() {
         has: function(t) { return _set.has(t); },
         toggle: function(t) {
             if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
-            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            _safeSaveArray(KEY, _set);
             return _set.has(t);
         },
-        all: function() { return [].concat(Array.from(_set)); },
+        all: function() { return Array.from(_set); },
         count: function() { return _set.size; }
     };
 })();
@@ -628,15 +649,15 @@ window._ownToggle = function(ticker, cb) {
 /* --- Shared watchlist state (localStorage, cross-dashboard) --- */
 window._watched = (function() {
     var KEY = 'dashboard_watched_tickers';
-    var _set = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+    var _set = new Set(_safeLoadArray(KEY));
     return {
         has: function(t) { return _set.has(t); },
         toggle: function(t) {
             if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
-            localStorage.setItem(KEY, JSON.stringify([].concat(Array.from(_set))));
+            _safeSaveArray(KEY, _set);
             return _set.has(t);
         },
-        all: function() { return [].concat(Array.from(_set)); },
+        all: function() { return Array.from(_set); },
         count: function() { return _set.size; }
     };
 })();
