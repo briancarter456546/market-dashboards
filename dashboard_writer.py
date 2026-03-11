@@ -848,12 +848,11 @@ DASHBOARD_DESCRIPTIONS = {
         "Replaces smart-money dashboard which failed validation against this real data."
     ),
     "pole-rotation": (
-        "Visualizes the ~20 ETF poles (out of 43 total) that passed reliability testing "
-        "via RSI(2) mean-reversion backtest with Profit Factor >= 1.5. Each pole is a "
-        "Factor-Mimicking Portfolio (equal-weighted top 5 ETF constituents). Heatmap cards "
-        "show 1W/1M/3M returns color-coded by momentum. Performance table includes 6M and "
-        "YTD returns plus backtest trust scores (PF, win rate) and SPY beta. Poles excluded "
-        "from regression (US Large Cap Core, US Dollar, Cash, Dow, S&P Variants) are removed."
+        "25 scimode-validated poles (14 VALIDATED + 11 MARGINAL) from taxonomy regression. "
+        "Each pole is a Factor-Mimicking Portfolio (equal-weighted ETF basket). Shows lead ETF "
+        "performance (1W/1M/3M/6M/YTD), SMA29 extension zone, coherence score, stock count, "
+        "and SPY beta. VIX regime overlay highlights poles historically strongest in the current "
+        "VIX band. Filtered by scimode_pole_validation (coherence, stability, predictive value)."
     ),
 }
 
@@ -1283,10 +1282,9 @@ DASHBOARD_REGISTRY = [
     },
     {
         "slug":        "pole-rotation",
-        "title":       "Proven Pole Rotation",
-        "description": "21 ETF poles that passed RSI(2) reliability testing (PF >= 1.5). "
-                       "Heatmap cards with 1W/1M/3M returns, sortable performance table, "
-                       "and backtest trust scores for each factor-mimicking portfolio.",
+        "title":       "Validated Pole Rotation",
+        "description": "25 scimode-validated poles with lead ETF performance, SMA29 extension zones, "
+                       "VIX regime overlay, and sector recommendations. Entry/exit scanner style table.",
         "icon":        "🧲",
         "color":       "#7c3aed",
         "tag":         "Taxonomy",

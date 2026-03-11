@@ -1,17 +1,22 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# pole_rotation_backend.py - v1.0
-# Last updated: 2026-03-08
+# pole_rotation_backend.py - v2.0
+# Last updated: 2026-03-11
 # =============================================================================
-# v1.0: Initial release - Proven Pole Rotation dashboard
-#   - Shows ~20 ETF poles that passed RSI(2) reliability testing (PF >= 1.5)
-#   - Heatmap cards with 1W/1M/3M color coding
-#   - Sortable performance table with backtest trust scores
-#   - Reads fmp_pole_returns_raw.csv (daily log returns per pole)
+# v2.0: Complete rewrite - Entry/Exit dashboard style
+#   - Uses 25 scimode-validated poles (not RSI(2) PF filter)
+#   - Lead ETF per pole with SMA29 extension + zone badge
+#   - VIX regime banner with scimode-validated sector recommendations
+#   - Sortable table: pole name, lead ETF, classification, 1W/1M/3M/6M/YTD,
+#     extension %, zone badge, coherence, # stocks, SPY beta
+#   - Stat bar + regime banner matching entry/exit dashboard pattern
+#
+# v1.0: Heatmap cards filtered by RSI(2) PF >= 1.5
 # =============================================================================
 
 import os
 import json
+import pickle
 import warnings
 from datetime import datetime
 
@@ -28,263 +33,137 @@ warnings.filterwarnings('ignore')
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 _DATA_DIR   = os.path.normpath(os.path.join(_SCRIPT_DIR, '..', 'perplexity-user-data'))
+CACHE_DIR   = os.path.normpath(os.path.join(_DATA_DIR, 'price_cache'))
 
 FMP_RETURNS_PATH = os.path.normpath(os.path.join(
     _DATA_DIR, 'output', 'taxonomy', 'fmp_pole_returns_raw.csv'))
 POLE_META_PATH   = os.path.normpath(os.path.join(
     _DATA_DIR, 'output', 'taxonomy', 'fmp_pole_metadata.json'))
-_bt_dir = os.path.join(_DATA_DIR, 'output', 'backtest')
-_bt_candidates = sorted(
-    [f for f in os.listdir(_bt_dir) if f.startswith('rsi2_43pole_comparison_')],
-    reverse=True,
-) if os.path.isdir(_bt_dir) else []
-BACKTEST_PATH = os.path.normpath(os.path.join(_bt_dir, _bt_candidates[0])) if _bt_candidates else ''
+VALIDATED_POLES_JSON = os.path.normpath(os.path.join(
+    _DATA_DIR, 'output', 'scientist', 'validated_poles.json'))
+VIX_PKL = os.path.join(CACHE_DIR, '^VIX.pkl')
 
 # =============================================================================
-# PROVEN POLES - PF >= 1.5 from RSI(2) backtest, excluding regression-excluded
-# poles (17, 23, 26, 36, 41) and the index (^GSPC / pole 0).
+# VIX REGIME (same as sma29_entry_backend v1.4)
 # =============================================================================
 
-EXCLUDED_POLE_IDS = {0, 17, 23, 26, 36, 41}
-MIN_PROFIT_FACTOR = 1.5
+VIX_BANDS = [
+    (0,  15, '<15',   'LOW VOLATILITY'),
+    (15, 20, '15-20', 'NORMAL'),
+    (20, 25, '20-25', 'ELEVATED'),
+    (25, 30, '25-30', 'HIGH'),
+    (30, 999, '30+',  'EXTREME'),
+]
 
-# =============================================================================
-# EXTRA CSS
-# =============================================================================
-
-EXTRA_CSS = """
-/* Heatmap card grid */
-.pole-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 14px;
-    margin-bottom: 22px;
+VIX_SECTOR_RECS = {
+    '<15':  ['Semis & Tech', 'Financials', 'Defense', 'LatAm'],
+    '15-20': ['Semis & Tech', 'Financials', 'Cybersecurity', 'Consumer Disc'],
+    '20-25': ['Telecom', 'Semis & Tech', 'LatAm', 'Financials'],
+    '25-30': ['Telecom', 'Semis & Tech', 'LatAm', 'Energy'],
+    '30+':   ['Semis & Tech', 'Energy', 'Copper & Metals', 'Defense'],
 }
 
-.pole-card {
-    background: #fff;
-    border: 1px solid #e2e4e8;
-    border-radius: 8px;
-    padding: 16px 18px;
-    border-top: 5px solid #ccc;
-    position: relative;
+# Pole IDs that are favored per VIX band (for highlighting)
+VIX_FAVORED_POLES = {
+    '<15':  {16, 19, 11, 13},
+    '15-20': {16, 19, 27, 37},
+    '20-25': {18, 16, 13, 19},
+    '25-30': {18, 16, 13, 9},
+    '30+':   {16, 9, 45, 11},
 }
 
-.pole-card .pole-name {
-    font-size: 0.82em;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin-bottom: 4px;
-    line-height: 1.3;
+# Lead ETF per pole (first/most liquid member)
+LEAD_ETF = {
+    1: 'VGK', 2: 'XLP', 3: 'IWM', 4: 'AGG', 5: 'GLD',
+    6: 'FXI', 8: 'BITQ', 9: 'USO', 10: 'HEZU', 11: 'ITA',
+    13: 'EWZ', 14: 'VNQ', 15: 'EWJ', 16: 'SMH', 18: 'XLC',
+    19: 'XLF', 20: 'HYG', 27: 'CIBR', 28: 'FLTW', 29: 'URA',
+    32: 'TAN', 34: 'XLB', 37: 'XLY', 42: 'GXG', 45: 'COPX',
 }
 
-.pole-card .pole-members {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72em;
-    color: #888;
-    margin-bottom: 10px;
-}
-
-.pole-card .pole-returns {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-}
-
-.pole-card .ret-cell {
-    text-align: center;
-    padding: 6px 4px;
-    border-radius: 4px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.78em;
-    font-weight: 600;
-}
-
-.pole-card .ret-label {
-    font-size: 0.65em;
-    font-weight: 600;
-    color: #888;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 2px;
-}
-
-.pole-card .pf-badge {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72em;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 10px;
-    background: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
-}
-
-.pole-card .pf-badge.elite {
-    background: #fef3c7;
-    color: #d97706;
-    border-color: #fde68a;
-}
-
-/* Beta badge */
-.pole-card .beta-badge {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68em;
-    color: #888;
-    margin-top: 8px;
-}
-
-/* Return color cells */
-.ret-hot-3  { background: #14532d; color: #fff; }
-.ret-hot-2  { background: #166534; color: #fff; }
-.ret-hot-1  { background: #22c55e; color: #fff; }
-.ret-warm   { background: #dcfce7; color: #166534; }
-.ret-flat   { background: #f5f5f5; color: #888; }
-.ret-cool   { background: #fee2e2; color: #991b1b; }
-.ret-cold-1 { background: #ef4444; color: #fff; }
-.ret-cold-2 { background: #991b1b; color: #fff; }
-.ret-cold-3 { background: #450a0a; color: #fff; }
-
-/* Performance table */
-.perf-table td, .perf-table th {
-    padding: 11px 14px;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.90em;
-}
-.perf-table th {
-    background: #f8f9fb;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-size: 0.78em;
-    color: #555;
-    border-bottom: 2px solid #e2e4e8;
-}
-.perf-table td:not(:first-child):not(:nth-child(2)) {
-    font-family: 'IBM Plex Mono', monospace;
-    text-align: right;
-}
-.perf-table td:first-child {
-    font-weight: 600;
-    color: #1a1a2e;
-}
-.perf-table td:nth-child(2) {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.78em;
-    color: #888;
-}
-"""
-
-# =============================================================================
-# EXTRA JS - table sorting
-# =============================================================================
-
-EXTRA_JS = """
-document.querySelectorAll('.sortable-table thead th').forEach(function(th, colIdx) {
-    th.addEventListener('click', function() {
-        var table = th.closest('table');
-        var tbody = table.querySelector('tbody');
-        var rows = Array.from(tbody.querySelectorAll('tr'));
-        var asc = !th.classList.contains('sorted-asc');
-
-        table.querySelectorAll('th').forEach(function(h) {
-            h.classList.remove('sorted-asc', 'sorted-desc');
-        });
-        th.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
-
-        rows.sort(function(a, b) {
-            var aVal = a.cells[colIdx].getAttribute('data-sort') || a.cells[colIdx].textContent.trim();
-            var bVal = b.cells[colIdx].getAttribute('data-sort') || b.cells[colIdx].textContent.trim();
-            var aNum = parseFloat(aVal);
-            var bNum = parseFloat(bVal);
-            if (!isNaN(aNum) && !isNaN(bNum)) {
-                return asc ? aNum - bNum : bNum - aNum;
-            }
-            return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-        });
-
-        rows.forEach(function(row) { tbody.appendChild(row); });
-    });
-});
-"""
+# SMA29 extension zone buckets (simplified from sma29_entry_backend)
+EXTENSION_ZONES = [
+    (0,   5,  'OPTIMAL', '#166534', '#dcfce7'),
+    (5,  10,  'OPTIMAL', '#166534', '#dcfce7'),
+    (10, 15,  'GOOD',    '#075985', '#e0f2fe'),
+    (15, 20,  'FAIR',    '#854d0e', '#fef9c3'),
+    (20, 25,  'CAUTION', '#9a3412', '#fed7aa'),
+    (25, 40,  'WARNING', '#991b1b', '#fecaca'),
+    (40, 999, 'DANGER',  '#fff',    '#f87171'),
+]
 
 
 # =============================================================================
-# HELPERS
+# DATA LOADERS
 # =============================================================================
 
-def load_proven_poles(backtest_path):
-    """Load backtest results and filter to proven poles."""
-    bt = pd.read_csv(backtest_path, encoding='utf-8')
-    # Exclude regression-excluded poles and index
-    bt = bt[~bt['pole_id'].isin(EXCLUDED_POLE_IDS)]
-    # Filter by profit factor
-    proven = bt[bt['profit_factor'] >= MIN_PROFIT_FACTOR].copy()
-    proven = proven.sort_values('profit_factor', ascending=False)
-    return proven
+def load_validated_poles():
+    """Load validated_poles.json -> usable pole IDs + details."""
+    if not os.path.exists(VALIDATED_POLES_JSON):
+        print("[WARN] validated_poles.json not found")
+        return [], {}
+    with open(VALIDATED_POLES_JSON, 'r', encoding='utf-8') as f:
+        vp = json.load(f)
+    usable = vp.get('usable', [])
+    details = vp.get('details', {})
+    return usable, details
 
 
-def load_pole_metadata(meta_path):
+def load_pole_metadata():
     """Load pole metadata JSON."""
-    with open(meta_path, 'r', encoding='utf-8') as f:
+    with open(POLE_META_PATH, 'r', encoding='utf-8') as f:
         raw = json.load(f)
-    # Convert string keys to int
     return {int(k): v for k, v in raw.items() if k.isdigit()}
 
 
-def compute_pole_returns(returns_path, proven_pole_ids):
-    """Compute cumulative returns over various windows for proven poles."""
-    df = pd.read_csv(returns_path, encoding='utf-8', parse_dates=['date'])
+def load_current_vix():
+    """Load current VIX level."""
+    if not os.path.exists(VIX_PKL):
+        return None, None, None
+    try:
+        vdf = pd.read_pickle(VIX_PKL)
+        col = 'adjClose' if 'adjClose' in vdf.columns else 'close'
+        current_vix = float(vdf[col].iloc[-1])
+        for vlo, vhi, band_label, band_desc in VIX_BANDS:
+            if vlo <= current_vix < vhi:
+                return current_vix, band_label, band_desc
+        return current_vix, '30+', 'EXTREME'
+    except Exception:
+        return None, None, None
+
+
+def compute_pole_returns(usable_ids):
+    """Compute cumulative returns for each pole from FMP log returns."""
+    df = pd.read_csv(FMP_RETURNS_PATH, encoding='utf-8', parse_dates=['date'])
     df = df.set_index('date').sort_index()
 
-    # Build pole_id -> column name mapping
+    usable_set = set(usable_ids)
     col_map = {}
     for col in df.columns:
         parts = col.split('_', 1)
-        if parts[0].isdigit():
-            pid = int(parts[0])
-            if pid in proven_pole_ids:
-                col_map[pid] = col
+        if parts[0].isdigit() and int(parts[0]) in usable_set:
+            col_map[int(parts[0])] = col
 
-    # Compute cumulative returns for each window
     today = df.index[-1]
-    windows = {
-        '1W': 5,
-        '1M': 21,
-        '3M': 63,
-        '6M': 126,
-        'YTD': None,  # handled separately
-    }
+    windows = {'1W': 5, '1M': 21, '3M': 63, '6M': 126, 'YTD': None}
 
     results = {}
-    for pid in proven_pole_ids:
+    for pid in usable_ids:
         if pid not in col_map:
             continue
-        col = col_map[pid]
-        series = df[col].dropna()
+        series = df[col_map[pid]].dropna()
         if len(series) < 5:
             continue
 
         r = {}
         for label, days in windows.items():
             if label == 'YTD':
-                # From first trading day of current year
                 year_start = pd.Timestamp(today.year, 1, 1)
-                ytd_data = series[series.index >= year_start]
-                if len(ytd_data) > 0:
-                    # Log returns sum to get cumulative
-                    r['YTD'] = (np.exp(ytd_data.sum()) - 1) * 100
-                else:
-                    r['YTD'] = 0.0
+                ytd = series[series.index >= year_start]
+                r['YTD'] = (np.exp(ytd.sum()) - 1) * 100 if len(ytd) > 0 else 0.0
             else:
                 tail = series.tail(days)
-                if len(tail) > 0:
-                    r[label] = (np.exp(tail.sum()) - 1) * 100
-                else:
-                    r[label] = 0.0
+                r[label] = (np.exp(tail.sum()) - 1) * 100 if len(tail) > 0 else 0.0
 
         r['last_date'] = series.index[-1].strftime('%Y-%m-%d')
         results[pid] = r
@@ -292,152 +171,347 @@ def compute_pole_returns(returns_path, proven_pole_ids):
     return results
 
 
-def return_color_class(val):
-    """Map a return percentage to a CSS color class."""
-    if val > 15:
-        return 'ret-hot-3'
-    elif val > 8:
-        return 'ret-hot-2'
-    elif val > 3:
-        return 'ret-hot-1'
-    elif val > 0:
-        return 'ret-warm'
-    elif val > -3:
-        return 'ret-cool'
-    elif val > -8:
-        return 'ret-cold-1'
-    elif val > -15:
-        return 'ret-cold-2'
-    else:
-        return 'ret-cold-3'
-
-
-def border_color_from_1m(val):
-    """Get card top-border color based on 1M return."""
-    if val > 5:
-        return '#16a34a'
-    elif val > 0:
-        return '#86efac'
-    elif val > -5:
-        return '#fca5a5'
-    else:
-        return '#dc2626'
-
-
-def format_pct(val):
-    """Format a percentage value."""
-    if abs(val) < 0.05:
-        return '0.0%'
-    return '{:+.1f}%'.format(val)
-
-
-def build_heatmap_cards(proven_df, pole_meta, pole_returns):
-    """Build HTML grid of pole cards with return heatmaps."""
-    cards = []
-    for _, row in proven_df.iterrows():
-        pid = int(row['pole_id'])
-        if pid not in pole_returns:
+def compute_lead_etf_extension(lead_etfs):
+    """Compute SMA29 extension for each pole's lead ETF."""
+    ext_data = {}
+    for pid, ticker in lead_etfs.items():
+        pkl = os.path.join(CACHE_DIR, '{}.pkl'.format(ticker))
+        if not os.path.exists(pkl):
             continue
-        ret = pole_returns[pid]
-        meta = pole_meta.get(pid, {})
-        members = meta.get('members', [])
-        beta = meta.get('avg_spy_beta', 0)
-        pf = row['profit_factor']
-
-        # Card border color from 1M return
-        border_col = border_color_from_1m(ret.get('1M', 0))
-
-        # PF badge class
-        pf_class = 'pf-badge elite' if pf >= 2.0 else 'pf-badge'
-
-        card = []
-        card.append('<div class="pole-card" style="border-top-color:{};">'.format(border_col))
-        card.append('  <div class="pf-badge {}">PF {:.2f}</div>'.format(
-            'elite' if pf >= 2.0 else '', pf))
-        card.append('  <div class="pole-name">{}</div>'.format(
-            meta.get('pole_label', row.get('pole_name', 'Pole {}'.format(pid)))))
-        card.append('  <div class="pole-members">{}</div>'.format(
-            ' '.join(members[:5])))
-
-        # 3 return cells: 1W, 1M, 3M
-        card.append('  <div class="pole-returns">')
-        for label in ['1W', '1M', '3M']:
-            val = ret.get(label, 0)
-            css = return_color_class(val)
-            card.append('    <div class="ret-cell {}">'.format(css))
-            card.append('      <div class="ret-label">{}</div>'.format(label))
-            card.append('      {}'.format(format_pct(val)))
-            card.append('    </div>')
-        card.append('  </div>')
-
-        # Beta
-        card.append('  <div class="beta-badge">Beta {:.2f} | WR {:.0f}%</div>'.format(
-            beta, row['win_rate']))
-        card.append('</div>')
-        cards.append('\n'.join(card))
-
-    return '<div class="pole-grid">{}</div>'.format('\n'.join(cards))
-
-
-def build_performance_table(proven_df, pole_meta, pole_returns):
-    """Build sortable HTML table with full performance data."""
-    rows = []
-    for _, row in proven_df.iterrows():
-        pid = int(row['pole_id'])
-        if pid not in pole_returns:
+        try:
+            df = pd.read_pickle(pkl)
+            col = 'adjClose' if 'adjClose' in df.columns else 'close'
+            close = df[col].dropna()
+            if len(close) < 29:
+                continue
+            sma29 = close.rolling(29).mean()
+            latest = float(close.iloc[-1])
+            sma_val = float(sma29.iloc[-1])
+            if np.isnan(sma_val) or sma_val <= 0:
+                continue
+            ext_pct = ((latest - sma_val) / sma_val) * 100.0
+            ext_data[pid] = {
+                'price': round(latest, 2),
+                'sma29': round(sma_val, 2),
+                'ext_pct': round(ext_pct, 2),
+            }
+        except Exception:
             continue
-        ret = pole_returns[pid]
-        meta = pole_meta.get(pid, {})
-        members = meta.get('members', [])
-        pf = row['profit_factor']
-        wr = row['win_rate']
+    return ext_data
 
-        def ret_td(label):
-            val = ret.get(label, 0)
-            css = 'pos' if val > 0 else ('neg' if val < 0 else 'muted')
-            return '<td class="num {}" data-sort="{:.4f}">{}</td>'.format(
-                css, val, format_pct(val))
 
-        tr = []
-        tr.append('<tr>')
-        tr.append('  <td>{}</td>'.format(
-            meta.get('pole_label', row.get('pole_name', 'Pole {}'.format(pid)))))
-        tr.append('  <td>{}</td>'.format(' '.join(members[:3])))
-        tr.append(ret_td('1W'))
-        tr.append(ret_td('1M'))
-        tr.append(ret_td('3M'))
-        tr.append(ret_td('6M'))
-        tr.append(ret_td('YTD'))
-        tr.append('  <td class="num" data-sort="{:.2f}" style="font-weight:700;'
-                   'color:{};">{:.2f}</td>'.format(
-                       pf, '#d97706' if pf >= 2.0 else '#16a34a', pf))
-        tr.append('  <td class="num" data-sort="{:.1f}">{:.1f}%</td>'.format(wr, wr))
-        tr.append('  <td class="num" data-sort="{:.2f}">{:.2f}</td>'.format(
-            meta.get('avg_spy_beta', 0), meta.get('avg_spy_beta', 0)))
-        tr.append('</tr>')
-        rows.append('\n'.join(tr))
+def classify_extension(ext_pct):
+    """Map extension % to zone label + colors."""
+    if ext_pct < 0:
+        return 'BELOW SMA', '#6b7280', '#e5e7eb'
+    for lo, hi, label, fg, bg in EXTENSION_ZONES:
+        if lo <= ext_pct < hi:
+            return label, fg, bg
+    return 'DANGER', '#fff', '#f87171'
 
-    header = (
-        '<thead><tr>'
-        '<th title="Factor-Mimicking Portfolio pole name (equal-weighted top 5 ETF constituents)">Pole</th>'
-        '<th title="Top ETF constituents in this pole by correlation strength">Top ETFs</th>'
-        '<th title="1-week return of the pole portfolio">1W</th>'
-        '<th title="1-month return of the pole portfolio">1M</th>'
-        '<th title="3-month return of the pole portfolio">3M</th>'
-        '<th title="6-month return of the pole portfolio">6M</th>'
-        '<th title="Year-to-date return of the pole portfolio">YTD</th>'
-        '<th title="RSI(2) mean-reversion backtest Profit Factor. PF >= 1.5 = reliable pole. Higher = stronger mean-reversion edge.">PF</th>'
-        '<th title="RSI(2) backtest win rate. % of trades that were profitable.">Win Rate</th>'
-        '<th title="6-month regression beta vs SPY. Shows how much this pole moves with the market.">Beta</th>'
-        '</tr></thead>'
-    )
 
-    return (
-        '<table class="perf-table sortable-table">'
-        '{}'
-        '<tbody>{}</tbody>'
-        '</table>'.format(header, '\n'.join(rows))
-    )
+# =============================================================================
+# CSS
+# =============================================================================
+
+EXTRA_CSS = """
+/* Classification badges */
+.cls-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.cls-VALIDATED { background: #dcfce7; color: #166534; }
+.cls-MARGINAL  { background: #fef9c3; color: #854d0e; }
+
+/* Extension zone badges */
+.ext-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* VIX favored highlight */
+.vix-favored {
+    background: linear-gradient(90deg, #fef3c720, transparent);
+}
+.vix-star {
+    color: #d97706;
+    font-size: 0.82em;
+}
+
+/* Compact table */
+#poleTable { font-size: 0.82em; }
+#poleTable th, #poleTable td { padding: 5px 8px; white-space: nowrap; }
+#poleTable th { cursor: pointer; border-bottom: 1px dashed #999; }
+
+/* Filter buttons */
+.filter-btn {
+    margin: 2px 4px;
+    padding: 4px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #f3f4f6;
+    font-size: 0.85em;
+}
+.filter-btn.active {
+    background: #1a1a2e;
+    color: #fff;
+    border-color: #1a1a2e;
+}
+"""
+
+EXTRA_JS = """
+// Sort by column
+function sortPoleTable(colIdx, numeric) {
+    var table = document.getElementById('poleTable');
+    var tbody = table.tBodies[0];
+    var rows = Array.from(tbody.rows);
+    var asc = table.getAttribute('data-sort-col') == colIdx
+              && table.getAttribute('data-sort-dir') == 'asc';
+    var keyed = rows.map(function(r) {
+        var v = r.cells[colIdx].getAttribute('data-val');
+        if (v === null) v = r.cells[colIdx].textContent;
+        if (numeric) { var p = parseFloat(v); v = isNaN(p) ? -9999 : p; }
+        return {row: r, val: v};
+    });
+    keyed.sort(function(a, b) {
+        if (a.val < b.val) return asc ? 1 : -1;
+        if (a.val > b.val) return asc ? -1 : 1;
+        return 0;
+    });
+    table.setAttribute('data-sort-col', colIdx);
+    table.setAttribute('data-sort-dir', asc ? 'desc' : 'asc');
+    var frag = document.createDocumentFragment();
+    keyed.forEach(function(k) { frag.appendChild(k.row); });
+    tbody.appendChild(frag);
+}
+
+// Filter by classification
+function filterClass(cls) {
+    var btns = document.querySelectorAll('.filter-btn');
+    btns.forEach(function(b) { b.classList.remove('active'); });
+    if (cls !== 'ALL') {
+        event.target.classList.add('active');
+    }
+    var rows = document.getElementById('poleTable').tBodies[0].rows;
+    for (var i = 0; i < rows.length; i++) {
+        if (cls === 'ALL') {
+            rows[i].style.display = '';
+        } else if (cls === 'FAVORED') {
+            rows[i].style.display = rows[i].classList.contains('vix-favored') ? '' : 'none';
+        } else {
+            var rc = rows[i].getAttribute('data-cls') || '';
+            rows[i].style.display = (rc === cls) ? '' : 'none';
+        }
+    }
+}
+"""
+
+
+# =============================================================================
+# HTML BUILDER
+# =============================================================================
+
+def build_html(pole_data, vix_context):
+    """Build the dashboard HTML."""
+    current_vix = vix_context.get('current_vix')
+    vix_band = vix_context.get('vix_band')
+    vix_desc = vix_context.get('vix_desc')
+    favored_ids = VIX_FAVORED_POLES.get(vix_band, set()) if vix_band else set()
+
+    # Stats
+    n_poles = len(pole_data)
+    n_validated = sum(1 for p in pole_data if p['classification'] == 'VALIDATED')
+    n_marginal = sum(1 for p in pole_data if p['classification'] == 'MARGINAL')
+    hot_1m = sum(1 for p in pole_data if p.get('ret_1m', 0) > 0)
+    cold_1m = n_poles - hot_1m
+    n_optimal = sum(1 for p in pole_data if p.get('zone') == 'OPTIMAL')
+    n_favored = sum(1 for p in pole_data if p['pole_id'] in favored_ids)
+
+    # Build DashboardWriter
+    dw = DashboardWriter('pole-rotation', 'Validated Pole Rotation')
+
+    # Stat bar
+    stat_bar = dw.stat_bar([
+        ('Validated', str(n_validated), 'pos'),
+        ('Marginal', str(n_marginal), 'warn'),
+        ('Hot (1M+)', str(hot_1m), 'pos' if hot_1m > cold_1m else 'warn'),
+        ('Cold (1M-)', str(cold_1m), 'neg' if cold_1m > hot_1m else 'neutral'),
+        ('Optimal Zone', str(n_optimal), 'pos' if n_optimal > 5 else 'warn'),
+        ('VIX Favored', str(n_favored), 'pos'),
+    ])
+
+    # Regime banner
+    if hot_1m > cold_1m * 1.5:
+        banner_text = "BROAD STRENGTH - {}/{} poles positive on 1M".format(hot_1m, n_poles)
+        banner_color = '#22c55e'
+    elif hot_1m > cold_1m:
+        banner_text = "MIXED LEAN POSITIVE - {}/{} poles positive on 1M".format(hot_1m, n_poles)
+        banner_color = '#f59e0b'
+    else:
+        banner_text = "WEAK ROTATION - Only {}/{} poles positive on 1M".format(hot_1m, n_poles)
+        banner_color = '#ef4444'
+    banner_score = '25 scimode-validated poles | Lead ETF extension + VIX regime overlay'
+
+    # VIX banner
+    vix_banner = ''
+    if current_vix is not None:
+        vix_color_map = {'<15': '#22c55e', '15-20': '#64748b', '20-25': '#f59e0b',
+                         '25-30': '#ef4444', '30+': '#991b1b'}
+        vix_color = vix_color_map.get(vix_band, '#64748b')
+        recs = VIX_SECTOR_RECS.get(vix_band, [])
+        recs_str = ', '.join(recs) if recs else 'N/A'
+        vix_banner = """
+        <div style="background:linear-gradient(135deg, {color}22, {color}11);
+                    border-left:4px solid {color}; padding:10px 16px; margin-bottom:14px;
+                    border-radius:4px; font-size:0.88em">
+            <span style="font-weight:700; color:{color}">VIX {vix:.1f} ({desc})</span>
+            &nbsp;|&nbsp; Best sectors: <b>{recs}</b>
+            &nbsp;|&nbsp; <span style="color:#d97706">&#9733;</span> = VIX-favored pole
+            <span style="float:right;font-size:0.82em;color:#888">scimode_vix_sector_v1_0</span>
+        </div>""".format(color=vix_color, vix=current_vix, desc=vix_desc, recs=recs_str)
+
+    # Filter buttons
+    filter_html = '<div style="margin-bottom:14px">'
+    filter_html += '<button class="filter-btn" onclick="filterClass(\'ALL\')">ALL ({})</button>'.format(n_poles)
+    filter_html += '<button class="filter-btn" onclick="filterClass(\'VALIDATED\')">VALIDATED ({})</button>'.format(n_validated)
+    filter_html += '<button class="filter-btn" onclick="filterClass(\'MARGINAL\')">MARGINAL ({})</button>'.format(n_marginal)
+    if n_favored > 0:
+        filter_html += '<button class="filter-btn" onclick="filterClass(\'FAVORED\')">VIX FAVORED ({})</button>'.format(n_favored)
+    filter_html += '</div>'
+
+    # Table
+    header = """<table id="poleTable" class="dash-table" data-sort-col="0" data-sort-dir="desc">
+    <thead><tr>
+        <th onclick="sortPoleTable(0,false)" title="Pole name from taxonomy regression">Pole</th>
+        <th onclick="sortPoleTable(1,false)" title="Lead ETF for this pole (most liquid member)">Lead ETF</th>
+        <th onclick="sortPoleTable(2,false)" title="Scimode validation: VALIDATED (4/4 tests) or MARGINAL (3/4)">Class</th>
+        <th onclick="sortPoleTable(3,true)" title="1-week return of pole portfolio (equal-weighted FMP)">1W</th>
+        <th onclick="sortPoleTable(4,true)" title="1-month return">1M</th>
+        <th onclick="sortPoleTable(5,true)" title="3-month return">3M</th>
+        <th onclick="sortPoleTable(6,true)" title="6-month return">6M</th>
+        <th onclick="sortPoleTable(7,true)" title="Year-to-date return">YTD</th>
+        <th onclick="sortPoleTable(8,true)" title="Lead ETF % above 29-day SMA. Shows how extended this sector is.">Ext %</th>
+        <th onclick="sortPoleTable(9,false)" title="SMA29 extension zone (OPTIMAL = 0-10% above SMA29)">Zone</th>
+        <th onclick="sortPoleTable(10,true)" title="Pairwise correlation coherence (how tightly members move together). Higher = more reliable pole.">Coher</th>
+        <th onclick="sortPoleTable(11,true)" title="Number of stocks assigned to this pole in the taxonomy">Stocks</th>
+        <th onclick="sortPoleTable(12,true)" title="Average SPY beta of pole ETF members">Beta</th>
+        <th title="All ETF members defining this pole">Members</th>
+    </tr></thead>
+    <tbody>"""
+
+    rows_html = []
+    for p in pole_data:
+        pid = p['pole_id']
+        is_favored = pid in favored_ids
+        cls = p['classification']
+
+        # Return cells
+        def ret_td(val, col_idx):
+            if val is None:
+                return '<td class="tr" data-val="-9999">-</td>'
+            color = '#22c55e' if val > 0 else '#ef4444' if val < 0 else '#888'
+            return '<td class="tr" data-val="{v}" style="color:{c}">{v:+.1f}%</td>'.format(
+                v=val, c=color)
+
+        # Extension zone badge
+        ext_pct = p.get('ext_pct')
+        if ext_pct is not None:
+            zone, zone_fg, zone_bg = classify_extension(ext_pct)
+            ext_str = '{:+.1f}%'.format(ext_pct)
+            ext_color = '#22c55e' if ext_pct >= 0 else '#ef4444'
+            zone_badge = '<span class="ext-badge" style="background:{bg};color:{fg}">{z}</span>'.format(
+                bg=zone_bg, fg=zone_fg, z=zone)
+        else:
+            ext_str = '-'
+            ext_color = '#888'
+            zone_badge = '-'
+            zone = ''
+            ext_pct = -999
+
+        # Classification badge
+        cls_badge = '<span class="cls-badge cls-{c}">{c}</span>'.format(c=cls)
+
+        # VIX favored star
+        star = ' <span class="vix-star" title="VIX-favored in current regime">&#9733;</span>' if is_favored else ''
+
+        # Row class
+        row_cls = 'vix-favored' if is_favored else ''
+
+        tr = '<tr class="{rc}" data-cls="{cls}">'.format(rc=row_cls, cls=cls)
+        tr += '<td class="tl"><b>{name}</b>{star}</td>'.format(name=p['label'], star=star)
+        tr += '<td class="tc" style="font-family:monospace;font-size:0.82em">{}</td>'.format(p.get('lead_etf', '-'))
+        tr += '<td class="tc">{}</td>'.format(cls_badge)
+        tr += ret_td(p.get('ret_1w'), 3)
+        tr += ret_td(p.get('ret_1m'), 4)
+        tr += ret_td(p.get('ret_3m'), 5)
+        tr += ret_td(p.get('ret_6m'), 6)
+        tr += ret_td(p.get('ret_ytd'), 7)
+        tr += '<td class="tr" data-val="{}" style="color:{}">{}</td>'.format(
+            ext_pct, ext_color, ext_str)
+        tr += '<td class="tc" data-val="{}">{}</td>'.format(
+            zone if zone != 'BELOW SMA' else 'ZBELOW', zone_badge)
+        tr += '<td class="tr" data-val="{:.3f}">{:.2f}</td>'.format(
+            p.get('coherence', 0) or 0, p.get('coherence', 0) or 0)
+        tr += '<td class="tr" data-val="{}">{}</td>'.format(p.get('n_stocks', 0), p.get('n_stocks', 0))
+        tr += '<td class="tr" data-val="{:.2f}">{:.2f}</td>'.format(
+            p.get('beta', 0), p.get('beta', 0))
+        tr += '<td class="tl" style="font-size:0.72em;color:#888">{}</td>'.format(
+            ', '.join(p.get('members', [])[:5]))
+        tr += '</tr>'
+        rows_html.append(tr)
+
+    table_html = header + '\n'.join(rows_html) + '</tbody></table>'
+
+    # Methodology
+    methodology = """
+    <details style="margin-bottom:16px">
+    <summary style="cursor:pointer;font-weight:600;color:#4a5568">Methodology (scimode-validated)</summary>
+    <div style="padding:8px 12px;font-size:0.82em;color:#555;line-height:1.6">
+    <p><b>Pole Source:</b> 43 ETF poles from taxonomy_stock_regression (OLS on SPY residuals -> OLS on FMPs).
+    Each pole is an equal-weighted portfolio of 2-5 ETFs that define a market factor.</p>
+    <p><b>Validation:</b> scimode_pole_validation_v1_0.py tested each pole on 4 criteria:
+    coherence (63d pairwise correlation), stability (half-history comparison),
+    predictive value (do trending pole members outperform?), and redundancy check.
+    VALIDATED = passed 4/4, MARGINAL = 3/4, NOISE = 2 or fewer (excluded).</p>
+    <p><b>VIX Regime:</b> scimode_vix_sector_v1_0.py tested 21d forward returns by VIX band x pole.
+    Stars mark poles historically strongest in the current VIX regime.</p>
+    <p><b>Extension:</b> Lead ETF's (Close - SMA29) / SMA29. Same zones as Entry/Exit dashboard.
+    OPTIMAL = 0-10% above SMA29 (best forward PF).</p>
+    <p><b>Lead ETF:</b> Most liquid/common ETF in each pole's member basket.</p>
+    </div>
+    </details>
+    """
+
+    # Assemble
+    parts = []
+    parts.append(dw.build_header(subtitle='Scimode-Validated | 25 Poles | VIX Regime Overlay'))
+    parts.append(stat_bar)
+    parts.append(dw.regime_banner(banner_text, banner_score, color=banner_color))
+    if vix_banner:
+        parts.append(vix_banner)
+    parts.append(dw.section('Methodology', methodology, hint='scimode_pole_validation + scimode_vix_sector'))
+    parts.append(filter_html)
+    parts.append(dw.section('Pole Performance', table_html, hint='Click headers to sort | Default: 1M descending'))
+
+    # LLM block
+    llm_html = dw.llm_block()
+    if llm_html:
+        parts.append(llm_html)
+
+    parts.append(dw.footer())
+
+    body = '\n'.join(parts)
+    dw.write(body, extra_css=EXTRA_CSS, extra_js=EXTRA_JS)
+    return dw.index_path
 
 
 # =============================================================================
@@ -445,119 +519,98 @@ def build_performance_table(proven_df, pole_meta, pole_returns):
 # =============================================================================
 
 def main():
-    try:
-        print('[INFO] Loading backtest data...')
-        proven_df = load_proven_poles(BACKTEST_PATH)
-        proven_ids = set(proven_df['pole_id'].astype(int).tolist())
-        print('[OK] {} proven poles (PF >= {})'.format(len(proven_ids), MIN_PROFIT_FACTOR))
+    print("=" * 70)
+    print("VALIDATED POLE ROTATION v2.0")
+    print("=" * 70)
 
-        print('[INFO] Loading pole metadata...')
-        pole_meta = load_pole_metadata(POLE_META_PATH)
-
-        print('[INFO] Computing pole returns from FMP data...')
-        pole_returns = compute_pole_returns(FMP_RETURNS_PATH, proven_ids)
-        print('[OK] Returns computed for {} poles'.format(len(pole_returns)))
-
-        # Count hot/cold
-        hot = sum(1 for r in pole_returns.values() if r.get('1M', 0) > 0)
-        cold = len(pole_returns) - hot
-
-        # Find latest date
-        dates = [r.get('last_date', '') for r in pole_returns.values()]
-        latest_date = max(dates) if dates else datetime.now().strftime('%Y-%m-%d')
-
-        # === BUILD HTML ===
-        writer = DashboardWriter('pole-rotation', 'Proven Pole Rotation')
-
-        parts = []
-
-        # Stat bar
-        parts.append(writer.stat_bar([
-            ('Date', latest_date, 'neutral'),
-            ('Proven Poles', str(len(proven_ids)), 'neutral'),
-            ('Hot (1M+)', str(hot), 'pos'),
-            ('Cold (1M-)', str(cold), 'neg'),
-            ('Min PF', '{:.1f}'.format(MIN_PROFIT_FACTOR), 'warn'),
-        ]))
-
-        # Header
-        parts.append(writer.build_header(
-            'RSI(2) Backtest Validated | PF >= {:.1f} | {} of 43 poles'.format(
-                MIN_PROFIT_FACTOR, len(proven_ids))))
-
-        # Regime banner - summary
-        top_pole = proven_df.iloc[0]
-        top_meta = pole_meta.get(int(top_pole['pole_id']), {})
-        hottest_pid = max(pole_returns, key=lambda p: pole_returns[p].get('1M', -999))
-        hottest_meta = pole_meta.get(hottest_pid, {})
-        hottest_1m = pole_returns[hottest_pid].get('1M', 0)
-
-        coldest_pid = min(pole_returns, key=lambda p: pole_returns[p].get('1M', 999))
-        coldest_meta = pole_meta.get(coldest_pid, {})
-        coldest_1m = pole_returns[coldest_pid].get('1M', 0)
-
-        score_html = (
-            'Hottest 1M: <b>{}</b> ({:+.1f}%)<br>'
-            'Coldest 1M: <b>{}</b> ({:+.1f}%)<br>'
-            'Top PF: <b>{}</b> ({:.2f})'.format(
-                hottest_meta.get('pole_label', '?'), hottest_1m,
-                coldest_meta.get('pole_label', '?'), coldest_1m,
-                top_meta.get('pole_label', '?'), top_pole['profit_factor']))
-
-        banner_color = '#22c55e' if hot > cold else '#ef4444'
-        parts.append(writer.regime_banner(
-            '{} OF {} HOT'.format(hot, len(pole_returns)),
-            score_html, color=banner_color))
-
-        # Heatmap cards section
-        cards_html = build_heatmap_cards(proven_df, pole_meta, pole_returns)
-        parts.append(writer.section(
-            'Pole Rotation Heatmap',
-            cards_html,
-            hint='Sorted by Profit Factor | Cards colored by 1M return'))
-
-        # Performance table
-        table_html = build_performance_table(proven_df, pole_meta, pole_returns)
-        parts.append(writer.section(
-            'Performance Table',
-            table_html,
-            hint='Click headers to sort'))
-
-        # Methodology note
-        method_html = (
-            '<div style="font-size:0.88em;color:#666;line-height:1.7;">'
-            '<b>Methodology:</b> 43 ETF poles were tested using an RSI(2) mean-reversion '
-            'pullback strategy across full history. Poles with Profit Factor >= 1.5 after '
-            'excluding regression-excluded poles (US Large Cap Core, US Dollar, Cash, Dow, '
-            'S&P Variants) are shown here as "proven." Returns are computed from equal-weighted '
-            'FMP (Factor-Mimicking Portfolio) log returns of each pole\'s top 5 ETF constituents.'
-            '<br><br>'
-            '<b>PF Tiers:</b> '
-            '<span style="color:#d97706;font-weight:700;">Gold (PF >= 2.0)</span> = Elite reliability. '
-            '<span style="color:#16a34a;font-weight:700;">Green (PF 1.5-2.0)</span> = Proven reliability.'
-            '</div>'
-        )
-        parts.append(writer.section('Methodology', method_html))
-
-        # LLM block
-        llm_html = writer.llm_block()
-        if llm_html:
-            parts.append(llm_html)
-
-        # Footer
-        parts.append(writer.footer())
-
-        body = '\n'.join(parts)
-        writer.write(body, extra_css=EXTRA_CSS, extra_js=EXTRA_JS)
-
-        print('[OK] Proven Pole Rotation dashboard written successfully')
-        return 0
-
-    except Exception as e:
-        print('[FAIL] {}'.format(e))
-        import traceback
-        traceback.print_exc()
+    # Load validated poles
+    print("[1/5] Loading validated poles...")
+    usable_ids, pole_details = load_validated_poles()
+    if not usable_ids:
+        print("[FAIL] No validated poles found")
         return 1
+    print("  {} usable poles".format(len(usable_ids)))
+
+    # Load pole metadata
+    print("[2/5] Loading pole metadata...")
+    pole_meta = load_pole_metadata()
+
+    # Load VIX
+    print("[3/5] Loading VIX regime...")
+    current_vix, vix_band, vix_desc = load_current_vix()
+    if current_vix is not None:
+        print("  VIX = {:.1f} ({} / {})".format(current_vix, vix_band, vix_desc))
+
+    # Compute pole returns
+    print("[4/5] Computing pole returns from FMP data...")
+    pole_returns = compute_pole_returns(usable_ids)
+    print("  Returns computed for {} poles".format(len(pole_returns)))
+
+    # Compute lead ETF extensions
+    print("[5/5] Computing lead ETF extensions...")
+    lead_etfs = {pid: LEAD_ETF[pid] for pid in usable_ids if pid in LEAD_ETF}
+    ext_data = compute_lead_etf_extension(lead_etfs)
+    print("  Extensions computed for {} ETFs".format(len(ext_data)))
+
+    # Assemble pole data rows
+    pole_data = []
+    for pid in usable_ids:
+        meta = pole_meta.get(pid, {})
+        detail = pole_details.get(str(pid), {})
+        ret = pole_returns.get(pid, {})
+        ext = ext_data.get(pid, {})
+
+        row = {
+            'pole_id': pid,
+            'label': detail.get('label', meta.get('pole_label', 'Pole {}'.format(pid))),
+            'classification': detail.get('classification', 'MARGINAL'),
+            'coherence': detail.get('coherence'),
+            'n_stocks': detail.get('n_stocks', 0),
+            'lead_etf': LEAD_ETF.get(pid, '-'),
+            'members': meta.get('members', []),
+            'beta': meta.get('avg_spy_beta', 0),
+            'ret_1w': ret.get('1W'),
+            'ret_1m': ret.get('1M'),
+            'ret_3m': ret.get('3M'),
+            'ret_6m': ret.get('6M'),
+            'ret_ytd': ret.get('YTD'),
+            'ext_pct': ext.get('ext_pct'),
+            'zone': classify_extension(ext.get('ext_pct', -999))[0] if ext.get('ext_pct') is not None else None,
+        }
+        pole_data.append(row)
+
+    # Sort by 1M return descending
+    pole_data.sort(key=lambda r: r.get('ret_1m') or -999, reverse=True)
+
+    vix_context = {
+        'current_vix': current_vix,
+        'vix_band': vix_band,
+        'vix_desc': vix_desc,
+    }
+
+    # Summary
+    print()
+    print("=" * 70)
+    print("SUMMARY")
+    print("=" * 70)
+    hot = sum(1 for p in pole_data if (p.get('ret_1m') or 0) > 0)
+    print("  Poles: {} ({} hot, {} cold on 1M)".format(len(pole_data), hot, len(pole_data) - hot))
+    if current_vix is not None:
+        favored = VIX_FAVORED_POLES.get(vix_band, set())
+        print("  VIX regime: {:.1f} ({})".format(current_vix, vix_desc))
+        fav_names = [p['label'] for p in pole_data if p['pole_id'] in favored]
+        print("  VIX-favored: {}".format(', '.join(fav_names)))
+    print()
+    print("  Top 5 by 1M:")
+    for p in pole_data[:5]:
+        print("    {:30s} 1M={:+.1f}%  ext={:+.1f}%  [{}]".format(
+            p['label'], p.get('ret_1m') or 0, p.get('ext_pct') or 0,
+            p.get('zone') or '-'))
+
+    out_path = build_html(pole_data, vix_context)
+    print()
+    print("[OK] Dashboard: {}".format(out_path))
+    return 0
 
 
 if __name__ == '__main__':

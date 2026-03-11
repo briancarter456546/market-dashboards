@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Proven Pole Rotation - 2026-03-11</title>
+<title>Validated Pole Rotation - 2026-03-11</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 
@@ -466,138 +466,65 @@ th.own-th { width: 30px; text-align: center; cursor: default; }
 th.watch-th { width: 30px; text-align: center; cursor: default; }
 
 
-/* Heatmap card grid */
-.pole-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 14px;
-    margin-bottom: 22px;
-}
-
-.pole-card {
-    background: #fff;
-    border: 1px solid #e2e4e8;
-    border-radius: 8px;
-    padding: 16px 18px;
-    border-top: 5px solid #ccc;
-    position: relative;
-}
-
-.pole-card .pole-name {
-    font-size: 0.82em;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin-bottom: 4px;
-    line-height: 1.3;
-}
-
-.pole-card .pole-members {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72em;
-    color: #888;
-    margin-bottom: 10px;
-}
-
-.pole-card .pole-returns {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-}
-
-.pole-card .ret-cell {
-    text-align: center;
-    padding: 6px 4px;
-    border-radius: 4px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.78em;
-    font-weight: 600;
-}
-
-.pole-card .ret-label {
-    font-size: 0.65em;
-    font-weight: 600;
-    color: #888;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 2px;
-}
-
-.pole-card .pf-badge {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72em;
-    font-weight: 700;
+/* Classification badges */
+.cls-badge {
+    display: inline-block;
     padding: 2px 8px;
-    border-radius: 10px;
-    background: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
-}
-
-.pole-card .pf-badge.elite {
-    background: #fef3c7;
-    color: #d97706;
-    border-color: #fde68a;
-}
-
-/* Beta badge */
-.pole-card .beta-badge {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68em;
-    color: #888;
-    margin-top: 8px;
-}
-
-/* Return color cells */
-.ret-hot-3  { background: #14532d; color: #fff; }
-.ret-hot-2  { background: #166534; color: #fff; }
-.ret-hot-1  { background: #22c55e; color: #fff; }
-.ret-warm   { background: #dcfce7; color: #166534; }
-.ret-flat   { background: #f5f5f5; color: #888; }
-.ret-cool   { background: #fee2e2; color: #991b1b; }
-.ret-cold-1 { background: #ef4444; color: #fff; }
-.ret-cold-2 { background: #991b1b; color: #fff; }
-.ret-cold-3 { background: #450a0a; color: #fff; }
-
-/* Performance table */
-.perf-table td, .perf-table th {
-    padding: 11px 14px;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.90em;
-}
-.perf-table th {
-    background: #f8f9fb;
+    border-radius: 4px;
+    font-size: 0.72em;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.5px;
+}
+.cls-VALIDATED { background: #dcfce7; color: #166534; }
+.cls-MARGINAL  { background: #fef9c3; color: #854d0e; }
+
+/* Extension zone badges */
+.ext-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
     font-size: 0.78em;
-    color: #555;
-    border-bottom: 2px solid #e2e4e8;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
-.perf-table td:not(:first-child):not(:nth-child(2)) {
-    font-family: 'IBM Plex Mono', monospace;
-    text-align: right;
+
+/* VIX favored highlight */
+.vix-favored {
+    background: linear-gradient(90deg, #fef3c720, transparent);
 }
-.perf-table td:first-child {
-    font-weight: 600;
-    color: #1a1a2e;
+.vix-star {
+    color: #d97706;
+    font-size: 0.82em;
 }
-.perf-table td:nth-child(2) {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.78em;
-    color: #888;
+
+/* Compact table */
+#poleTable { font-size: 0.82em; }
+#poleTable th, #poleTable td { padding: 5px 8px; white-space: nowrap; }
+#poleTable th { cursor: pointer; border-bottom: 1px dashed #999; }
+
+/* Filter buttons */
+.filter-btn {
+    margin: 2px 4px;
+    padding: 4px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #f3f4f6;
+    font-size: 0.85em;
+}
+.filter-btn.active {
+    background: #1a1a2e;
+    color: #fff;
+    border-color: #1a1a2e;
 }
 
 </style>
 </head><body>
-<div class="stat-bar"><div class="stat"><div class="stat-label">Date</div><div class="stat-value neutral">2026-03-11</div></div><div class="stat"><div class="stat-label">Proven Poles</div><div class="stat-value neutral">21</div></div><div class="stat"><div class="stat-label">Hot (1M+)</div><div class="stat-value pos">6</div></div><div class="stat"><div class="stat-label">Cold (1M-)</div><div class="stat-value neg">15</div></div><div class="stat"><div class="stat-label">Min PF</div><div class="stat-value warn">1.5</div></div></div>
 <div class="page-header">
-  <h1>Proven Pole Rotation</h1>
+  <h1>Validated Pole Rotation</h1>
   <div class="meta">
-    RSI(2) Backtest Validated | PF >= 1.5 | 21 of 43 poles &nbsp;|&nbsp;
-    Data as of 2026-03-11 14:31 ET &nbsp;|&nbsp;
+    Scimode-Validated | 25 Poles | VIX Regime Overlay &nbsp;|&nbsp;
+    Data as of 2026-03-11 13:03 ET &nbsp;|&nbsp;
     <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
   </div>
 </div>
@@ -607,682 +534,86 @@ th.watch-th { width: 30px; text-align: center; cursor: default; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Visualizes the ~20 ETF poles (out of 43 total) that passed reliability testing via RSI(2) mean-reversion backtest with Profit Factor >= 1.5. Each pole is a Factor-Mimicking Portfolio (equal-weighted top 5 ETF constituents). Heatmap cards show 1W/1M/3M returns color-coded by momentum. Performance table includes 6M and YTD returns plus backtest trust scores (PF, win rate) and SPY beta. Poles excluded from regression (US Large Cap Core, US Dollar, Cash, Dow, S&P Variants) are removed.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
-<div class="regime-banner" style="border-left-color:#ef4444;"><div class="regime-label" style="color:#ef4444;">6 OF 21 HOT</div><div class="regime-score">Hottest 1M: <b>Energy & Oil</b> (+24.0%)<br>Coldest 1M: <b>Financials & Banking</b> (-9.7%)<br>Top PF: <b>Momentum</b> (3.56)</div></div>
-<div class="table-section"><div class="table-section-header"><h2>Pole Rotation Heatmap</h2><span style="font-size:0.85em;color:#888;">Sorted by Profit Factor | Cards colored by 1M return</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div class="pole-grid"><div class="pole-card" style="border-top-color:#fca5a5;">
-  <div class="pf-badge elite">PF 3.56</div>
-  <div class="pole-name">Momentum</div>
-  <div class="pole-members">SPMO MTUM</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1W</div>
-      -1.2%
+<div class="stat-bar"><div class="stat"><div class="stat-label">Validated</div><div class="stat-value pos">14</div></div><div class="stat"><div class="stat-label">Marginal</div><div class="stat-value warn">11</div></div><div class="stat"><div class="stat-label">Hot (1M+)</div><div class="stat-value warn">6</div></div><div class="stat"><div class="stat-label">Cold (1M-)</div><div class="stat-value neg">19</div></div><div class="stat"><div class="stat-label">Optimal Zone</div><div class="stat-value warn">5</div></div><div class="stat"><div class="stat-label">VIX Favored</div><div class="stat-value pos">4</div></div></div>
+<div class="regime-banner" style="border-left-color:#ef4444;"><div class="regime-label" style="color:#ef4444;">WEAK ROTATION - Only 6/25 poles positive on 1M</div><div class="regime-score">25 scimode-validated poles | Lead ETF extension + VIX regime overlay</div></div>
+
+        <div style="background:linear-gradient(135deg, #f59e0b22, #f59e0b11);
+                    border-left:4px solid #f59e0b; padding:10px 16px; margin-bottom:14px;
+                    border-radius:4px; font-size:0.88em">
+            <span style="font-weight:700; color:#f59e0b">VIX 24.8 (ELEVATED)</span>
+            &nbsp;|&nbsp; Best sectors: <b>Telecom, Semis & Tech, LatAm, Financials</b>
+            &nbsp;|&nbsp; <span style="color:#d97706">&#9733;</span> = VIX-favored pole
+            <span style="float:right;font-size:0.82em;color:#888">scimode_vix_sector_v1_0</span>
+        </div>
+<div class="table-section"><div class="table-section-header"><h2>Methodology</h2><span style="font-size:0.85em;color:#888;">scimode_pole_validation + scimode_vix_sector</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;">
+    <details style="margin-bottom:16px">
+    <summary style="cursor:pointer;font-weight:600;color:#4a5568">Methodology (scimode-validated)</summary>
+    <div style="padding:8px 12px;font-size:0.82em;color:#555;line-height:1.6">
+    <p><b>Pole Source:</b> 43 ETF poles from taxonomy_stock_regression (OLS on SPY residuals -> OLS on FMPs).
+    Each pole is an equal-weighted portfolio of 2-5 ETFs that define a market factor.</p>
+    <p><b>Validation:</b> scimode_pole_validation_v1_0.py tested each pole on 4 criteria:
+    coherence (63d pairwise correlation), stability (half-history comparison),
+    predictive value (do trending pole members outperform?), and redundancy check.
+    VALIDATED = passed 4/4, MARGINAL = 3/4, NOISE = 2 or fewer (excluded).</p>
+    <p><b>VIX Regime:</b> scimode_vix_sector_v1_0.py tested 21d forward returns by VIX band x pole.
+    Stars mark poles historically strongest in the current VIX regime.</p>
+    <p><b>Extension:</b> Lead ETF's (Close - SMA29) / SMA29. Same zones as Entry/Exit dashboard.
+    OPTIMAL = 0-10% above SMA29 (best forward PF).</p>
+    <p><b>Lead ETF:</b> Most liquid/common ETF in each pole's member basket.</p>
     </div>
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1M</div>
-      -3.0%
-    </div>
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">3M</div>
-      -1.7%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 0.99 | WR 74%</div>
-</div>
-<div class="pole-card" style="border-top-color:#86efac;">
-  <div class="pf-badge elite">PF 3.21</div>
-  <div class="pole-name">Lithium & Battery Materials</div>
-  <div class="pole-members">LITP REMX LIT</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-warm">
-      <div class="ret-label">1W</div>
-      +0.4%
-    </div>
-    <div class="ret-cell ret-hot-1">
-      <div class="ret-label">1M</div>
-      +3.1%
-    </div>
-    <div class="ret-cell ret-hot-3">
-      <div class="ret-label">3M</div>
-      +21.3%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 1.19 | WR 72%</div>
-</div>
-<div class="pole-card" style="border-top-color:#fca5a5;">
-  <div class="pf-badge elite">PF 2.74</div>
-  <div class="pole-name">Gold Leverage / Inverse</div>
-  <div class="pole-members">IGLD SPY</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1W</div>
-      -0.6%
-    </div>
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1M</div>
-      -0.7%
-    </div>
-    <div class="ret-cell ret-hot-2">
-      <div class="ret-label">3M</div>
-      +8.8%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 0.88 | WR 76%</div>
-</div>
-<div class="pole-card" style="border-top-color:#fca5a5;">
-  <div class="pf-badge elite">PF 2.58</div>
-  <div class="pole-name">Quality Factor</div>
-  <div class="pole-members">QUAL QLTY</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1W</div>
-      -1.8%
-    </div>
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1M</div>
-      -3.0%
-    </div>
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">3M</div>
-      -0.6%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 0.94 | WR 77%</div>
-</div>
-<div class="pole-card" style="border-top-color:#fca5a5;">
-  <div class="pf-badge elite">PF 2.46</div>
-  <div class="pole-name">Consumer Discretionary</div>
-  <div class="pole-members">XLY VCR</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1W</div>
-      -2.3%
-    </div>
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1M</div>
-      -3.6%
-    </div>
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">3M</div>
-      -3.7%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 1.03 | WR 75%</div>
-</div>
-<div class="pole-card" style="border-top-color:#16a34a;">
-  <div class="pf-badge elite">PF 2.33</div>
-  <div class="pole-name">Volatility Complex</div>
-  <div class="pole-members">VIXY VIXM VXX UVXY VXZ</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-hot-2">
-      <div class="ret-label">1W</div>
-      +10.5%
-    </div>
-    <div class="ret-cell ret-hot-3">
-      <div class="ret-label">1M</div>
-      +20.2%
-    </div>
-    <div class="ret-cell ret-hot-1">
-      <div class="ret-label">3M</div>
-      +5.4%
-    </div>
-  </div>
-  <div class="beta-badge">Beta -2.81 | WR 75%</div>
-</div>
-<div class="pole-card" style="border-top-color:#dc2626;">
-  <div class="pf-badge elite">PF 2.33</div>
-  <div class="pole-name">Uranium & Nuclear</div>
-  <div class="pole-members">URA URNJ URNM NLR</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1W</div>
-      -4.5%
-    </div>
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1M</div>
-      -6.2%
-    </div>
-    <div class="ret-cell ret-hot-3">
-      <div class="ret-label">3M</div>
-      +15.7%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 1.10 | WR 70%</div>
-</div>
-<div class="pole-card" style="border-top-color:#fca5a5;">
-  <div class="pf-badge elite">PF 2.24</div>
-  <div class="pole-name">Cybersecurity & Cloud</div>
-  <div class="pole-members">CIBR HACK CLOU SKYY</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-warm">
-      <div class="ret-label">1W</div>
-      +1.7%
-    </div>
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1M</div>
-      -0.6%
-    </div>
-    <div class="ret-cell ret-cold-2">
-      <div class="ret-label">3M</div>
-      -12.8%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 1.09 | WR 75%</div>
-</div>
-<div class="pole-card" style="border-top-color:#dc2626;">
-  <div class="pf-badge elite">PF 2.20</div>
-  <div class="pole-name">Cannabis</div>
-  <div class="pole-members">MSOS CNBS</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1W</div>
-      -1.5%
-    </div>
-    <div class="ret-cell ret-cold-2">
-      <div class="ret-label">1M</div>
-      -8.6%
-    </div>
-    <div class="ret-cell ret-hot-1">
-      <div class="ret-label">3M</div>
-      +6.3%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 0.90 | WR 54%</div>
-</div>
-<div class="pole-card" style="border-top-color:#dc2626;">
-  <div class="pf-badge elite">PF 2.05</div>
-  <div class="pole-name">Developed International Equity</div>
-  <div class="pole-members">IEUR IEV GSEU VGK SPEU</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1W</div>
-      -2.6%
-    </div>
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1M</div>
-      -5.6%
-    </div>
-    <div class="ret-cell ret-hot-1">
-      <div class="ret-label">3M</div>
-      +4.0%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 0.92 | WR 65%</div>
-</div>
-<div class="pole-card" style="border-top-color:#dc2626;">
-  <div class="pf-badge elite">PF 2.03</div>
-  <div class="pole-name">Financials & Banking</div>
-  <div class="pole-members">XLF VFH KBE IAI</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1W</div>
-      -4.5%
-    </div>
-    <div class="ret-cell ret-cold-2">
-      <div class="ret-label">1M</div>
-      -9.7%
-    </div>
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">3M</div>
-      -6.0%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 1.26 | WR 69%</div>
-</div>
-<div class="pole-card" style="border-top-color:#fca5a5;">
-  <div class="pf-badge ">PF 1.88</div>
-  <div class="pole-name">Healthcare & Biotech</div>
-  <div class="pole-members">PJP IHE VHT IYH XPH</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1W</div>
-      -2.2%
-    </div>
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1M</div>
-      -2.5%
-    </div>
-    <div class="ret-cell ret-warm">
-      <div class="ret-label">3M</div>
-      +1.2%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 0.75 | WR 71%</div>
-</div>
-<div class="pole-card" style="border-top-color:#86efac;">
-  <div class="pf-badge ">PF 1.86</div>
-  <div class="pole-name">Gold & Precious Metals</div>
-  <div class="pole-members">CEF SGOL PHYS SIL RING</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1W</div>
-      -1.4%
-    </div>
-    <div class="ret-cell ret-warm">
-      <div class="ret-label">1M</div>
-      +0.9%
-    </div>
-    <div class="ret-cell ret-hot-3">
-      <div class="ret-label">3M</div>
-      +28.2%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 0.26 | WR 62%</div>
-</div>
-<div class="pole-card" style="border-top-color:#86efac;">
-  <div class="pf-badge ">PF 1.86</div>
-  <div class="pole-name">Defense & Aerospace</div>
-  <div class="pole-members">PPA ITA XAR MISL</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1W</div>
-      -3.2%
-    </div>
-    <div class="ret-cell ret-warm">
-      <div class="ret-label">1M</div>
-      +0.5%
-    </div>
-    <div class="ret-cell ret-hot-3">
-      <div class="ret-label">3M</div>
-      +17.8%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 0.91 | WR 71%</div>
-</div>
-<div class="pole-card" style="border-top-color:#fca5a5;">
-  <div class="pf-badge ">PF 1.84</div>
-  <div class="pole-name">Currency-Hedged Europe</div>
-  <div class="pole-members">HEZU ESGD SPGM KBA</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1W</div>
-      -1.1%
-    </div>
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1M</div>
-      -3.4%
-    </div>
-    <div class="ret-cell ret-warm">
-      <div class="ret-label">3M</div>
-      +2.7%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 0.81 | WR 68%</div>
-</div>
-<div class="pole-card" style="border-top-color:#16a34a;">
-  <div class="pf-badge ">PF 1.83</div>
-  <div class="pole-name">Energy & Oil</div>
-  <div class="pole-members">USO BNO GSG PDBC DBC</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-hot-2">
-      <div class="ret-label">1W</div>
-      +10.2%
-    </div>
-    <div class="ret-cell ret-hot-3">
-      <div class="ret-label">1M</div>
-      +24.0%
-    </div>
-    <div class="ret-cell ret-hot-3">
-      <div class="ret-label">3M</div>
-      +36.1%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 0.51 | WR 71%</div>
-</div>
-<div class="pole-card" style="border-top-color:#dc2626;">
-  <div class="pf-badge ">PF 1.81</div>
-  <div class="pole-name">US Small & Mid Cap</div>
-  <div class="pole-members">IJR MDY IWM IJH VB</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1W</div>
-      -3.8%
-    </div>
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1M</div>
-      -5.2%
-    </div>
-    <div class="ret-cell ret-warm">
-      <div class="ret-label">3M</div>
-      +2.7%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 1.07 | WR 70%</div>
-</div>
-<div class="pole-card" style="border-top-color:#fca5a5;">
-  <div class="pf-badge ">PF 1.73</div>
-  <div class="pole-name">Crypto & Digital Assets</div>
-  <div class="pole-members">BITQ DAPP FDIG STCE BKCH</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1W</div>
-      -4.0%
-    </div>
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1M</div>
-      -4.3%
-    </div>
-    <div class="ret-cell ret-cold-3">
-      <div class="ret-label">3M</div>
-      -17.2%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 2.32 | WR 68%</div>
-</div>
-<div class="pole-card" style="border-top-color:#fca5a5;">
-  <div class="pf-badge ">PF 1.73</div>
-  <div class="pole-name">Semiconductors & Tech Hardware</div>
-  <div class="pole-members">SOXX SMH PSI FTXL TDIV</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1W</div>
-      -0.5%
-    </div>
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1M</div>
-      -2.8%
-    </div>
-    <div class="ret-cell ret-hot-2">
-      <div class="ret-label">3M</div>
-      +9.0%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 1.30 | WR 64%</div>
-</div>
-<div class="pole-card" style="border-top-color:#16a34a;">
-  <div class="pf-badge ">PF 1.70</div>
-  <div class="pole-name">Grains & Agriculture</div>
-  <div class="pole-members">CORN WEAT SOYB DBA</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-hot-1">
-      <div class="ret-label">1W</div>
-      +3.6%
-    </div>
-    <div class="ret-cell ret-hot-1">
-      <div class="ret-label">1M</div>
-      +6.9%
-    </div>
-    <div class="ret-cell ret-hot-1">
-      <div class="ret-label">3M</div>
-      +6.6%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 0.15 | WR 65%</div>
-</div>
-<div class="pole-card" style="border-top-color:#fca5a5;">
-  <div class="pf-badge ">PF 1.67</div>
-  <div class="pole-name">Latin America</div>
-  <div class="pole-members">EWZS FLBR EWZ ILF</div>
-  <div class="pole-returns">
-    <div class="ret-cell ret-cool">
-      <div class="ret-label">1W</div>
-      -0.5%
-    </div>
-    <div class="ret-cell ret-cold-1">
-      <div class="ret-label">1M</div>
-      -3.2%
-    </div>
-    <div class="ret-cell ret-hot-3">
-      <div class="ret-label">3M</div>
-      +17.1%
-    </div>
-  </div>
-  <div class="beta-badge">Beta 1.10 | WR 67%</div>
-</div></div></div></div>
-<div class="table-section"><div class="table-section-header"><h2>Performance Table</h2><span style="font-size:0.85em;color:#888;">Click headers to sort</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="perf-table sortable-table"><thead><tr><th title="Factor-Mimicking Portfolio pole name (equal-weighted top 5 ETF constituents)">Pole</th><th title="Top ETF constituents in this pole by correlation strength">Top ETFs</th><th title="1-week return of the pole portfolio">1W</th><th title="1-month return of the pole portfolio">1M</th><th title="3-month return of the pole portfolio">3M</th><th title="6-month return of the pole portfolio">6M</th><th title="Year-to-date return of the pole portfolio">YTD</th><th title="RSI(2) mean-reversion backtest Profit Factor. PF >= 1.5 = reliable pole. Higher = stronger mean-reversion edge.">PF</th><th title="RSI(2) backtest win rate. % of trades that were profitable.">Win Rate</th><th title="6-month regression beta vs SPY. Shows how much this pole moves with the market.">Beta</th></tr></thead><tbody><tr>
-  <td>Momentum</td>
-  <td>SPMO MTUM</td>
-<td class="num neg" data-sort="-1.1566">-1.2%</td>
-<td class="num neg" data-sort="-2.9503">-3.0%</td>
-<td class="num neg" data-sort="-1.7303">-1.7%</td>
-<td class="num pos" data-sort="0.4997">+0.5%</td>
-<td class="num neg" data-sort="-0.6888">-0.7%</td>
-  <td class="num" data-sort="3.56" style="font-weight:700;color:#d97706;">3.56</td>
-  <td class="num" data-sort="74.3">74.3%</td>
-  <td class="num" data-sort="0.99">0.99</td>
-</tr>
-<tr>
-  <td>Lithium & Battery Materials</td>
-  <td>LITP REMX LIT</td>
-<td class="num pos" data-sort="0.3683">+0.4%</td>
-<td class="num pos" data-sort="3.1158">+3.1%</td>
-<td class="num pos" data-sort="21.3500">+21.3%</td>
-<td class="num pos" data-sort="62.2860">+62.3%</td>
-<td class="num pos" data-sort="16.3574">+16.4%</td>
-  <td class="num" data-sort="3.21" style="font-weight:700;color:#d97706;">3.21</td>
-  <td class="num" data-sort="72.0">72.0%</td>
-  <td class="num" data-sort="1.19">1.19</td>
-</tr>
-<tr>
-  <td>Gold Leverage / Inverse</td>
-  <td>IGLD SPY</td>
-<td class="num neg" data-sort="-0.5836">-0.6%</td>
-<td class="num neg" data-sort="-0.7358">-0.7%</td>
-<td class="num pos" data-sort="8.7920">+8.8%</td>
-<td class="num pos" data-sort="17.7358">+17.7%</td>
-<td class="num pos" data-sort="7.2442">+7.2%</td>
-  <td class="num" data-sort="2.74" style="font-weight:700;color:#d97706;">2.74</td>
-  <td class="num" data-sort="76.2">76.2%</td>
-  <td class="num" data-sort="0.88">0.88</td>
-</tr>
-<tr>
-  <td>Quality Factor</td>
-  <td>QUAL QLTY</td>
-<td class="num neg" data-sort="-1.8500">-1.8%</td>
-<td class="num neg" data-sort="-3.0272">-3.0%</td>
-<td class="num neg" data-sort="-0.6257">-0.6%</td>
-<td class="num pos" data-sort="6.0021">+6.0%</td>
-<td class="num neg" data-sort="-1.0025">-1.0%</td>
-  <td class="num" data-sort="2.58" style="font-weight:700;color:#d97706;">2.58</td>
-  <td class="num" data-sort="76.6">76.6%</td>
-  <td class="num" data-sort="0.94">0.94</td>
-</tr>
-<tr>
-  <td>Consumer Discretionary</td>
-  <td>XLY VCR</td>
-<td class="num neg" data-sort="-2.3192">-2.3%</td>
-<td class="num neg" data-sort="-3.5992">-3.6%</td>
-<td class="num neg" data-sort="-3.6790">-3.7%</td>
-<td class="num neg" data-sort="-3.7208">-3.7%</td>
-<td class="num neg" data-sort="-4.8960">-4.9%</td>
-  <td class="num" data-sort="2.46" style="font-weight:700;color:#d97706;">2.46</td>
-  <td class="num" data-sort="74.9">74.9%</td>
-  <td class="num" data-sort="1.03">1.03</td>
-</tr>
-<tr>
-  <td>Volatility Complex</td>
-  <td>VIXY VIXM VXX</td>
-<td class="num pos" data-sort="10.5354">+10.5%</td>
-<td class="num pos" data-sort="20.2456">+20.2%</td>
-<td class="num pos" data-sort="5.4447">+5.4%</td>
-<td class="num neg" data-sort="-3.7922">-3.8%</td>
-<td class="num pos" data-sort="19.6284">+19.6%</td>
-  <td class="num" data-sort="2.33" style="font-weight:700;color:#d97706;">2.33</td>
-  <td class="num" data-sort="75.0">75.0%</td>
-  <td class="num" data-sort="-2.81">-2.81</td>
-</tr>
-<tr>
-  <td>Uranium & Nuclear</td>
-  <td>URA URNJ URNM</td>
-<td class="num neg" data-sort="-4.4965">-4.5%</td>
-<td class="num neg" data-sort="-6.1521">-6.2%</td>
-<td class="num pos" data-sort="15.7337">+15.7%</td>
-<td class="num pos" data-sort="27.3071">+27.3%</td>
-<td class="num pos" data-sort="20.4740">+20.5%</td>
-  <td class="num" data-sort="2.33" style="font-weight:700;color:#d97706;">2.33</td>
-  <td class="num" data-sort="70.4">70.4%</td>
-  <td class="num" data-sort="1.10">1.10</td>
-</tr>
-<tr>
-  <td>Cybersecurity & Cloud</td>
-  <td>CIBR HACK CLOU</td>
-<td class="num pos" data-sort="1.7025">+1.7%</td>
-<td class="num neg" data-sort="-0.6315">-0.6%</td>
-<td class="num neg" data-sort="-12.7924">-12.8%</td>
-<td class="num neg" data-sort="-12.6284">-12.6%</td>
-<td class="num neg" data-sort="-9.3656">-9.4%</td>
-  <td class="num" data-sort="2.24" style="font-weight:700;color:#d97706;">2.24</td>
-  <td class="num" data-sort="75.0">75.0%</td>
-  <td class="num" data-sort="1.09">1.09</td>
-</tr>
-<tr>
-  <td>Cannabis</td>
-  <td>MSOS CNBS</td>
-<td class="num neg" data-sort="-1.5110">-1.5%</td>
-<td class="num neg" data-sort="-8.5703">-8.6%</td>
-<td class="num pos" data-sort="6.2592">+6.3%</td>
-<td class="num neg" data-sort="-23.5285">-23.5%</td>
-<td class="num neg" data-sort="-18.2958">-18.3%</td>
-  <td class="num" data-sort="2.20" style="font-weight:700;color:#d97706;">2.20</td>
-  <td class="num" data-sort="53.9">53.9%</td>
-  <td class="num" data-sort="0.90">0.90</td>
-</tr>
-<tr>
-  <td>Developed International Equity</td>
-  <td>IEUR IEV GSEU</td>
-<td class="num neg" data-sort="-2.5946">-2.6%</td>
-<td class="num neg" data-sort="-5.6252">-5.6%</td>
-<td class="num pos" data-sort="4.0379">+4.0%</td>
-<td class="num pos" data-sort="8.0401">+8.0%</td>
-<td class="num pos" data-sort="0.8134">+0.8%</td>
-  <td class="num" data-sort="2.05" style="font-weight:700;color:#d97706;">2.05</td>
-  <td class="num" data-sort="65.2">65.2%</td>
-  <td class="num" data-sort="0.92">0.92</td>
-</tr>
-<tr>
-  <td>Financials & Banking</td>
-  <td>XLF VFH KBE</td>
-<td class="num neg" data-sort="-4.5062">-4.5%</td>
-<td class="num neg" data-sort="-9.7205">-9.7%</td>
-<td class="num neg" data-sort="-6.0318">-6.0%</td>
-<td class="num neg" data-sort="-5.3058">-5.3%</td>
-<td class="num neg" data-sort="-7.6722">-7.7%</td>
-  <td class="num" data-sort="2.03" style="font-weight:700;color:#d97706;">2.03</td>
-  <td class="num" data-sort="69.3">69.3%</td>
-  <td class="num" data-sort="1.26">1.26</td>
-</tr>
-<tr>
-  <td>Healthcare & Biotech</td>
-  <td>PJP IHE VHT</td>
-<td class="num neg" data-sort="-2.2290">-2.2%</td>
-<td class="num neg" data-sort="-2.5017">-2.5%</td>
-<td class="num pos" data-sort="1.1705">+1.2%</td>
-<td class="num pos" data-sort="15.1422">+15.1%</td>
-<td class="num pos" data-sort="0.0005">0.0%</td>
-  <td class="num" data-sort="1.88" style="font-weight:700;color:#16a34a;">1.88</td>
-  <td class="num" data-sort="70.9">70.9%</td>
-  <td class="num" data-sort="0.75">0.75</td>
-</tr>
-<tr>
-  <td>Gold & Precious Metals</td>
-  <td>CEF SGOL PHYS</td>
-<td class="num neg" data-sort="-1.4037">-1.4%</td>
-<td class="num pos" data-sort="0.9418">+0.9%</td>
-<td class="num pos" data-sort="28.2249">+28.2%</td>
-<td class="num pos" data-sort="51.8822">+51.9%</td>
-<td class="num pos" data-sort="19.3061">+19.3%</td>
-  <td class="num" data-sort="1.86" style="font-weight:700;color:#16a34a;">1.86</td>
-  <td class="num" data-sort="62.0">62.0%</td>
-  <td class="num" data-sort="0.26">0.26</td>
-</tr>
-<tr>
-  <td>Defense & Aerospace</td>
-  <td>PPA ITA XAR</td>
-<td class="num neg" data-sort="-3.2223">-3.2%</td>
-<td class="num pos" data-sort="0.4951">+0.5%</td>
-<td class="num pos" data-sort="17.8258">+17.8%</td>
-<td class="num pos" data-sort="24.9488">+24.9%</td>
-<td class="num pos" data-sort="13.5052">+13.5%</td>
-  <td class="num" data-sort="1.86" style="font-weight:700;color:#16a34a;">1.86</td>
-  <td class="num" data-sort="70.7">70.7%</td>
-  <td class="num" data-sort="0.91">0.91</td>
-</tr>
-<tr>
-  <td>Currency-Hedged Europe</td>
-  <td>HEZU ESGD SPGM</td>
-<td class="num neg" data-sort="-1.1438">-1.1%</td>
-<td class="num neg" data-sort="-3.3614">-3.4%</td>
-<td class="num pos" data-sort="2.6516">+2.7%</td>
-<td class="num pos" data-sort="8.5853">+8.6%</td>
-<td class="num pos" data-sort="1.2215">+1.2%</td>
-  <td class="num" data-sort="1.84" style="font-weight:700;color:#16a34a;">1.84</td>
-  <td class="num" data-sort="67.5">67.5%</td>
-  <td class="num" data-sort="0.81">0.81</td>
-</tr>
-<tr>
-  <td>Energy & Oil</td>
-  <td>USO BNO GSG</td>
-<td class="num pos" data-sort="10.1600">+10.2%</td>
-<td class="num pos" data-sort="23.9543">+24.0%</td>
-<td class="num pos" data-sort="36.1236">+36.1%</td>
-<td class="num pos" data-sort="36.6480">+36.6%</td>
-<td class="num pos" data-sort="37.2093">+37.2%</td>
-  <td class="num" data-sort="1.83" style="font-weight:700;color:#16a34a;">1.83</td>
-  <td class="num" data-sort="70.7">70.7%</td>
-  <td class="num" data-sort="0.51">0.51</td>
-</tr>
-<tr>
-  <td>US Small & Mid Cap</td>
-  <td>IJR MDY IWM</td>
-<td class="num neg" data-sort="-3.7894">-3.8%</td>
-<td class="num neg" data-sort="-5.1825">-5.2%</td>
-<td class="num pos" data-sort="2.7476">+2.7%</td>
-<td class="num pos" data-sort="5.7412">+5.7%</td>
-<td class="num pos" data-sort="3.0975">+3.1%</td>
-  <td class="num" data-sort="1.81" style="font-weight:700;color:#16a34a;">1.81</td>
-  <td class="num" data-sort="69.5">69.5%</td>
-  <td class="num" data-sort="1.07">1.07</td>
-</tr>
-<tr>
-  <td>Crypto & Digital Assets</td>
-  <td>BITQ DAPP FDIG</td>
-<td class="num neg" data-sort="-4.0414">-4.0%</td>
-<td class="num neg" data-sort="-4.3290">-4.3%</td>
-<td class="num neg" data-sort="-17.2139">-17.2%</td>
-<td class="num neg" data-sort="-8.5947">-8.6%</td>
-<td class="num neg" data-sort="-2.2517">-2.3%</td>
-  <td class="num" data-sort="1.73" style="font-weight:700;color:#16a34a;">1.73</td>
-  <td class="num" data-sort="68.1">68.1%</td>
-  <td class="num" data-sort="2.32">2.32</td>
-</tr>
-<tr>
-  <td>Semiconductors & Tech Hardware</td>
-  <td>SOXX SMH PSI</td>
-<td class="num neg" data-sort="-0.5215">-0.5%</td>
-<td class="num neg" data-sort="-2.7980">-2.8%</td>
-<td class="num pos" data-sort="8.9997">+9.0%</td>
-<td class="num pos" data-sort="33.5613">+33.6%</td>
-<td class="num pos" data-sort="12.3760">+12.4%</td>
-  <td class="num" data-sort="1.73" style="font-weight:700;color:#16a34a;">1.73</td>
-  <td class="num" data-sort="64.0">64.0%</td>
-  <td class="num" data-sort="1.30">1.30</td>
-</tr>
-<tr>
-  <td>Grains & Agriculture</td>
-  <td>CORN WEAT SOYB</td>
-<td class="num pos" data-sort="3.6487">+3.6%</td>
-<td class="num pos" data-sort="6.9263">+6.9%</td>
-<td class="num pos" data-sort="6.6378">+6.6%</td>
-<td class="num pos" data-sort="7.1839">+7.2%</td>
-<td class="num pos" data-sort="8.9205">+8.9%</td>
-  <td class="num" data-sort="1.70" style="font-weight:700;color:#16a34a;">1.70</td>
-  <td class="num" data-sort="65.2">65.2%</td>
-  <td class="num" data-sort="0.15">0.15</td>
-</tr>
-<tr>
-  <td>Latin America</td>
-  <td>EWZS FLBR EWZ</td>
-<td class="num neg" data-sort="-0.5402">-0.5%</td>
-<td class="num neg" data-sort="-3.2380">-3.2%</td>
-<td class="num pos" data-sort="17.1239">+17.1%</td>
-<td class="num pos" data-sort="23.5108">+23.5%</td>
-<td class="num pos" data-sort="16.7173">+16.7%</td>
-  <td class="num" data-sort="1.67" style="font-weight:700;color:#16a34a;">1.67</td>
-  <td class="num" data-sort="67.2">67.2%</td>
-  <td class="num" data-sort="1.10">1.10</td>
-</tr></tbody></table></div></div>
-<div class="table-section"><div class="table-section-header"><h2>Methodology</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div style="font-size:0.88em;color:#666;line-height:1.7;"><b>Methodology:</b> 43 ETF poles were tested using an RSI(2) mean-reversion pullback strategy across full history. Poles with Profit Factor >= 1.5 after excluding regression-excluded poles (US Large Cap Core, US Dollar, Cash, Dow, S&P Variants) are shown here as "proven." Returns are computed from equal-weighted FMP (Factor-Mimicking Portfolio) log returns of each pole's top 5 ETF constituents.<br><br><b>PF Tiers:</b> <span style="color:#d97706;font-weight:700;">Gold (PF >= 2.0)</span> = Elite reliability. <span style="color:#16a34a;font-weight:700;">Green (PF 1.5-2.0)</span> = Proven reliability.</div></div></div>
-</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-11 4:42 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+    </details>
+    </div></div>
+<div style="margin-bottom:14px"><button class="filter-btn" onclick="filterClass('ALL')">ALL (25)</button><button class="filter-btn" onclick="filterClass('VALIDATED')">VALIDATED (14)</button><button class="filter-btn" onclick="filterClass('MARGINAL')">MARGINAL (11)</button><button class="filter-btn" onclick="filterClass('FAVORED')">VIX FAVORED (4)</button></div>
+<div class="table-section"><div class="table-section-header"><h2>Pole Performance</h2><span style="font-size:0.85em;color:#888;">Click headers to sort | Default: 1M descending</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table id="poleTable" class="dash-table" data-sort-col="0" data-sort-dir="desc">
+    <thead><tr>
+        <th onclick="sortPoleTable(0,false)" title="Pole name from taxonomy regression">Pole</th>
+        <th onclick="sortPoleTable(1,false)" title="Lead ETF for this pole (most liquid member)">Lead ETF</th>
+        <th onclick="sortPoleTable(2,false)" title="Scimode validation: VALIDATED (4/4 tests) or MARGINAL (3/4)">Class</th>
+        <th onclick="sortPoleTable(3,true)" title="1-week return of pole portfolio (equal-weighted FMP)">1W</th>
+        <th onclick="sortPoleTable(4,true)" title="1-month return">1M</th>
+        <th onclick="sortPoleTable(5,true)" title="3-month return">3M</th>
+        <th onclick="sortPoleTable(6,true)" title="6-month return">6M</th>
+        <th onclick="sortPoleTable(7,true)" title="Year-to-date return">YTD</th>
+        <th onclick="sortPoleTable(8,true)" title="Lead ETF % above 29-day SMA. Shows how extended this sector is.">Ext %</th>
+        <th onclick="sortPoleTable(9,false)" title="SMA29 extension zone (OPTIMAL = 0-10% above SMA29)">Zone</th>
+        <th onclick="sortPoleTable(10,true)" title="Pairwise correlation coherence (how tightly members move together). Higher = more reliable pole.">Coher</th>
+        <th onclick="sortPoleTable(11,true)" title="Number of stocks assigned to this pole in the taxonomy">Stocks</th>
+        <th onclick="sortPoleTable(12,true)" title="Average SPY beta of pole ETF members">Beta</th>
+        <th title="All ETF members defining this pole">Members</th>
+    </tr></thead>
+    <tbody><tr class="" data-cls="VALIDATED"><td class="tl"><b>Energy & Oil</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">USO</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="9.829010075290224" style="color:#22c55e">+9.8%</td><td class="tr" data-val="23.581904762738183" style="color:#22c55e">+23.6%</td><td class="tr" data-val="35.71464029516955" style="color:#22c55e">+35.7%</td><td class="tr" data-val="36.23748400916509" style="color:#22c55e">+36.2%</td><td class="tr" data-val="36.797049290507644" style="color:#22c55e">+36.8%</td><td class="tr" data-val="26.45" style="color:#22c55e">+26.4%</td><td class="tc" data-val="WARNING"><span class="ext-badge" style="background:#fecaca;color:#991b1b">WARNING</span></td><td class="tr" data-val="0.402">0.40</td><td class="tr" data-val="40">40</td><td class="tr" data-val="0.51">0.51</td><td class="tl" style="font-size:0.72em;color:#888">USO, BNO, GSG, PDBC, DBC</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>REITs & Real Estate</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">VNQ</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-2.6850933593237536" style="color:#ef4444">-2.7%</td><td class="tr" data-val="1.0247627164481354" style="color:#22c55e">+1.0%</td><td class="tr" data-val="5.866361477020821" style="color:#22c55e">+5.9%</td><td class="tr" data-val="5.035627690736644" style="color:#22c55e">+5.0%</td><td class="tr" data-val="6.018442815307101" style="color:#22c55e">+6.0%</td><td class="tr" data-val="-0.77" style="color:#ef4444">-0.8%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.333">0.33</td><td class="tr" data-val="32">32</td><td class="tr" data-val="1.02">1.02</td><td class="tl" style="font-size:0.72em;color:#888">ICF, IYR, RWR, REZ, VNQ</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Gold & Precious Metals</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">GLD</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-1.4881409715809313" style="color:#ef4444">-1.5%</td><td class="tr" data-val="0.8553538105092073" style="color:#22c55e">+0.9%</td><td class="tr" data-val="28.11514336711223" style="color:#22c55e">+28.1%</td><td class="tr" data-val="51.752143382747164" style="color:#22c55e">+51.8%</td><td class="tr" data-val="19.203991572255052" style="color:#22c55e">+19.2%</td><td class="tr" data-val="2.2" style="color:#22c55e">+2.2%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.722">0.72</td><td class="tr" data-val="74">74</td><td class="tr" data-val="0.26">0.26</td><td class="tl" style="font-size:0.72em;color:#888">CEF, SGOL, PHYS, SIL, RING</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Defense & Aerospace</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">ITA</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-3.077917661212204" style="color:#ef4444">-3.1%</td><td class="tr" data-val="0.6450449276557357" style="color:#22c55e">+0.6%</td><td class="tr" data-val="18.001511990566364" style="color:#22c55e">+18.0%</td><td class="tr" data-val="25.135167077243146" style="color:#22c55e">+25.1%</td><td class="tr" data-val="13.67448851451285" style="color:#22c55e">+13.7%</td><td class="tr" data-val="0.63" style="color:#22c55e">+0.6%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.433">0.43</td><td class="tr" data-val="44">44</td><td class="tr" data-val="0.91">0.91</td><td class="tl" style="font-size:0.72em;color:#888">PPA, ITA, XAR, MISL</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Asia Ex-China</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">FLTW</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-1.1197377451936164" style="color:#ef4444">-1.1%</td><td class="tr" data-val="0.24551225040223557" style="color:#22c55e">+0.2%</td><td class="tr" data-val="24.015665140643417" style="color:#22c55e">+24.0%</td><td class="tr" data-val="43.63097618056662" style="color:#22c55e">+43.6%</td><td class="tr" data-val="19.306709491835594" style="color:#22c55e">+19.3%</td><td class="tr" data-val="0.29" style="color:#22c55e">+0.3%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.595">0.59</td><td class="tr" data-val="35">35</td><td class="tr" data-val="0.82">0.82</td><td class="tl" style="font-size:0.72em;color:#888">FLTW, FLKR, FRDM</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Core Bonds / Duration</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">AGG</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-0.7056823529758671" style="color:#ef4444">-0.7%</td><td class="tr" data-val="0.03465628106953389" style="color:#22c55e">+0.0%</td><td class="tr" data-val="0.771266043402874" style="color:#22c55e">+0.8%</td><td class="tr" data-val="1.2224619073453846" style="color:#22c55e">+1.2%</td><td class="tr" data-val="0.46438883631720884" style="color:#22c55e">+0.5%</td><td class="tr" data-val="-0.5" style="color:#ef4444">-0.5%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.264">0.26</td><td class="tr" data-val="60">60</td><td class="tr" data-val="-0.05">-0.05</td><td class="tl" style="font-size:0.72em;color:#888">IEF, BND, VGIT, GOVT, AGG</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Cybersecurity & Cloud</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">CIBR</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="1.8842629806635092" style="color:#22c55e">+1.9%</td><td class="tr" data-val="-0.4538168625267236" style="color:#ef4444">-0.5%</td><td class="tr" data-val="-12.63648630531038" style="color:#ef4444">-12.6%</td><td class="tr" data-val="-12.472214166016837" style="color:#ef4444">-12.5%</td><td class="tr" data-val="-9.203590894156466" style="color:#ef4444">-9.2%</td><td class="tr" data-val="-0.2" style="color:#ef4444">-0.2%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.362">0.36</td><td class="tr" data-val="72">72</td><td class="tr" data-val="1.09">1.09</td><td class="tl" style="font-size:0.72em;color:#888">CIBR, HACK, CLOU, SKYY</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>High Yield Credit</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">HYG</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="-0.5737474905233908" style="color:#ef4444">-0.6%</td><td class="tr" data-val="-0.7616186840104233" style="color:#ef4444">-0.8%</td><td class="tr" data-val="0.7248700659046037" style="color:#22c55e">+0.7%</td><td class="tr" data-val="1.9765988013114022" style="color:#22c55e">+2.0%</td><td class="tr" data-val="0.11622154055908052" style="color:#22c55e">+0.1%</td><td class="tr" data-val="-0.44" style="color:#ef4444">-0.4%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.189">0.19</td><td class="tr" data-val="32">32</td><td class="tr" data-val="0.37">0.37</td><td class="tl" style="font-size:0.72em;color:#888">JNK, HYG</td></tr>
+<tr class="vix-favored" data-cls="MARGINAL"><td class="tl"><b>Telecom & Communication Services</b> <span class="vix-star" title="VIX-favored in current regime">&#9733;</span></td><td class="tc" style="font-family:monospace;font-size:0.82em">XLC</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="-1.376770342690825" style="color:#ef4444">-1.4%</td><td class="tr" data-val="-0.9537997390578257" style="color:#ef4444">-1.0%</td><td class="tr" data-val="-0.18946508197955625" style="color:#ef4444">-0.2%</td><td class="tr" data-val="1.6909668966637925" style="color:#22c55e">+1.7%</td><td class="tr" data-val="-0.9559874758077624" style="color:#ef4444">-1.0%</td><td class="tr" data-val="0.16" style="color:#22c55e">+0.2%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.229">0.23</td><td class="tr" data-val="27">27</td><td class="tr" data-val="0.93">0.93</td><td class="tl" style="font-size:0.72em;color:#888">VOX, FCOM, XLC, IXP</td></tr>
+<tr class="vix-favored" data-cls="VALIDATED"><td class="tl"><b>Semiconductors & Tech Hardware</b> <span class="vix-star" title="VIX-favored in current regime">&#9733;</span></td><td class="tc" style="font-family:monospace;font-size:0.82em">SMH</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-0.22237389014716502" style="color:#ef4444">-0.2%</td><td class="tr" data-val="-2.5056878494935653" style="color:#ef4444">-2.5%</td><td class="tr" data-val="9.327472628599299" style="color:#22c55e">+9.3%</td><td class="tr" data-val="33.962928900311674" style="color:#22c55e">+34.0%</td><td class="tr" data-val="12.713898651487332" style="color:#22c55e">+12.7%</td><td class="tr" data-val="-0.57" style="color:#ef4444">-0.6%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.458">0.46</td><td class="tr" data-val="71">71</td><td class="tr" data-val="1.30">1.30</td><td class="tl" style="font-size:0.72em;color:#888">SOXX, SMH, PSI, FTXL, TDIV</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Defensive / Low-Vol Equity</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">XLP</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="-2.65409690604409" style="color:#ef4444">-2.7%</td><td class="tr" data-val="-2.8516264479331532" style="color:#ef4444">-2.9%</td><td class="tr" data-val="9.727511909932884" style="color:#22c55e">+9.7%</td><td class="tr" data-val="6.2792546056755105" style="color:#22c55e">+6.3%</td><td class="tr" data-val="9.251360036480772" style="color:#22c55e">+9.3%</td><td class="tr" data-val="-2.75" style="color:#ef4444">-2.8%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.164">0.16</td><td class="tr" data-val="66">66</td><td class="tr" data-val="0.56">0.56</td><td class="tl" style="font-size:0.72em;color:#888">VDC, XLP</td></tr>
+<tr class="vix-favored" data-cls="MARGINAL"><td class="tl"><b>Latin America</b> <span class="vix-star" title="VIX-favored in current regime">&#9733;</span></td><td class="tc" style="font-family:monospace;font-size:0.82em">EWZ</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="-0.42694786188494094" style="color:#ef4444">-0.4%</td><td class="tr" data-val="-3.127844847355976" style="color:#ef4444">-3.1%</td><td class="tr" data-val="17.25724637777246" style="color:#22c55e">+17.3%</td><td class="tr" data-val="23.651425404147062" style="color:#22c55e">+23.7%</td><td class="tr" data-val="16.850114556183037" style="color:#22c55e">+16.9%</td><td class="tr" data-val="-1.18" style="color:#ef4444">-1.2%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.574">0.57</td><td class="tr" data-val="15">15</td><td class="tr" data-val="1.10">1.10</td><td class="tl" style="font-size:0.72em;color:#888">EWZS, FLBR, EWZ, ILF</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Copper & Industrial Metals</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">COPX</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-2.611204179322124" style="color:#ef4444">-2.6%</td><td class="tr" data-val="-3.1897964383630018" style="color:#ef4444">-3.2%</td><td class="tr" data-val="16.437900461886844" style="color:#22c55e">+16.4%</td><td class="tr" data-val="39.393938923607095" style="color:#22c55e">+39.4%</td><td class="tr" data-val="9.410710321293458" style="color:#22c55e">+9.4%</td><td class="tr" data-val="-6.27" style="color:#ef4444">-6.3%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.589">0.59</td><td class="tr" data-val="31">31</td><td class="tr" data-val="0.84">0.84</td><td class="tl" style="font-size:0.72em;color:#888">CPER, DBB, COPX, PICK</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Currency-Hedged Europe</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">HEZU</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-1.0656623712777313" style="color:#ef4444">-1.1%</td><td class="tr" data-val="-3.2850544264078962" style="color:#ef4444">-3.3%</td><td class="tr" data-val="2.732693950999976" style="color:#22c55e">+2.7%</td><td class="tr" data-val="8.671051063063139" style="color:#22c55e">+8.7%</td><td class="tr" data-val="1.3014438744726187" style="color:#22c55e">+1.3%</td><td class="tr" data-val="-3.08" style="color:#ef4444">-3.1%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.294">0.29</td><td class="tr" data-val="67">67</td><td class="tr" data-val="0.81">0.81</td><td class="tl" style="font-size:0.72em;color:#888">HEZU, ESGD, SPGM, KBA</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Consumer Discretionary</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">XLY</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="-2.182447602409898" style="color:#ef4444">-2.2%</td><td class="tr" data-val="-3.4642988523345797" style="color:#ef4444">-3.5%</td><td class="tr" data-val="-3.544220907211315" style="color:#ef4444">-3.5%</td><td class="tr" data-val="-3.5860740655866197" style="color:#ef4444">-3.6%</td><td class="tr" data-val="-4.762861752675307" style="color:#ef4444">-4.8%</td><td class="tr" data-val="-2.54" style="color:#ef4444">-2.5%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.257">0.26</td><td class="tr" data-val="51">51</td><td class="tr" data-val="1.03">1.03</td><td class="tl" style="font-size:0.72em;color:#888">XLY, VCR</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Clean Energy & Solar</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">TAN</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="2.10430136302171" style="color:#22c55e">+2.1%</td><td class="tr" data-val="-3.7935241811428155" style="color:#ef4444">-3.8%</td><td class="tr" data-val="14.554378901760101" style="color:#22c55e">+14.6%</td><td class="tr" data-val="31.400559143158226" style="color:#22c55e">+31.4%</td><td class="tr" data-val="13.235562240502684" style="color:#22c55e">+13.2%</td><td class="tr" data-val="-1.93" style="color:#ef4444">-1.9%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.417">0.42</td><td class="tr" data-val="13">13</td><td class="tr" data-val="1.31">1.31</td><td class="tl" style="font-size:0.72em;color:#888">TAN, ICLN</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Materials & Chemicals</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">XLB</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="-4.213864718461702" style="color:#ef4444">-4.2%</td><td class="tr" data-val="-3.889405172331417" style="color:#ef4444">-3.9%</td><td class="tr" data-val="16.73075056057849" style="color:#22c55e">+16.7%</td><td class="tr" data-val="14.120722071390702" style="color:#22c55e">+14.1%</td><td class="tr" data-val="10.927697875153974" style="color:#22c55e">+10.9%</td><td class="tr" data-val="-4.14" style="color:#ef4444">-4.1%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.359">0.36</td><td class="tr" data-val="69">69</td><td class="tr" data-val="1.04">1.04</td><td class="tl" style="font-size:0.72em;color:#888">XLB, IYM, VAW</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Crypto & Digital Assets</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">BITQ</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="-3.813943479499027" style="color:#ef4444">-3.8%</td><td class="tr" data-val="-4.102314529960694" style="color:#ef4444">-4.1%</td><td class="tr" data-val="-17.017654980053475" style="color:#ef4444">-17.0%</td><td class="tr" data-val="-8.378044571486576" style="color:#ef4444">-8.4%</td><td class="tr" data-val="-2.0200387502361528" style="color:#ef4444">-2.0%</td><td class="tr" data-val="3.64" style="color:#22c55e">+3.6%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.770">0.77</td><td class="tr" data-val="19">19</td><td class="tr" data-val="2.32">2.32</td><td class="tl" style="font-size:0.72em;color:#888">BITQ, DAPP, FDIG, STCE, BKCH</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>US Small & Mid Cap</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">IWM</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-3.7201244419148627" style="color:#ef4444">-3.7%</td><td class="tr" data-val="-5.114229761550937" style="color:#ef4444">-5.1%</td><td class="tr" data-val="2.8216263521336105" style="color:#22c55e">+2.8%</td><td class="tr" data-val="5.8173395226523095" style="color:#22c55e">+5.8%</td><td class="tr" data-val="3.1717732935293785" style="color:#22c55e">+3.2%</td><td class="tr" data-val="-3.28" style="color:#ef4444">-3.3%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.395">0.39</td><td class="tr" data-val="33">33</td><td class="tr" data-val="1.07">1.07</td><td class="tl" style="font-size:0.72em;color:#888">IJR, MDY, IWM, IJH, VB</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>China / EM Asia</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">FXI</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="1.1517841662061379" style="color:#22c55e">+1.2%</td><td class="tr" data-val="-5.189694667605648" style="color:#ef4444">-5.2%</td><td class="tr" data-val="-1.9237870367138088" style="color:#ef4444">-1.9%</td><td class="tr" data-val="-1.6712954671814773" style="color:#ef4444">-1.7%</td><td class="tr" data-val="-0.5339736354966984" style="color:#ef4444">-0.5%</td><td class="tr" data-val="-4.42" style="color:#ef4444">-4.4%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.504">0.50</td><td class="tr" data-val="32">32</td><td class="tr" data-val="0.97">0.97</td><td class="tl" style="font-size:0.72em;color:#888">MCHI, GXC, FXI, FLCH, AAXJ</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Uranium & Nuclear</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">URA</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="-3.7441302833016943" style="color:#ef4444">-3.7%</td><td class="tr" data-val="-5.412772105111607" style="color:#ef4444">-5.4%</td><td class="tr" data-val="16.64538348881084" style="color:#22c55e">+16.6%</td><td class="tr" data-val="28.309999600330936" style="color:#22c55e">+28.3%</td><td class="tr" data-val="21.42297676251681" style="color:#22c55e">+21.4%</td><td class="tr" data-val="-3.17" style="color:#ef4444">-3.2%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.843">0.84</td><td class="tr" data-val="10">10</td><td class="tr" data-val="1.10">1.10</td><td class="tl" style="font-size:0.72em;color:#888">URA, URNJ, URNM, NLR</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Developed International Equity</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">VGK</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-2.5737587919650196" style="color:#ef4444">-2.6%</td><td class="tr" data-val="-5.605033105879098" style="color:#ef4444">-5.6%</td><td class="tr" data-val="4.06015769559831" style="color:#22c55e">+4.1%</td><td class="tr" data-val="8.063202433779315" style="color:#22c55e">+8.1%</td><td class="tr" data-val="0.8349287985851994" style="color:#22c55e">+0.8%</td><td class="tr" data-val="-3.94" style="color:#ef4444">-3.9%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.607">0.61</td><td class="tr" data-val="176">176</td><td class="tr" data-val="0.92">0.92</td><td class="tl" style="font-size:0.72em;color:#888">IEUR, IEV, GSEU, VGK, SPEU</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Japan</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">EWJ</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-2.9523551924309888" style="color:#ef4444">-3.0%</td><td class="tr" data-val="-5.822877568001683" style="color:#ef4444">-5.8%</td><td class="tr" data-val="9.873085226792933" style="color:#22c55e">+9.9%</td><td class="tr" data-val="15.966876600442049" style="color:#22c55e">+16.0%</td><td class="tr" data-val="7.725902059786294" style="color:#22c55e">+7.7%</td><td class="tr" data-val="-4.23" style="color:#ef4444">-4.2%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.504">0.50</td><td class="tr" data-val="24">24</td><td class="tr" data-val="0.71">0.71</td><td class="tl" style="font-size:0.72em;color:#888">EWJ, EWJV, DXJ</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Colombia / Value</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">GXG</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="0.6890016219710082" style="color:#22c55e">+0.7%</td><td class="tr" data-val="-5.978459446074469" style="color:#ef4444">-6.0%</td><td class="tr" data-val="7.2447191324791715" style="color:#22c55e">+7.2%</td><td class="tr" data-val="17.905905217007344" style="color:#22c55e">+17.9%</td><td class="tr" data-val="5.609122943685829" style="color:#22c55e">+5.6%</td><td class="tr" data-val="-999" style="color:#888">-</td><td class="tc" data-val="">-</td><td class="tr" data-val="0.253">0.25</td><td class="tr" data-val="10">10</td><td class="tr" data-val="0.89">0.89</td><td class="tl" style="font-size:0.72em;color:#888">COLO, PVAL</td></tr>
+<tr class="vix-favored" data-cls="VALIDATED"><td class="tl"><b>Financials & Banking</b> <span class="vix-star" title="VIX-favored in current regime">&#9733;</span></td><td class="tc" style="font-family:monospace;font-size:0.82em">XLF</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-4.556720737375109" style="color:#ef4444">-4.6%</td><td class="tr" data-val="-9.768250084268605" style="color:#ef4444">-9.8%</td><td class="tr" data-val="-6.08149180250842" style="color:#ef4444">-6.1%</td><td class="tr" data-val="-5.355874730678356" style="color:#ef4444">-5.4%</td><td class="tr" data-val="-7.72100828851594" style="color:#ef4444">-7.7%</td><td class="tr" data-val="-4.86" style="color:#ef4444">-4.9%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.465">0.47</td><td class="tr" data-val="80">80</td><td class="tr" data-val="1.26">1.26</td><td class="tl" style="font-size:0.72em;color:#888">XLF, VFH, KBE, IAI</td></tr></tbody></table></div></div>
+<details class="llm-block">
+<summary>About This Dashboard</summary>
+<div class="llm-block-body">
+<div class="llm-section-label">What It Does</div>
+<div class="llm-static">Visualizes the ~20 ETF poles (out of 43 total) that passed reliability testing via RSI(2) mean-reversion backtest with Profit Factor >= 1.5. Each pole is a Factor-Mimicking Portfolio (equal-weighted top 5 ETF constituents). Heatmap cards show 1W/1M/3M returns color-coded by momentum. Performance table includes 6M and YTD returns plus backtest trust scores (PF, win rate) and SPY beta. Poles excluded from regression (US Large Cap Core, US Dollar, Cash, Dow, S&P Variants) are removed.</div>
+<div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div>
+</div></details>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-11 5:46 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
 
 /* --- Shared ownership state (localStorage, cross-dashboard) --- */
@@ -1429,32 +760,50 @@ function getGradientColor(score) {
 }
 
 
-document.querySelectorAll('.sortable-table thead th').forEach(function(th, colIdx) {
-    th.addEventListener('click', function() {
-        var table = th.closest('table');
-        var tbody = table.querySelector('tbody');
-        var rows = Array.from(tbody.querySelectorAll('tr'));
-        var asc = !th.classList.contains('sorted-asc');
-
-        table.querySelectorAll('th').forEach(function(h) {
-            h.classList.remove('sorted-asc', 'sorted-desc');
-        });
-        th.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
-
-        rows.sort(function(a, b) {
-            var aVal = a.cells[colIdx].getAttribute('data-sort') || a.cells[colIdx].textContent.trim();
-            var bVal = b.cells[colIdx].getAttribute('data-sort') || b.cells[colIdx].textContent.trim();
-            var aNum = parseFloat(aVal);
-            var bNum = parseFloat(bVal);
-            if (!isNaN(aNum) && !isNaN(bNum)) {
-                return asc ? aNum - bNum : bNum - aNum;
-            }
-            return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-        });
-
-        rows.forEach(function(row) { tbody.appendChild(row); });
+// Sort by column
+function sortPoleTable(colIdx, numeric) {
+    var table = document.getElementById('poleTable');
+    var tbody = table.tBodies[0];
+    var rows = Array.from(tbody.rows);
+    var asc = table.getAttribute('data-sort-col') == colIdx
+              && table.getAttribute('data-sort-dir') == 'asc';
+    var keyed = rows.map(function(r) {
+        var v = r.cells[colIdx].getAttribute('data-val');
+        if (v === null) v = r.cells[colIdx].textContent;
+        if (numeric) { var p = parseFloat(v); v = isNaN(p) ? -9999 : p; }
+        return {row: r, val: v};
     });
-});
+    keyed.sort(function(a, b) {
+        if (a.val < b.val) return asc ? 1 : -1;
+        if (a.val > b.val) return asc ? -1 : 1;
+        return 0;
+    });
+    table.setAttribute('data-sort-col', colIdx);
+    table.setAttribute('data-sort-dir', asc ? 'desc' : 'asc');
+    var frag = document.createDocumentFragment();
+    keyed.forEach(function(k) { frag.appendChild(k.row); });
+    tbody.appendChild(frag);
+}
+
+// Filter by classification
+function filterClass(cls) {
+    var btns = document.querySelectorAll('.filter-btn');
+    btns.forEach(function(b) { b.classList.remove('active'); });
+    if (cls !== 'ALL') {
+        event.target.classList.add('active');
+    }
+    var rows = document.getElementById('poleTable').tBodies[0].rows;
+    for (var i = 0; i < rows.length; i++) {
+        if (cls === 'ALL') {
+            rows[i].style.display = '';
+        } else if (cls === 'FAVORED') {
+            rows[i].style.display = rows[i].classList.contains('vix-favored') ? '' : 'none';
+        } else {
+            var rc = rows[i].getAttribute('data-cls') || '';
+            rows[i].style.display = (rc === cls) ? '' : 'none';
+        }
+    }
+}
 
 </script>
 </body></html>
