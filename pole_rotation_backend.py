@@ -33,8 +33,12 @@ FMP_RETURNS_PATH = os.path.normpath(os.path.join(
     _DATA_DIR, 'output', 'taxonomy', 'fmp_pole_returns_raw.csv'))
 POLE_META_PATH   = os.path.normpath(os.path.join(
     _DATA_DIR, 'output', 'taxonomy', 'fmp_pole_metadata.json'))
-BACKTEST_PATH    = os.path.normpath(os.path.join(
-    _DATA_DIR, 'output', 'backtest', 'rsi2_43pole_comparison_2026-03-04.csv'))
+_bt_dir = os.path.join(_DATA_DIR, 'output', 'backtest')
+_bt_candidates = sorted(
+    [f for f in os.listdir(_bt_dir) if f.startswith('rsi2_43pole_comparison_')],
+    reverse=True,
+) if os.path.isdir(_bt_dir) else []
+BACKTEST_PATH = os.path.normpath(os.path.join(_bt_dir, _bt_candidates[0])) if _bt_candidates else ''
 
 # =============================================================================
 # PROVEN POLES - PF >= 1.5 from RSI(2) backtest, excluding regression-excluded
