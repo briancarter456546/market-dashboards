@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# sma29_entry_backend.py - v1.3
-# Last updated: 2026-03-10
+# sma29_entry_backend.py - v1.4
+# Last updated: 2026-03-11
 # =============================================================================
+# v1.4: VIX regime banner + gold filtering + validated pole reference
+#   - VIX regime banner shows current VIX band and historically strongest sectors
+#   - Gold/Precious Metals (pole 5) filtered from OPTIMAL when VIX < 20
+#   - Noise poles flagged via validated_poles.json from scimode_pole_validation
+#
 # v1.3: Per-asset-class extension scoring via pole assignments
 #   - Each ticker's primary pole maps to an asset class
 #   - Asset-class-specific score adjustments from scimode task #145:
@@ -79,6 +84,35 @@ CACHE_DIR   = os.path.normpath(os.path.join(_DATA_DIR, 'price_cache'))
 MOMENTUM_FILE = os.path.join(_SCRIPT_DIR, 'momentum_ranker_data.json')
 PULLBACK_FILE = os.path.join(_DATA_DIR, 'pullback_health_data.json')
 OUTPUT_JSON   = os.path.join(_DATA_DIR, 'sma29_entry_data.json')
+VIX_PKL       = os.path.join(CACHE_DIR, '^VIX.pkl')
+VALIDATED_POLES_JSON = os.path.join(_DATA_DIR, 'output', 'scientist', 'validated_poles.json')
+
+# =============================================================================
+# VIX REGIME: sector recommendations from scimode_vix_sector_v1_0.py
+# Key finding: sector performance varies 4x by VIX band
+# Gold worst at ALL VIX levels; Tech consistently best in elevated VIX
+# =============================================================================
+
+VIX_BANDS = [
+    (0,  15, '<15',   'LOW VOLATILITY'),
+    (15, 20, '15-20', 'NORMAL'),
+    (20, 25, '20-25', 'ELEVATED'),
+    (25, 30, '25-30', 'HIGH'),
+    (30, 999, '30+',  'EXTREME'),
+]
+
+# Scimode-validated: best-performing poles per VIX band (OPTIMAL extension, 21d fwd)
+VIX_SECTOR_RECS = {
+    '<15':  ['Semis & Tech', 'Financials', 'Defense', 'LatAm'],
+    '15-20': ['Semis & Tech', 'Financials', 'Cybersecurity', 'Consumer Disc'],
+    '20-25': ['Telecom', 'Semis & Tech', 'LatAm', 'Financials'],
+    '25-30': ['Telecom', 'Semis & Tech', 'LatAm', 'Energy'],
+    '30+':   ['Semis & Tech', 'Energy', 'Copper & Metals', 'Defense'],
+}
+
+# Pole IDs to EXCLUDE from OPTIMAL recs in low VIX (worst performers)
+# Pole 5 = Gold & Precious Metals: worst PF at all VIX levels
+GOLD_POLE_IDS = {5}
 
 # =============================================================================
 # SCIMODE-VALIDATED EXTENSION BUCKETS
@@ -226,8 +260,40 @@ ASSET_CLASS_LABELS = {
 }
 
 
+def load_current_vix():
+    """Load current VIX level from price_cache/^VIX.pkl."""
+    if not os.path.exists(VIX_PKL):
+        print("[WARN] VIX pkl not found: {}".format(VIX_PKL))
+        return None, None, None
+    try:
+        vdf = pd.read_pickle(VIX_PKL)
+        close_col = 'adjClose' if 'adjClose' in vdf.columns else 'close'
+        current_vix = float(vdf[close_col].iloc[-1])
+        for vlo, vhi, band_label, band_desc in VIX_BANDS:
+            if vlo <= current_vix < vhi:
+                return current_vix, band_label, band_desc
+        return current_vix, '30+', 'EXTREME'
+    except Exception as e:
+        print("[WARN] Could not load VIX: {}".format(e))
+        return None, None, None
+
+
+def load_validated_pole_ids():
+    """Load validated + marginal pole IDs from scimode output."""
+    if not os.path.exists(VALIDATED_POLES_JSON):
+        return None, {}
+    try:
+        with open(VALIDATED_POLES_JSON, 'r', encoding='utf-8') as f:
+            vp = json.load(f)
+        usable = set(vp.get('usable', []))
+        details = vp.get('details', {})
+        return usable, details
+    except Exception:
+        return None, {}
+
+
 def load_pole_assignments():
-    """Load pole assignments from taxonomy CSV -> {ticker: asset_class}."""
+    """Load pole assignments from taxonomy CSV -> {ticker: (asset_class, pole_id)}."""
     if not os.path.exists(POLE_DIAGNOSTICS_CSV):
         print("[WARN] Pole diagnostics not found: {}".format(POLE_DIAGNOSTICS_CSV))
         return {}
@@ -238,9 +304,10 @@ def load_pole_assignments():
             ticker = row['ticker']
             pole_id = row['primary_pole']
             if pd.isna(pole_id):
-                result[ticker] = 'equity'  # default
+                result[ticker] = ('equity', None)
             else:
-                result[ticker] = POLE_TO_ASSET_CLASS.get(int(pole_id), 'equity')
+                pid = int(pole_id)
+                result[ticker] = (POLE_TO_ASSET_CLASS.get(pid, 'equity'), pid)
         return result
     except Exception as e:
         print("[WARN] Could not load pole assignments: {}".format(e))
@@ -439,22 +506,32 @@ def combined_score(momentum_score, health_score, extension_score):
 # =============================================================================
 
 def build_universe():
-    """Build scored universe from all 3 data sources + pole assignments."""
-    print("[1/5] Loading momentum ranker data...")
+    """Build scored universe from all 3 data sources + pole assignments + VIX."""
+    print("[1/6] Loading momentum ranker data...")
     mr_data = load_momentum_data()
     print("  {} tickers".format(len(mr_data)))
 
-    print("[2/5] Loading pullback health data...")
+    print("[2/6] Loading pullback health data...")
     pb_data = load_pullback_data()
     print("  {} tickers".format(len(pb_data)))
 
-    print("[3/5] Loading pole assignments...")
+    print("[3/6] Loading pole assignments + validated poles...")
     pole_map = load_pole_assignments()
     print("  {} tickers with pole data".format(len(pole_map)))
+    usable_poles, pole_details = load_validated_pole_ids()
+    if usable_poles:
+        print("  {} validated/marginal poles loaded".format(len(usable_poles)))
+
+    print("[4/6] Loading VIX regime...")
+    current_vix, vix_band, vix_desc = load_current_vix()
+    if current_vix is not None:
+        print("  VIX = {:.1f} (band: {} / {})".format(current_vix, vix_band, vix_desc))
+    else:
+        print("  [WARN] VIX unavailable, skipping regime features")
 
     # Universe = union of momentum ranker + pullback health tickers
     all_tickers = sorted(set(list(mr_data.keys()) + list(pb_data.keys())))
-    print("[4/5] Computing SMA29 extensions for {} tickers...".format(len(all_tickers)))
+    print("[5/6] Computing SMA29 extensions for {} tickers...".format(len(all_tickers)))
 
     # Parallel SMA29 computation
     ext_data = {}
@@ -471,9 +548,11 @@ def build_universe():
                 print("  ... computed {}/{}".format(done, len(all_tickers)))
     print("  {} tickers with valid SMA29 data".format(len(ext_data)))
 
-    print("[5/5] Scoring with per-asset-class adjustments...")
+    print("[6/6] Scoring with per-asset-class adjustments...")
     # Count asset class distribution
     ac_counts = {}
+    gold_filtered_count = 0
+    noise_pole_count = 0
     results = []
     for ticker in all_tickers:
         mr = mr_data.get(ticker)
@@ -483,12 +562,28 @@ def build_universe():
         if ext is None:
             continue  # need at least price data
 
-        # Look up asset class from pole assignment
-        asset_class = pole_map.get(ticker, 'equity')
+        # Look up asset class + pole_id from pole assignment
+        ac_pid = pole_map.get(ticker, ('equity', None))
+        asset_class, pole_id = ac_pid
         ac_counts[asset_class] = ac_counts.get(asset_class, 0) + 1
+
+        # Check if this is a noise pole
+        is_noise_pole = False
+        if usable_poles is not None and pole_id is not None:
+            if pole_id not in usable_poles:
+                is_noise_pole = True
+                noise_pole_count += 1
 
         ext_pct = ext['extension_pct']
         ext_label, ext_score_val, ext_pf, ext_fwd = classify_extension(ext_pct, asset_class)
+
+        # Gold filtering: demote Gold/Precious Metals from OPTIMAL when VIX < 20
+        gold_filtered = False
+        if (pole_id is not None and pole_id in GOLD_POLE_IDS
+                and ext_label == 'OPTIMAL'
+                and current_vix is not None and current_vix < 20):
+            gold_filtered = True
+            gold_filtered_count += 1
 
         # SMA10 exit alert
         ext10_pct = ext.get('ext10_pct')
@@ -530,6 +625,9 @@ def build_universe():
             'top_pole': mr.get('top_pole', '') if mr else '',
             'asset_class': asset_class,
             'asset_class_label': ASSET_CLASS_LABELS.get(asset_class, 'Equity'),
+            'pole_id': pole_id,
+            'is_noise_pole': is_noise_pole,
+            'gold_filtered': gold_filtered,
             'combined_score': combo,
         }
         results.append(row)
@@ -538,9 +636,20 @@ def build_universe():
     print("  Asset class distribution:")
     for ac, cnt in sorted(ac_counts.items(), key=lambda x: -x[1]):
         print("    {:12s} {:,}".format(ASSET_CLASS_LABELS.get(ac, ac), cnt))
+    if noise_pole_count:
+        print("  {} tickers in noise poles (flagged)".format(noise_pole_count))
+    if gold_filtered_count:
+        print("  {} Gold/PM tickers filtered from OPTIMAL (VIX < 20)".format(gold_filtered_count))
 
     results.sort(key=lambda r: r['combined_score'], reverse=True)
-    return results
+
+    vix_context = {
+        'current_vix': current_vix,
+        'vix_band': vix_band,
+        'vix_desc': vix_desc,
+    }
+
+    return results, vix_context
 
 
 # =============================================================================
@@ -752,9 +861,14 @@ def _color_pct(val):
         c=color, v=val)
 
 
-def build_html(results):
+def build_html(results, vix_context=None):
     """Build the dashboard HTML."""
     now = datetime.now()
+    if vix_context is None:
+        vix_context = {}
+    current_vix = vix_context.get('current_vix')
+    vix_band = vix_context.get('vix_band')
+    vix_desc = vix_context.get('vix_desc')
 
     # Counts by zone
     zone_counts = {}
@@ -936,10 +1050,17 @@ def build_html(results):
 
         mr_rank_str = '#{}'.format(r['momentum_rank']) if r['momentum_rank'] and r['momentum_rank'] < 9999 else '-'
 
+        # Gold-filtered or noise-pole indicator
+        ticker_suffix = ''
+        if r.get('gold_filtered'):
+            ticker_suffix = ' <span title="Gold/PM filtered from OPTIMAL (VIX&lt;20)" style="font-size:0.65em;color:#f59e0b">Au</span>'
+        elif r.get('is_noise_pole'):
+            ticker_suffix = ' <span title="Noise pole (low coherence/stability)" style="font-size:0.65em;color:#d1d5db">?</span>'
+
         row = '<tr data-zone="{zone}">'.format(zone=zone_attr)
         row += _own_cell(r['ticker'])
         row += _watch_cell(r['ticker'])
-        row += '<td class="tl"><b>{}</b> <span style="font-size:0.72em;color:#999">{}</span></td>'.format(r['ticker'], mr_rank_str)
+        row += '<td class="tl"><b>{}</b> <span style="font-size:0.72em;color:#999">{}</span>{}</td>'.format(r['ticker'], mr_rank_str, ticker_suffix)
         row += '<td class="tr" data-val="{}">${:,.2f}</td>'.format(r['price'], r['price'])
         row += '<td class="tr" data-val="{v}" style="font-weight:700;color:{c}">{v:.1f}</td>'.format(
             v=r['combined_score'],
@@ -991,10 +1112,33 @@ def build_html(results):
     banner_score = 'Weights: {}% Momentum + {}% Health + {}% Extension'.format(
         int(W_MOMENTUM * 100), int(W_HEALTH * 100), int(W_EXTENSION * 100))
 
+    # VIX regime banner
+    vix_banner_html = ''
+    if current_vix is not None:
+        vix_color_map = {'<15': '#22c55e', '15-20': '#64748b', '20-25': '#f59e0b',
+                         '25-30': '#ef4444', '30+': '#991b1b'}
+        vix_color = vix_color_map.get(vix_band, '#64748b')
+        recs = VIX_SECTOR_RECS.get(vix_band, [])
+        recs_str = ', '.join(recs) if recs else 'N/A'
+        gold_note = ''
+        if current_vix < 20:
+            gold_note = ' | <span style="color:#f87171">Gold/PM filtered from OPTIMAL</span>'
+        vix_banner_html = """
+        <div style="background:linear-gradient(135deg, {color}22, {color}11);
+                    border-left:4px solid {color}; padding:10px 16px; margin-bottom:14px;
+                    border-radius:4px; font-size:0.88em">
+            <span style="font-weight:700; color:{color}">VIX {vix:.1f} ({desc})</span>
+            &nbsp;|&nbsp; Best sectors: <b>{recs}</b>{gold}
+            <span style="float:right;font-size:0.82em;color:#888">scimode_vix_sector_v1_0</span>
+        </div>""".format(color=vix_color, vix=current_vix, desc=vix_desc,
+                         recs=recs_str, gold=gold_note)
+
     parts = []
     parts.append(dw.build_header(subtitle='SMA29 Entry + SMA10 Exit | Scimode-Validated'))
     parts.append(dw.stat_bar(stat_bar_data))
     parts.append(dw.regime_banner(banner_text, banner_score, color=banner_color))
+    if vix_banner_html:
+        parts.append(vix_banner_html)
     parts.append(dw.section('Methodology', methodology, hint='Scimode exit_signal_test.py'))
     parts.append(zone_btns)
     parts.append(dw.section('Entry Quality Rankings', table_html, hint='Click headers to sort'))
@@ -1017,16 +1161,17 @@ def build_html(results):
 
 def main():
     print("=" * 70)
-    print("ENTER & EXIT QUALITY SCANNER v1.3")
+    print("ENTER & EXIT QUALITY SCANNER v1.4")
     print("=" * 70)
 
-    results = build_universe()
+    results, vix_context = build_universe()
 
     # Save JSON cache
     output = clean_nan({
         'generated_at': datetime.now().isoformat(),
         'total': len(results),
         'weights': {'momentum': W_MOMENTUM, 'health': W_HEALTH, 'extension': W_EXTENSION},
+        'vix': vix_context,
         'results': results,
     })
     with open(OUTPUT_JSON, 'w', encoding='utf-8') as f:
@@ -1043,14 +1188,18 @@ def main():
     print("  Universe:    {:,}".format(len(results)))
     print("  Above SMA29: {:,}".format(above))
     print("  Optimal zone: {:,}".format(optimal))
+    if vix_context.get('current_vix') is not None:
+        print("  VIX regime:  {:.1f} ({})".format(
+            vix_context['current_vix'], vix_context['vix_desc']))
     if results:
         print("  Top 5:")
         for r in results[:5]:
-            print("    {} {:>7.1f}  ext={:+.1f}% [{}]  mom={:.0f}  health={:.0f}".format(
+            gf = ' [Au filtered]' if r.get('gold_filtered') else ''
+            print("    {} {:>7.1f}  ext={:+.1f}% [{}]  mom={:.0f}  health={:.0f}{}".format(
                 r['ticker'].ljust(6), r['combined_score'], r['extension_pct'],
-                r['extension_label'], r['momentum_score'], r['health_score']))
+                r['extension_label'], r['momentum_score'], r['health_score'], gf))
 
-    out_path = build_html(results)
+    out_path = build_html(results, vix_context)
     print()
     print("[OK] Dashboard: {}".format(out_path))
 
