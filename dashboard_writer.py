@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# dashboard_writer.py - v1.3
-# Last updated: 2026-03-02
+# dashboard_writer.py - v1.4
+# Last updated: 2026-03-10
 # =============================================================================
+# v1.4: Added price_cache_freshness() + auto "Data as of" in build_header()
 # v1.3:
 #   - Added shared ownership system (OWNERSHIP_CSS + OWNERSHIP_JS)
 #   - Cross-dashboard "I Own This" checkbox via single localStorage key
@@ -36,6 +37,7 @@
 #               └── dashboard_20260218.html
 # =============================================================================
 
+import glob
 import os
 import shutil
 import datetime
@@ -57,6 +59,30 @@ DOCS_DIR = REPO_ROOT
 GITHUB_USER = "briancarter456546"
 GITHUB_REPO = "market-dashboards"
 GITHUB_PAGES_BASE = "https://{}.github.io/{}".format(GITHUB_USER, GITHUB_REPO)
+
+# Default price cache path (backends can override)
+_DEFAULT_CACHE_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), '..', 'perplexity-user-data', 'price_cache'
+)
+
+
+def price_cache_freshness(cache_dir=None):
+    """Return human-readable timestamp of most recent price_cache update.
+
+    Usage in backends:
+        from dashboard_writer import price_cache_freshness
+        subtitle = f"Data as of {price_cache_freshness()}"
+    """
+    d = cache_dir or _DEFAULT_CACHE_DIR
+    try:
+        pkls = glob.glob(os.path.join(d, '*.pkl'))
+        if not pkls:
+            return 'unknown'
+        newest = max(os.path.getmtime(f) for f in pkls)
+        return datetime.datetime.fromtimestamp(newest).strftime('%Y-%m-%d %H:%M ET')
+    except Exception:
+        return 'unknown'
+
 
 # =============================================================================
 # SHARED CSS THEME - v1.1
@@ -913,6 +939,9 @@ class DashboardWriter(object):
         lines.append('  <div class="meta">')
         if subtitle:
             lines.append('    {} &nbsp;|&nbsp;'.format(subtitle))
+        freshness = price_cache_freshness()
+        if freshness != 'unknown':
+            lines.append('    Data as of {} &nbsp;|&nbsp;'.format(freshness))
         lines.append('    <a href="{}">market-dashboards</a>'.format(GITHUB_PAGES_BASE))
         lines.append('  </div>')
         lines.append('</div>')

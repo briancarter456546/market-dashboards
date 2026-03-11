@@ -606,6 +606,7 @@ th.watch-th { width: 30px; text-align: center; cursor: default; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Visualizes the ~20 ETF poles (out of 43 total) that passed reliability testing via RSI(2) mean-reversion backtest with Profit Factor >= 1.5. Each pole is a Factor-Mimicking Portfolio (equal-weighted top 5 ETF constituents). Heatmap cards show 1W/1M/3M returns color-coded by momentum. Performance table includes 6M and YTD returns plus backtest trust scores (PF, win rate) and SPY beta. Poles excluded from regression (US Large Cap Core, US Dollar, Cash, Dow, S&P Variants) are removed.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
 <div class="regime-banner" style="border-left-color:#ef4444;"><div class="regime-label" style="color:#ef4444;">10 OF 21 HOT</div><div class="regime-score">Hottest 1M: <b>Energy & Oil</b> (+30.0%)<br>Coldest 1M: <b>Financials & Banking</b> (-7.9%)<br>Top PF: <b>Momentum</b> (3.56)</div></div>
 <div class="table-section"><div class="table-section-header"><h2>Pole Rotation Heatmap</h2><span style="font-size:0.85em;color:#888;">Sorted by Profit Factor | Cards colored by 1M return</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div class="pole-grid"><div class="pole-card" style="border-top-color:#86efac;">
   <div class="pf-badge elite">PF 3.56</div>
@@ -1280,13 +1281,6 @@ th.watch-th { width: 30px; text-align: center; cursor: default; }
   <td class="num" data-sort="1.10">1.10</td>
 </tr></tbody></table></div></div>
 <div class="table-section"><div class="table-section-header"><h2>Methodology</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div style="font-size:0.88em;color:#666;line-height:1.7;"><b>Methodology:</b> 43 ETF poles were tested using an RSI(2) mean-reversion pullback strategy across full history. Poles with Profit Factor >= 1.5 after excluding regression-excluded poles (US Large Cap Core, US Dollar, Cash, Dow, S&P Variants) are shown here as "proven." Returns are computed from equal-weighted FMP (Factor-Mimicking Portfolio) log returns of each pole's top 5 ETF constituents.<br><br><b>PF Tiers:</b> <span style="color:#d97706;font-weight:700;">Gold (PF >= 2.0)</span> = Elite reliability. <span style="color:#16a34a;font-weight:700;">Green (PF 1.5-2.0)</span> = Proven reliability.</div></div></div>
-<details class="llm-block">
-<summary>About This Dashboard</summary>
-<div class="llm-block-body">
-<div class="llm-section-label">What It Does</div>
-<div class="llm-static">Visualizes the ~20 ETF poles (out of 43 total) that passed reliability testing via RSI(2) mean-reversion backtest with Profit Factor >= 1.5. Each pole is a Factor-Mimicking Portfolio (equal-weighted top 5 ETF constituents). Heatmap cards show 1W/1M/3M returns color-coded by momentum. Performance table includes 6M and YTD returns plus backtest trust scores (PF, win rate) and SPY beta. Poles excluded from regression (US Large Cap Core, US Dollar, Cash, Dow, S&P Variants) are removed.</div>
-<div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div>
-</div></details>
 </div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-10 3:30 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
 
