@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# sma29_entry_backend.py - v1.4
-# Last updated: 2026-03-11
+# sma29_entry_backend.py - v1.5
+# Last updated: 2026-03-12
 # =============================================================================
+# v1.5: Path quality predictions from scimode_path_quality_v1_0.py
+#   - Loads path_quality_lookup.json (3-way: ext_bucket x vix_band x pole_group)
+#   - Each ticker gets predicted path grade: SMOOTH / OK / ROUGH / CHOPPY
+#   - Based on median MAE + first-green-day from 52,341 historical observations
+#   - OOS validated: predicted-bad flag catches 49% bad rate (vs 38% base)
+#   - New "Path" column in dashboard with color-coded badge
+#
 # v1.4: VIX regime banner + gold filtering + validated pole reference
 #   - VIX regime banner shows current VIX band and historically strongest sectors
 #   - Gold/Precious Metals (pole 5) filtered from OPTIMAL when VIX < 20
@@ -86,6 +93,7 @@ PULLBACK_FILE = os.path.join(_DATA_DIR, 'pullback_health_data.json')
 OUTPUT_JSON   = os.path.join(_DATA_DIR, 'sma29_entry_data.json')
 VIX_PKL       = os.path.join(CACHE_DIR, '^VIX.pkl')
 VALIDATED_POLES_JSON = os.path.join(_DATA_DIR, 'output', 'scientist', 'validated_poles.json')
+PATH_QUALITY_JSON   = os.path.join(_DATA_DIR, 'output', 'scientist', 'path_quality_lookup.json')
 
 # =============================================================================
 # VIX REGIME: sector recommendations from scimode_vix_sector_v1_0.py
@@ -290,6 +298,107 @@ def load_validated_pole_ids():
         return usable, details
     except Exception:
         return None, {}
+
+
+# =============================================================================
+# POLE GROUP MAPPING (matches scimode_path_quality_v1_0.py)
+# Used for path quality lookup key: ext_bucket|vix_band|pole_group
+# =============================================================================
+
+POLE_GROUPS = {
+    'US Equity':    [3, 2, 37],
+    'Tech':         [16, 27, 8],
+    'Financials':   [19, 20],
+    'Healthcare':   [7],
+    'Energy/Commod': [9, 45, 5],
+    'Bonds':        [4],
+    'REITs':        [14],
+    'Defense':      [11],
+    'Telecom':      [18],
+    'Materials':    [34],
+    'International': [1, 6, 10, 15, 28, 13],
+}
+
+POLE_ID_TO_GROUP = {}
+for _gname, _pids in POLE_GROUPS.items():
+    for _pid in _pids:
+        POLE_ID_TO_GROUP[_pid] = _gname
+
+
+def load_path_quality_lookup():
+    """Load path quality lookup from scimode output."""
+    if not os.path.exists(PATH_QUALITY_JSON):
+        print("[WARN] Path quality lookup not found: {}".format(PATH_QUALITY_JSON))
+        return {}, {}
+    try:
+        with open(PATH_QUALITY_JSON, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return data.get('lookup', {}), data.get('fallback_2way', {})
+    except Exception as e:
+        print("[WARN] Could not load path quality: {}".format(e))
+        return {}, {}
+
+
+def predict_path_quality(ext_bucket, vix_band, pole_id, pq_lookup, pq_fallback):
+    """Look up predicted path quality for an entry.
+
+    Returns dict with: grade, median_mae, median_ttg, prob_good, prob_bad
+    Grade: SMOOTH (prob_good >= 0.42), OK (>= 0.30), ROUGH (>= 0.20), CHOPPY (< 0.20)
+    """
+    pole_group = POLE_ID_TO_GROUP.get(pole_id, 'Other')
+
+    # Map extension labels to lookup keys
+    ext_key_map = {
+        'OPTIMAL': None,  # need to split 0-5% vs 5-10%
+        'GOOD': '10-15%',
+        'FAIR': '15-25%',
+        'CAUTION': '15-25%',
+        'WARNING': '25%+',
+        'DANGER': '25%+',
+        'EXTREME': '25%+',
+        'BELOW SMA': None,
+    }
+
+    # Try 3-way lookup first
+    if ext_bucket and vix_band and pole_group != 'Other':
+        key_3 = '{}|{}|{}'.format(ext_bucket, vix_band, pole_group)
+        if key_3 in pq_lookup:
+            cell = pq_lookup[key_3]
+            return _grade_from_cell(cell)
+
+    # 2-way fallback
+    if ext_bucket and vix_band:
+        key_2 = '{}|{}'.format(ext_bucket, vix_band)
+        if key_2 in pq_fallback:
+            cell = pq_fallback[key_2]
+            return _grade_from_cell(cell)
+
+    return None
+
+
+def _grade_from_cell(cell):
+    """Convert lookup cell to path quality grade."""
+    prob_good = cell.get('prob_good', 0)
+    prob_bad = cell.get('prob_bad', 0)
+    median_mae = cell.get('median_mae', 0)
+    median_ttg = cell.get('median_ttg', 0)
+
+    if prob_good >= 0.42:
+        grade = 'SMOOTH'
+    elif prob_good >= 0.30:
+        grade = 'OK'
+    elif prob_good >= 0.20:
+        grade = 'ROUGH'
+    else:
+        grade = 'CHOPPY'
+
+    return {
+        'grade': grade,
+        'median_mae': median_mae,
+        'median_ttg': median_ttg,
+        'prob_good': round(prob_good * 100, 1),
+        'prob_bad': round(prob_bad * 100, 1),
+    }
 
 
 def load_pole_assignments():
@@ -522,16 +631,23 @@ def build_universe():
     if usable_poles:
         print("  {} validated/marginal poles loaded".format(len(usable_poles)))
 
-    print("[4/6] Loading VIX regime...")
+    print("[4/7] Loading VIX regime...")
     current_vix, vix_band, vix_desc = load_current_vix()
     if current_vix is not None:
         print("  VIX = {:.1f} (band: {} / {})".format(current_vix, vix_band, vix_desc))
     else:
         print("  [WARN] VIX unavailable, skipping regime features")
 
+    print("[5/7] Loading path quality lookup...")
+    pq_lookup, pq_fallback = load_path_quality_lookup()
+    if pq_lookup:
+        print("  {} 3-way cells, {} 2-way fallbacks loaded".format(len(pq_lookup), len(pq_fallback)))
+    else:
+        print("  [WARN] No path quality data - column will be empty")
+
     # Universe = union of momentum ranker + pullback health tickers
     all_tickers = sorted(set(list(mr_data.keys()) + list(pb_data.keys())))
-    print("[5/6] Computing SMA29 extensions for {} tickers...".format(len(all_tickers)))
+    print("[6/7] Computing SMA29 extensions for {} tickers...".format(len(all_tickers)))
 
     # Parallel SMA29 computation
     ext_data = {}
@@ -548,7 +664,7 @@ def build_universe():
                 print("  ... computed {}/{}".format(done, len(all_tickers)))
     print("  {} tickers with valid SMA29 data".format(len(ext_data)))
 
-    print("[6/6] Scoring with per-asset-class adjustments...")
+    print("[7/7] Scoring with per-asset-class adjustments + path quality...")
     # Count asset class distribution
     ac_counts = {}
     gold_filtered_count = 0
@@ -595,6 +711,26 @@ def build_universe():
 
         combo = combined_score(m_score, h_score, e_score)
 
+        # Path quality prediction
+        # Map extension % to lookup bucket key
+        if ext_pct < 0:
+            pq_ext_bucket = None
+        elif ext_pct < 5:
+            pq_ext_bucket = '0-5%'
+        elif ext_pct < 10:
+            pq_ext_bucket = '5-10%'
+        elif ext_pct < 15:
+            pq_ext_bucket = '10-15%'
+        elif ext_pct < 25:
+            pq_ext_bucket = '15-25%'
+        else:
+            pq_ext_bucket = '25%+'
+
+        path_quality = None
+        if pq_ext_bucket and vix_band and pq_lookup:
+            path_quality = predict_path_quality(
+                pq_ext_bucket, vix_band, pole_id, pq_lookup, pq_fallback)
+
         row = {
             'ticker': ticker,
             'price': ext['close'],
@@ -628,6 +764,7 @@ def build_universe():
             'pole_id': pole_id,
             'is_noise_pole': is_noise_pole,
             'gold_filtered': gold_filtered,
+            'path_quality': path_quality,
             'combined_score': combo,
         }
         results.append(row)
@@ -680,6 +817,13 @@ EXTRA_CSS = """
 .exit-watch   { background: #f97316; color: #fff; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 0.78em; }
 .exit-elevated { background: #fbbf24; color: #78350f; font-weight: 600; padding: 2px 8px; border-radius: 4px; font-size: 0.78em; }
 @keyframes pulse-exit { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+/* Path quality badges */
+.path-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.78em; font-weight: 700; letter-spacing: 0.5px; }
+.path-SMOOTH { background: #dcfce7; color: #166534; }
+.path-OK     { background: #e0f2fe; color: #075985; }
+.path-ROUGH  { background: #fed7aa; color: #9a3412; }
+.path-CHOPPY { background: #fecaca; color: #991b1b; }
 
 /* Tooltip on column headers */
 th[title] { cursor: help; border-bottom: 1px dashed #999; }
@@ -1000,6 +1144,16 @@ def build_html(results, vix_context=None):
     <tr><td style="padding:2px 8px;color:#14b8a6"><b>Sector</b></td><td style="padding:2px 8px">Slightly better than universal (56-62% at 10%+)</td><td style="padding:2px 8px">+5 to +15 at 10%+</td></tr>
     <tr><td style="padding:2px 8px;color:#6b7280"><b>Equity</b></td><td style="padding:2px 8px">Universal buckets calibrated to equity (no change)</td><td style="padding:2px 8px">None</td></tr>
     </table>
+    <p style="margin-top:10px"><b>Path Quality</b> (scimode_path_quality_v1_0, 52K observations, OOS validated):</p>
+    <p>Predicts the <i>journey</i>, not just the destination. Based on extension + VIX + sector combination.</p>
+    <table style="font-size:0.9em;border-collapse:collapse;margin:6px 0">
+    <tr><th style="padding:2px 8px;text-align:left">Grade</th><th style="padding:2px 8px">Meaning</th><th style="padding:2px 8px">Typical MAE</th><th style="padding:2px 8px">P(good path)</th></tr>
+    <tr><td style="padding:2px 8px"><span class="path-badge path-SMOOTH">SMOOTH</span></td><td style="padding:2px 8px">Low drawdown, quick green</td><td style="padding:2px 8px;text-align:center">&gt; -2%</td><td style="padding:2px 8px;text-align:center">&gt; 42%</td></tr>
+    <tr><td style="padding:2px 8px"><span class="path-badge path-OK">OK</span></td><td style="padding:2px 8px">Moderate drawdown, eventual green</td><td style="padding:2px 8px;text-align:center">-2 to -4%</td><td style="padding:2px 8px;text-align:center">30-42%</td></tr>
+    <tr><td style="padding:2px 8px"><span class="path-badge path-ROUGH">ROUGH</span></td><td style="padding:2px 8px">Significant pain before profit</td><td style="padding:2px 8px;text-align:center">-4 to -8%</td><td style="padding:2px 8px;text-align:center">20-30%</td></tr>
+    <tr><td style="padding:2px 8px"><span class="path-badge path-CHOPPY">CHOPPY</span></td><td style="padding:2px 8px">Deep drawdown, may never recover</td><td style="padding:2px 8px;text-align:center">&lt; -8%</td><td style="padding:2px 8px;text-align:center">&lt; 20%</td></tr>
+    </table>
+    <p style="font-size:0.85em;color:#888">Hover over the Path badge for exact MAE, time-to-green, and probabilities. Good path = MAE &gt; -2% AND green within 5 days. Bad path = MAE &lt; -5% OR never durably green.</p>
     <p><b>Key insight</b>: Use SMA29 for entry scoring (stable optimal zone), SMA10 for exit alerts (sharper overextension detection). PF confirms median return signals -- EXIT ALERT at 25%+ SMA10 has PF_median &lt; 1.0 (losing bucket for typical trader).</p>
     </div>
     </details>
@@ -1014,21 +1168,22 @@ def build_html(results, vix_context=None):
         <th onclick="sortTable(3,true)" style="cursor:pointer" title="Latest closing price (adjusted for splits)">Price</th>
         <th onclick="sortTable(4,true)" style="cursor:pointer" title="Weighted composite: 35% Momentum + 30% Pullback Health + 35% SMA29 Extension. Higher = better entry quality. 0-100 scale.">Combined</th>
         <th onclick="sortTable(5,true)" style="cursor:pointer" title="SMA10 exit alert based on scimode PF validation (468 tickers). EXIT ALERT = 25%+ above SMA10 (PF=1.11, PF_median=0.90). EXIT WATCH = 15-25% (PF=1.59, PF_median=1.07).">Exit</th>
-        <th onclick="sortTable(6,true)" style="cursor:pointer" title="% distance of close above 29-day SMA. Positive = above SMA29, negative = below.">Ext %</th>
-        <th onclick="sortTable(7,false)" style="cursor:pointer" title="SMA29 extension zone from scimode PF validation (468 tickers, trending filter). OPTIMAL = 0-10% above SMA29 (PF ~1.5). Zones scored by profit factor and median forward return.">Zone</th>
-        <th onclick="sortTable(8,true)" style="cursor:pointer" title="Momentum ranker composite score (0-100). Blend of: multi-period returns (1d-1y), ratio quality (acceleration checks), and bad-SPY-day resilience. Gated by SMA structure.">Momentum</th>
-        <th onclick="sortTable(9,true)" style="cursor:pointer" title="Pullback health score (0-100). Blend of: drawdown severity (NATR-adjusted), SMA structure (30/50/100/200), slope stage, vol expansion, beta-adjusted DD, and historical recovery rate.">Health</th>
-        <th onclick="sortTable(10,true)" style="cursor:pointer" title="Extension bucket score (0-95). From SMA29 zone: OPTIMAL=90-95, GOOD=75, FAIR=55, CAUTION=40, WARNING=20-25, DANGER=10, EXTREME=0.">Ext Score</th>
-        <th onclick="sortTable(11,true)" style="cursor:pointer" title="Profit Factor for this SMA29 extension zone = sum(wins)/sum(|losses|). From scimode PF validation (468 tickers, trending filter). PF>1.0 = profitable, PF<1.0 = losing. High-extension PF inflated by lottery tails.">PF</th>
-        <th onclick="sortTable(12,true)" style="cursor:pointer" title="Median 21-day forward return for this SMA29 extension zone. From scimode OOS test. Negative in DANGER/EXTREME zones.">Med Fwd</th>
-        <th onclick="sortTable(13,true)" style="cursor:pointer" title="R-squared of 21-day log-price regression. Measures trend quality: 1.0 = perfectly linear move, 0.0 = random walk. Above 0.70 = strong trend.">R-sq</th>
-        <th onclick="sortTable(14,true)" style="cursor:pointer" title="Annualized slope from 21-day log-price regression. Shows how fast the stock is trending (% per year). Higher = steeper uptrend.">Slope %</th>
-        <th onclick="sortTable(15,true)" style="cursor:pointer" title="Current drawdown from 63-day (3-month) rolling high. Shows how far the stock has pulled back from its recent peak. 0% = at high, -10% = pulled back 10%.">DD %</th>
-        <th onclick="sortTable(16,false)" style="cursor:pointer" title="Trend stage from slope analysis. Decline = falling, Basing = bottoming, Uptrend = sustained rise, Parabolic = late-stage acceleration.">Stage</th>
-        <th onclick="sortTable(17,true)" style="cursor:pointer" title="Total return over the past 5 trading days (1 week).">1W</th>
-        <th onclick="sortTable(18,true)" style="cursor:pointer" title="Total return over the past 21 trading days (1 month).">1M</th>
+        <th onclick="sortTable(6,false)" style="cursor:pointer" title="Predicted path quality from scimode (52K observations, OOS validated). SMOOTH = low MAE, fast green. CHOPPY = deep drawdown, slow recovery. Based on extension + VIX + sector combo.">Path</th>
+        <th onclick="sortTable(7,true)" style="cursor:pointer" title="% distance of close above 29-day SMA. Positive = above SMA29, negative = below.">Ext %</th>
+        <th onclick="sortTable(8,false)" style="cursor:pointer" title="SMA29 extension zone from scimode PF validation (468 tickers, trending filter). OPTIMAL = 0-10% above SMA29 (PF ~1.5). Zones scored by profit factor and median forward return.">Zone</th>
+        <th onclick="sortTable(9,true)" style="cursor:pointer" title="Momentum ranker composite score (0-100). Blend of: multi-period returns (1d-1y), ratio quality (acceleration checks), and bad-SPY-day resilience. Gated by SMA structure.">Momentum</th>
+        <th onclick="sortTable(10,true)" style="cursor:pointer" title="Pullback health score (0-100). Blend of: drawdown severity (NATR-adjusted), SMA structure (30/50/100/200), slope stage, vol expansion, beta-adjusted DD, and historical recovery rate.">Health</th>
+        <th onclick="sortTable(11,true)" style="cursor:pointer" title="Extension bucket score (0-95). From SMA29 zone: OPTIMAL=90-95, GOOD=75, FAIR=55, CAUTION=40, WARNING=20-25, DANGER=10, EXTREME=0.">Ext Score</th>
+        <th onclick="sortTable(12,true)" style="cursor:pointer" title="Profit Factor for this SMA29 extension zone = sum(wins)/sum(|losses|). From scimode PF validation (468 tickers, trending filter). PF>1.0 = profitable, PF<1.0 = losing. High-extension PF inflated by lottery tails.">PF</th>
+        <th onclick="sortTable(13,true)" style="cursor:pointer" title="Median 21-day forward return for this SMA29 extension zone. From scimode OOS test. Negative in DANGER/EXTREME zones.">Med Fwd</th>
+        <th onclick="sortTable(14,true)" style="cursor:pointer" title="R-squared of 21-day log-price regression. Measures trend quality: 1.0 = perfectly linear move, 0.0 = random walk. Above 0.70 = strong trend.">R-sq</th>
+        <th onclick="sortTable(15,true)" style="cursor:pointer" title="Annualized slope from 21-day log-price regression. Shows how fast the stock is trending (% per year). Higher = steeper uptrend.">Slope %</th>
+        <th onclick="sortTable(16,true)" style="cursor:pointer" title="Current drawdown from 63-day (3-month) rolling high. Shows how far the stock has pulled back from its recent peak. 0% = at high, -10% = pulled back 10%.">DD %</th>
+        <th onclick="sortTable(17,false)" style="cursor:pointer" title="Trend stage from slope analysis. Decline = falling, Basing = bottoming, Uptrend = sustained rise, Parabolic = late-stage acceleration.">Stage</th>
+        <th onclick="sortTable(18,true)" style="cursor:pointer" title="Total return over the past 5 trading days (1 week).">1W</th>
+        <th onclick="sortTable(19,true)" style="cursor:pointer" title="Total return over the past 21 trading days (1 month).">1M</th>
         <th title="Highest-correlated asset from 20-asset correlation universe (63-day window). Shows what this stock moves most like. Only shown if correlation >= 0.30.">Pole</th>
-        <th onclick="sortTable(20,false)" style="cursor:pointer" title="Asset class from pole assignment (taxonomy regression). Extension scores are adjusted per class: Miners get bonus (overextension is bullish), Indexes/Bonds get penalty (danger starts earlier).">Class</th>
+        <th onclick="sortTable(21,false)" style="cursor:pointer" title="Asset class from pole assignment (taxonomy regression). Extension scores are adjusted per class: Miners get bonus (overextension is bullish), Indexes/Bonds get penalty (danger starts earlier).">Class</th>
     </tr></thead>
     <tbody>"""
 
@@ -1066,6 +1221,18 @@ def build_html(results, vix_context=None):
             v=r['combined_score'],
             c='#166534' if r['combined_score'] >= 70 else '#854d0e' if r['combined_score'] >= 45 else '#991b1b')
         row += _exit_badge(r.get('exit_alert', ''))
+        # Path quality badge
+        pq = r.get('path_quality')
+        if pq:
+            pq_grade = pq['grade']
+            pq_val_map = {'SMOOTH': 4, 'OK': 3, 'ROUGH': 2, 'CHOPPY': 1}
+            pq_val = pq_val_map.get(pq_grade, 0)
+            pq_tooltip = 'MAE: {}% | TTG: {}d | P(good): {}% | P(bad): {}%'.format(
+                pq['median_mae'], pq['median_ttg'], pq['prob_good'], pq['prob_bad'])
+            row += '<td class="tc" data-val="{}"><span class="path-badge path-{}" title="{}">{}</span></td>'.format(
+                pq_val, pq_grade, pq_tooltip, pq_grade)
+        else:
+            row += '<td class="tc" data-val="0">-</td>'
         row += '<td class="tr" data-val="{}" style="color:{}">{}</td>'.format(r['extension_pct'], ext_color, ext_pct_str)
         row += '<td class="tc">{}</td>'.format(_ext_badge(r['extension_label']))
         row += '<td class="tr" data-val="{}">{:.0f}</td>'.format(r['momentum_score'], r['momentum_score'])
@@ -1161,7 +1328,7 @@ def build_html(results, vix_context=None):
 
 def main():
     print("=" * 70)
-    print("ENTER & EXIT QUALITY SCANNER v1.4")
+    print("ENTER & EXIT QUALITY SCANNER v1.5")
     print("=" * 70)
 
     results, vix_context = build_universe()
