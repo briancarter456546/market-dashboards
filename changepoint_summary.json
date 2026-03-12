@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-12T16:05:18.286715",
+  "generated_at": "2026-03-12T17:08:07.259105",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.288405145905081,
+  "norm_drift": 2.289842646742788,
   "top_regime": "tariff_shock",
   "top_sim": 36.9,
   "regime_similarity": [
@@ -13,7 +13,7 @@
     {
       "name": "covid",
       "desc": "Crash + V-shaped recovery",
-      "sim": 20.4
+      "sim": 20.3
     },
     {
       "name": "ai_bull",
