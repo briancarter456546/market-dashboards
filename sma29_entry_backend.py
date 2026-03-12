@@ -825,6 +825,9 @@ EXTRA_CSS = """
 .path-ROUGH  { background: #fed7aa; color: #9a3412; }
 .path-CHOPPY { background: #fecaca; color: #991b1b; }
 
+/* Filter bar */
+#filter-count { font-weight: 600; }
+
 /* Tooltip on column headers */
 th[title] { cursor: help; border-bottom: 1px dashed #999; }
 
@@ -909,50 +912,44 @@ function sortTable(colIdx, numeric) {
     tbody.appendChild(frag);
 }
 
-// Filter by extension zone
-function filterZone(zone) {
-    var btn = document.getElementById('btn-' + zone);
-    var active = btn && btn.classList.contains('active');
-
-    // Toggle all buttons off
-    document.querySelectorAll('.zone-btn').forEach(function(b) { b.classList.remove('active'); });
-
-    if (!active && zone !== 'ALL' && btn) { btn.classList.add('active'); }
-    applyFilters();
-}
-
-// Filter by ownership/watchlist
-var _ownedFilter = 'all';
-function filterOwned(mode) {
-    _ownedFilter = mode;
-    applyFilters();
-}
+// Unified filter system: all dropdowns + ownership
 function applyFilters() {
     var table = document.getElementById('mainTable');
     var rows = table.tBodies[0].rows;
-    var activeZone = null;
-    document.querySelectorAll('.zone-btn.active').forEach(function(b) {
-        activeZone = b.id ? b.id.replace('btn-', '') : null;
-    });
+    // Read all filter values
+    var fZone  = document.getElementById('f-zone').value;
+    var fExit  = document.getElementById('f-exit').value;
+    var fPath  = document.getElementById('f-path').value;
+    var fStage = document.getElementById('f-stage').value;
+    var fPole  = document.getElementById('f-pole').value;
+    var fClass = document.getElementById('f-class').value;
+    var fOwned = document.getElementById('f-owned').value;
+    var shown = 0;
     for (var i = 0; i < rows.length; i++) {
         var show = true;
-        // Zone filter
-        if (activeZone) {
-            var rowZone = rows[i].getAttribute('data-zone') || '';
-            if (rowZone !== activeZone) show = false;
+        if (fZone !== 'all' && rows[i].getAttribute('data-zone') !== fZone) show = false;
+        if (show && fExit !== 'all') {
+            var re = rows[i].getAttribute('data-exit') || 'none';
+            if (fExit === 'any-alert' && re === 'none') show = false;
+            else if (fExit !== 'any-alert' && re !== fExit) show = false;
         }
-        // Ownership filter
-        if (show && _ownedFilter !== 'all') {
+        if (show && fPath !== 'all' && rows[i].getAttribute('data-path') !== fPath) show = false;
+        if (show && fStage !== 'all' && rows[i].getAttribute('data-stage') !== fStage) show = false;
+        if (show && fPole !== 'all' && rows[i].getAttribute('data-pole') !== fPole) show = false;
+        if (show && fClass !== 'all' && rows[i].getAttribute('data-class') !== fClass) show = false;
+        if (show && fOwned !== 'all') {
             var ticker = rows[i].querySelector('.own-cb');
             if (ticker) ticker = ticker.getAttribute('data-ticker');
             var isOwned = ticker && window._owned && window._owned.has(ticker);
             var isWatched = ticker && window._watched && window._watched.has(ticker);
-            if (_ownedFilter === 'owned' && !isOwned) show = false;
-            if (_ownedFilter === 'watched' && !isWatched) show = false;
-            if (_ownedFilter === 'not-owned' && isOwned) show = false;
+            if (fOwned === 'owned' && !isOwned) show = false;
+            if (fOwned === 'watched' && !isWatched) show = false;
+            if (fOwned === 'not-owned' && isOwned) show = false;
         }
         rows[i].style.display = show ? '' : 'none';
+        if (show) shown++;
     }
+    document.getElementById('filter-count').textContent = shown + ' shown';
 }
 """
 
@@ -1081,27 +1078,60 @@ def build_html(results, vix_context=None):
     </div>
     """.format(len(results), above_sma, optimal, danger_plus, exit_alerts, exit_watches, avg_combo, top50_avg)
 
-    # Zone filter buttons
+    # Collect unique values for filter dropdowns
+    exit_vals = sorted(set(r.get('exit_alert', '') or 'none' for r in results))
+    path_vals = sorted(set((r.get('path_quality') or {}).get('grade', 'none') for r in results))
+    stage_names_map = {0: 'Decline', 1: 'Basing', 2: 'Uptrend', 3: 'Parabolic'}
+    stage_vals = sorted(set(stage_names_map.get(r.get('stage'), r.get('stage_name', '-')) for r in results))
+    pole_vals = sorted(set(r.get('top_pole', '') or 'none' for r in results))
+    class_vals = sorted(set(r.get('asset_class_label', 'Equity') for r in results))
+
+    def _dropdown(id_attr, label, options):
+        """Build a filter dropdown."""
+        html = '<label style="font-size:0.82em;margin-right:12px">{}: '.format(label)
+        html += '<select id="{}" onchange="applyFilters()" style="padding:3px 6px;border:1px solid #ccc;border-radius:4px;font-size:0.95em">'.format(id_attr)
+        html += '<option value="all">All</option>'
+        for opt in options:
+            if opt == 'none' or opt == '-' or opt == '':
+                continue
+            html += '<option value="{}">{}</option>'.format(opt, opt)
+        html += '</select></label>'
+        return html
+
+    filter_bar = '<div style="margin-bottom:14px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 0">'
+    # Zone filter
     zone_order = ['OPTIMAL', 'GOOD', 'FAIR', 'CAUTION', 'WARNING', 'DANGER', 'EXTREME', 'BELOW SMA']
-    zone_btns = '<div style="margin-bottom:14px">'
-    zone_btns += '<button class="zone-btn" onclick="filterZone(\'ALL\')" style="margin:2px 4px;padding:4px 12px;border:1px solid #ccc;border-radius:4px;cursor:pointer;background:#f3f4f6">ALL</button>'
-    for z in zone_order:
-        cnt = zone_counts.get(z, 0)
-        if cnt == 0:
-            continue
-        css = z.replace(' ', '')
-        if css == 'BELOWSMA':
-            css = 'BELOW'
-        zone_btns += '<button id="btn-{z}" class="zone-btn ext-badge ext-{css}" onclick="filterZone(\'{z}\')" style="margin:2px 4px;padding:4px 12px;cursor:pointer;border:1px solid #ccc;border-radius:4px">{z} ({cnt})</button>'.format(
-            z=z, css=css, cnt=cnt)
-    zone_btns += ' <label style="margin-left:16px;font-size:0.85em">Show: '
-    zone_btns += '<select id="filter-owned" onchange="filterOwned(this.value)" style="padding:3px 8px;border:1px solid #ccc;border-radius:4px">'
-    zone_btns += '<option value="all">All Stocks</option>'
-    zone_btns += '<option value="owned">Owned Only</option>'
-    zone_btns += '<option value="watched">Watched Only</option>'
-    zone_btns += '<option value="not-owned">Not Owned</option>'
-    zone_btns += '</select></label>'
-    zone_btns += '</div>'
+    filter_bar += _dropdown('f-zone', 'Zone', zone_order)
+    # Exit filter
+    exit_options = ['EXIT ALERT', 'EXIT WATCH', 'ELEVATED']
+    filter_bar += '<label style="font-size:0.82em;margin-right:12px">Exit: '
+    filter_bar += '<select id="f-exit" onchange="applyFilters()" style="padding:3px 6px;border:1px solid #ccc;border-radius:4px;font-size:0.95em">'
+    filter_bar += '<option value="all">All</option>'
+    filter_bar += '<option value="any-alert">Any Alert</option>'
+    for opt in exit_options:
+        filter_bar += '<option value="{}">{}</option>'.format(opt, opt)
+    filter_bar += '</select></label>'
+    # Path filter
+    path_order = ['SMOOTH', 'OK', 'ROUGH', 'CHOPPY']
+    filter_bar += _dropdown('f-path', 'Path', path_order)
+    # Stage filter
+    filter_bar += _dropdown('f-stage', 'Stage', ['Basing', 'Uptrend', 'Parabolic', 'Decline'])
+    # Pole filter
+    pole_vals_clean = [p for p in pole_vals if p and p != 'none']
+    filter_bar += _dropdown('f-pole', 'Pole', pole_vals_clean)
+    # Class filter
+    filter_bar += _dropdown('f-class', 'Class', class_vals)
+    # Owned filter
+    filter_bar += '<label style="font-size:0.82em;margin-right:12px">Show: '
+    filter_bar += '<select id="f-owned" onchange="applyFilters()" style="padding:3px 6px;border:1px solid #ccc;border-radius:4px;font-size:0.95em">'
+    filter_bar += '<option value="all">All</option>'
+    filter_bar += '<option value="owned">Owned</option>'
+    filter_bar += '<option value="watched">Watched</option>'
+    filter_bar += '<option value="not-owned">Not Owned</option>'
+    filter_bar += '</select></label>'
+    # Count
+    filter_bar += '<span id="filter-count" style="font-size:0.82em;color:#888;margin-left:8px">{} shown</span>'.format(len(results))
+    filter_bar += '</div>'
 
     # Methodology note
     methodology = """
@@ -1212,7 +1242,19 @@ def build_html(results, vix_context=None):
         elif r.get('is_noise_pole'):
             ticker_suffix = ' <span title="Noise pole (low coherence/stability)" style="font-size:0.65em;color:#d1d5db">?</span>'
 
-        row = '<tr data-zone="{zone}">'.format(zone=zone_attr)
+        # Path quality for data attributes
+        pq = r.get('path_quality')
+
+        # Data attributes for filtering
+        exit_attr = r.get('exit_alert', '') or 'none'
+        path_attr = pq['grade'] if pq else 'none'
+        stage_attr = stage_str
+        pole_attr = r.get('top_pole', '') or 'none'
+        class_attr = r.get('asset_class_label', 'Equity')
+
+        row = '<tr data-zone="{zone}" data-exit="{exit}" data-path="{path}" data-stage="{stage}" data-pole="{pole}" data-class="{cls}">'.format(
+            zone=zone_attr, exit=exit_attr, path=path_attr,
+            stage=stage_attr, pole=pole_attr, cls=class_attr)
         row += _own_cell(r['ticker'])
         row += _watch_cell(r['ticker'])
         row += '<td class="tl"><b>{}</b> <span style="font-size:0.72em;color:#999">{}</span>{}</td>'.format(r['ticker'], mr_rank_str, ticker_suffix)
@@ -1222,7 +1264,6 @@ def build_html(results, vix_context=None):
             c='#166534' if r['combined_score'] >= 70 else '#854d0e' if r['combined_score'] >= 45 else '#991b1b')
         row += _exit_badge(r.get('exit_alert', ''))
         # Path quality badge
-        pq = r.get('path_quality')
         if pq:
             pq_grade = pq['grade']
             pq_val_map = {'SMOOTH': 4, 'OK': 3, 'ROUGH': 2, 'CHOPPY': 1}
@@ -1307,7 +1348,7 @@ def build_html(results, vix_context=None):
     if vix_banner_html:
         parts.append(vix_banner_html)
     parts.append(dw.section('Methodology', methodology, hint='Scimode exit_signal_test.py'))
-    parts.append(zone_btns)
+    parts.append(filter_bar)
     parts.append(dw.section('Entry Quality Rankings', table_html, hint='Click headers to sort'))
     parts.append(dw.footer())
 
