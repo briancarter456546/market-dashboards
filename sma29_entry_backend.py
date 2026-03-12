@@ -1198,7 +1198,7 @@ def build_html(results, vix_context=None):
         <th onclick="sortTable(3,true)" style="cursor:pointer" title="Latest closing price (adjusted for splits)">Price</th>
         <th onclick="sortTable(4,true)" style="cursor:pointer" title="Weighted composite: 35% Momentum + 30% Pullback Health + 35% SMA29 Extension. Higher = better entry quality. 0-100 scale.">Combined</th>
         <th onclick="sortTable(5,true)" style="cursor:pointer" title="SMA10 exit alert based on scimode PF validation (468 tickers). EXIT ALERT = 25%+ above SMA10 (PF=1.11, PF_median=0.90). EXIT WATCH = 15-25% (PF=1.59, PF_median=1.07).">Exit</th>
-        <th onclick="sortTable(6,false)" style="cursor:pointer" title="Predicted path quality from scimode (52K observations, OOS validated). SMOOTH = low MAE, fast green. CHOPPY = deep drawdown, slow recovery. Based on extension + VIX + sector combo.">Path</th>
+        <th onclick="sortTable(6,false)" style="cursor:pointer" title="Predicted path quality (the journey after entry). SMOOTH: Max Adverse Excursion better than -2%, green within 5 days. OK: moderate drawdown, eventually profitable. ROUGH: significant drawdown (-4 to -8%) before profit. CHOPPY: deep drawdown (worse than -8%), may never recover. Based on extension + VIX + sector from 52K historical observations, OOS validated.">Path</th>
         <th onclick="sortTable(7,true)" style="cursor:pointer" title="% distance of close above 29-day SMA. Positive = above SMA29, negative = below.">Ext %</th>
         <th onclick="sortTable(8,false)" style="cursor:pointer" title="SMA29 extension zone from scimode PF validation (468 tickers, trending filter). OPTIMAL = 0-10% above SMA29 (PF ~1.5). Zones scored by profit factor and median forward return.">Zone</th>
         <th onclick="sortTable(9,true)" style="cursor:pointer" title="Momentum ranker composite score (0-100). Blend of: multi-period returns (1d-1y), ratio quality (acceleration checks), and bad-SPY-day resilience. Gated by SMA structure.">Momentum</th>
@@ -1268,7 +1268,7 @@ def build_html(results, vix_context=None):
             pq_grade = pq['grade']
             pq_val_map = {'SMOOTH': 4, 'OK': 3, 'ROUGH': 2, 'CHOPPY': 1}
             pq_val = pq_val_map.get(pq_grade, 0)
-            pq_tooltip = 'MAE: {}% | TTG: {}d | P(good): {}% | P(bad): {}%'.format(
+            pq_tooltip = 'Max Adverse Excursion: {}% | Time to green: {}d | P(good path): {}% | P(bad path): {}%'.format(
                 pq['median_mae'], pq['median_ttg'], pq['prob_good'], pq['prob_bad'])
             row += '<td class="tc" data-val="{}"><span class="path-badge path-{}" title="{}">{}</span></td>'.format(
                 pq_val, pq_grade, pq_tooltip, pq_grade)
