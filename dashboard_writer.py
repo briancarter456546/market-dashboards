@@ -854,6 +854,16 @@ DASHBOARD_DESCRIPTIONS = {
         "and SPY beta. VIX regime overlay highlights poles historically strongest in the current "
         "VIX band. Filtered by scimode_pole_validation (coherence, stability, predictive value)."
     ),
+    "gld-slv-signal": (
+        "Tracks the GLD/SLV ETF ratio as a contrarian silver buy signal. "
+        "When the ratio crosses above P90 (8.84 ETF, ~88:1 metal), silver "
+        "historically rallies +13.6% over 60 days (79% win rate across 14 "
+        "non-overlapping trades, 2019-2025). Signal is ratio-specific -- "
+        "outperforms pure silver mean-reversion by 2.7x. Best vehicles are "
+        "GDX (+16.1%) and GDXJ (+15.8%) due to operating leverage. "
+        "Sends email notification on signal activation, deactivation, and approach. "
+        "Validated by scimode_gld_slv_signal_v1_0.py. KB finding #44746."
+    ),
 }
 
 _LLM_DISCLAIMER = (
@@ -1298,6 +1308,16 @@ DASHBOARD_REGISTRY = [
         "icon":        "🎯",
         "color":       "#2563eb",
         "tag":         "Scanner",
+    },
+    {
+        "slug":        "gld-slv-signal",
+        "title":       "Gold/Silver Ratio Signal",
+        "description": "Scimode-validated mean-reversion signal. When GLD/SLV hits P90 (~88:1), "
+                       "silver 60d forward returns average +13.6% (79% win rate, 14 trades). "
+                       "Tracks ratio, threshold proximity, and target prices.",
+        "icon":        "Au",
+        "color":       "#d97706",
+        "tag":         "Signal",
     },
 ]
 

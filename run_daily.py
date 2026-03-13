@@ -191,6 +191,12 @@ BACKENDS = [
         'required': False,
     },
     {
+        'script': 'gld_slv_ratio_signal_v1_0.py',
+        'name': 'Gold/Silver Ratio Signal',
+        'slow': False,
+        'required': False,
+    },
+    {
         'script': 'dashboard_llm_descriptions.py',
         'name': 'LLM Dashboard Descriptions',
         'slow': False,
