@@ -561,6 +561,7 @@ def main():
 
     # Write dashboard
     writer = DashboardWriter('institutional-flows', 'Institutional Flows')
+    body = writer.build_header('13F + COT + Short Volume + Insider') + body + writer.footer()
     writer.write(body, extra_css=EXTRA_CSS)
 
     elapsed = _time.time() - t0

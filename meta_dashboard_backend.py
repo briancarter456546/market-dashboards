@@ -1724,6 +1724,7 @@ def main():
     body = build_body(regime, agreement_full, agreement_trusted,
                       intermarket, pattern, risk_flags_full, risk_flags_trusted)
     writer = DashboardWriter('meta-dashboard', 'Meta Dashboard')
+    body = writer.build_header('Cross-dashboard agreement + risk flags') + body + writer.footer()
     writer.write(body, extra_css=EXTRA_CSS, extra_js=EXTRA_JS)
 
     # Save summary CSV (trusted view as default)
