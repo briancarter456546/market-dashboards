@@ -174,46 +174,13 @@ SPREADS = [
             "meme stocks, SPACs."
         ),
     },
-    {
-        "name": "TLT/HYG",
-        "num": "TLT",
-        "den": "HYG",
-        "category": "Credit Stress",
-        "force": "Gravity",
-        "rising_means": (
-            "Credit stress rising, spreads widening, risk-off -- often leads equity weakness"
-        ),
-        "falling_means": (
-            "Risk appetite, credit spreads tightening, risk-on"
-        ),
-        "rising_playbook": (
-            "Defensive posture -- raise cash, add TLT, reduce credit exposure. "
-            "Often leads SPX by 2-4 weeks."
-        ),
-        "falling_playbook": (
-            "Credit healing -- re-engage risk. Favor HY carry, reduce hedges."
-        ),
-    },
-    {
-        "name": "JNK/LQD",
-        "num": "JNK",
-        "den": "LQD",
-        "category": "Credit Risk Appetite",
-        "force": "Strong Force",
-        "rising_means": (
-            "Junk outperforming IG, credit confidence, yield-seeking"
-        ),
-        "falling_means": (
-            "Investment grade outperforming, credit stress, de-risking"
-        ),
-        "rising_playbook": (
-            "Yield-seeking environment -- favor HY, leveraged credit, dividend growers."
-        ),
-        "falling_playbook": (
-            "De-risk credit book. Rotate JNK to LQD or AGG. "
-            "Widen stop-losses on equity."
-        ),
-    },
+    # TLT/HYG REMOVED: r=-0.867 with SPY/TLT (inverse duplicate).
+    # Credit stress is already captured by SPY/TLT falling.
+    # Scimode validation 2026-03-13: "leads SPX by 2-4 weeks" claim was
+    # empirically unsupported -- best correlation at lag 0 (concurrent).
+    # JNK/LQD REMOVED: r=0.993 with HYG/LQD (same signal).
+    # HYG/LQD is more liquid and widely used. Keeping that one.
+    # Scimode validation 2026-03-13.
     {
         "name": "COPX/GLD",
         "num": "COPX",
@@ -240,21 +207,21 @@ SPREADS = [
         "name": "XLB/XLU",
         "num": "XLB",
         "den": "XLU",
-        "category": "Growth Expectations (Real-Time PMI)",
+        "category": "Growth Expectations",
         "force": "Electromagnetism",
         "rising_means": (
-            "Growth expectations rising, cyclical demand, functions as "
-            "daily-updated ISM PMI"
+            "Growth expectations rising, cyclical demand, "
+            "correlated with SPY r=0.53 and yields r=0.40"
         ),
         "falling_means": (
             "Growth expectations falling, defensive rotation, recession positioning"
         ),
         "rising_playbook": (
-            "ISM proxy expanding -- favor materials, industrials, cyclical value. "
+            "Growth proxy rising -- favor materials, industrials, cyclical value. "
             "Sell utility premium."
         ),
         "falling_playbook": (
-            "ISM proxy contracting -- rotate to defensives. Long XLU, short XLB. "
+            "Growth proxy falling -- rotate to defensives. Long XLU, short XLB. "
             "Reduce cyclical exposure."
         ),
     },
@@ -298,7 +265,7 @@ SPREADS = [
         ),
         "falling_playbook": (
             "Semis rolling over = canary in the coal mine. Reduce tech, raise cash. "
-            "Often leads SPX lower by 4-8 weeks."
+            "Coincident-to-leading indicator of broad weakness."
         ),
     },
     {
