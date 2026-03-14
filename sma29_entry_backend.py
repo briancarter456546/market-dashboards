@@ -1,8 +1,16 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# sma29_entry_backend.py - v1.5
-# Last updated: 2026-03-12
+# sma29_entry_backend.py - v1.6
+# Last updated: 2026-03-13
 # =============================================================================
+# v1.6: Health -> Potential (inverted + VIX-boosted)
+#   - Scimode validated (n=32,706): low health predicts BETTER forward returns
+#   - Q1 health returns +2.17% 21d vs Q5 +1.22% (inverted relationship)
+#   - Reframed as "Potential": deeper pullback = more upside potential
+#   - VIX conditional boost: +10% at elevated, +20% high, +30% extreme VIX
+#   - At VIX 30+, low-health stocks return +13.59% 21d with 84.4% WR
+#   - Momentum score VALIDATED: +1.19% Q5-Q1 21d spread (kept as-is)
+#
 # v1.5: Path quality predictions from scimode_path_quality_v1_0.py
 #   - Loads path_quality_lookup.json (3-way: ext_bucket x vix_band x pole_group)
 #   - Each ticker gets predicted path grade: SMOOTH / OK / ROUGH / CHOPPY
@@ -576,8 +584,8 @@ def compute_sma29_extension(ticker):
 # =============================================================================
 
 # Component weights (must sum to 1.0)
-W_MOMENTUM = 0.35
-W_HEALTH   = 0.30
+W_MOMENTUM  = 0.35
+W_POTENTIAL = 0.30
 W_EXTENSION = 0.35
 
 
@@ -588,11 +596,32 @@ def score_momentum(mr_data):
     return min(100, max(0, float(mr_data.get('score', 0))))
 
 
-def score_health(pb_data):
-    """Score 0-100 from pullback health. Already 0-100."""
+def score_potential(pb_data, current_vix=None):
+    """Score 0-100 from pullback health, INVERTED to 'potential'.
+
+    Scimode validated (2026-03-13, n=32,706): low health (deep pullback)
+    predicts BETTER forward returns. Q1 health returns +2.17% 21d vs
+    Q5 +1.22%. Reframed as 'potential': deeper pullback = more upside.
+
+    VIX boost: at elevated+ VIX, low-health stocks return even more
+    (VIX 30+: +13.59% 21d, 84.4% WR). Apply VIX multiplier.
+    """
     if pb_data is None:
-        return 0
-    return min(100, max(0, float(pb_data.get('health', 0) or 0)))
+        return 50  # neutral if no data
+    health = min(100, max(0, float(pb_data.get('health', 0) or 0)))
+    # Invert: low health = high potential
+    potential = 100 - health
+
+    # VIX boost: amplify potential in high-VIX environments
+    if current_vix is not None:
+        if current_vix >= 30:
+            potential = min(100, potential * 1.3)   # 30% boost at extreme VIX
+        elif current_vix >= 25:
+            potential = min(100, potential * 1.2)   # 20% boost at high VIX
+        elif current_vix >= 20:
+            potential = min(100, potential * 1.1)   # 10% boost at elevated VIX
+
+    return potential
 
 
 def score_extension(ext_pct):
@@ -601,11 +630,11 @@ def score_extension(ext_pct):
     return score
 
 
-def combined_score(momentum_score, health_score, extension_score):
-    """Weighted composite."""
+def combined_score(momentum_score, potential_score, extension_score):
+    """Weighted composite. Scimode validated 2026-03-13."""
     return round(
         W_MOMENTUM * momentum_score +
-        W_HEALTH * health_score +
+        W_POTENTIAL * potential_score +
         W_EXTENSION * extension_score, 1
     )
 
@@ -706,10 +735,10 @@ def build_universe():
         exit_alert, exit_pf, exit_fwd = classify_sma10_exit(ext10_pct)
 
         m_score = score_momentum(mr)
-        h_score = score_health(pb)
+        p_score = score_potential(pb, current_vix)
         e_score = ext_score_val
 
-        combo = combined_score(m_score, h_score, e_score)
+        combo = combined_score(m_score, p_score, e_score)
 
         # Path quality prediction
         # Map extension % to lookup bucket key
@@ -750,7 +779,7 @@ def build_universe():
             'momentum_score': round(m_score, 1),
             'momentum_rank': int(mr.get('rank', 9999)) if mr else None,
             'momentum_flag': mr.get('momentum_flag', '') if mr else '',
-            'health_score': round(h_score, 1),
+            'potential_score': round(p_score, 1),
             'health_verdict': pb.get('verdict', '') if pb else '',
             'dd_pct': round(float(pb.get('dd_pct', 0) or 0), 1) if pb else None,
             'stage': pb.get('stage', None) if pb else None,
@@ -1138,7 +1167,7 @@ def build_html(results, vix_context=None):
     <details style="margin-bottom:16px">
     <summary style="cursor:pointer;font-weight:600;color:#4a5568">Methodology (scimode-validated)</summary>
     <div style="padding:8px 12px;font-size:0.82em;color:#555;line-height:1.6">
-    <p><b>Combined Score</b> = 35% Momentum + 30% Pullback Health + 35% SMA29 Extension</p>
+    <p><b>Combined Score</b> = 35% Momentum + 30% Potential + 35% SMA29 Extension</p>
     <p><b>Profit Factor</b> = sum(winning trades) / sum(|losing trades|). PF &gt; 1.0 = profitable edge, PF &lt; 1.0 = losing. Captures both win rate and payoff asymmetry in one number.</p>
     <p><b>SMA29 Extension</b> = (Close - SMA29) / SMA29. PF from scimode_pf_validation (468 tickers, trending filter):</p>
     <table style="font-size:0.9em;border-collapse:collapse;margin:6px 0">
@@ -1153,8 +1182,8 @@ def build_html(results, vix_context=None):
     </table>
     <p style="font-size:0.85em;color:#888">* WARNING/DANGER/EXTREME PF inflated by lottery-tail winners. PF_median (typical trader): WARNING 0.64-1.47, DANGER 1.14, EXTREME 0.91. Small samples (n=84-357).</p>
     <p><b>Momentum Score</b>: From momentum_ranker_v1_18 composite (returns + ratios + SPY-relative days).</p>
-    <p><b>Health Score</b>: From pullback_health (NATR drawdown, SMA structure, slope stage, vol expansion, beta-adjusted DD, historical recovery).</p>
-    <p><b>Ideal entry</b>: High momentum + healthy pullback + optimal SMA29 zone (0-10% extension, PF ~1.5). These are stocks trending up with room to run.</p>
+    <p><b>Potential Score</b>: Inverted pullback health (deep pullback = high potential). Scimode validated: low-health stocks return +2.17% 21d vs high-health +1.22%. VIX-boosted: at VIX 30+, deep pullbacks return +13.6% 21d with 84% WR.</p>
+    <p><b>Ideal entry</b>: High momentum + high potential (deep pullback in uptrend) + optimal SMA29 zone (0-10% extension, PF ~1.5). Potential is VIX-boosted: deeper pullbacks at elevated VIX have the strongest forward returns.</p>
     <p style="margin-top:10px"><b>SMA10 Exit Alert</b> (scimode PF validation, 468 tickers):</p>
     <p>SMA10 detects overextension faster than SMA29. PF validates exit signals.</p>
     <table style="font-size:0.9em;border-collapse:collapse;margin:6px 0">
@@ -1196,13 +1225,13 @@ def build_html(results, vix_context=None):
         <th>Watch</th>
         <th onclick="sortTable(2,false)" style="cursor:pointer" title="Stock ticker symbol + momentum rank (#1 = highest scored)">Ticker</th>
         <th onclick="sortTable(3,true)" style="cursor:pointer" title="Latest closing price (adjusted for splits)">Price</th>
-        <th onclick="sortTable(4,true)" style="cursor:pointer" title="Weighted composite: 35% Momentum + 30% Pullback Health + 35% SMA29 Extension. Higher = better entry quality. 0-100 scale.">Combined</th>
+        <th onclick="sortTable(4,true)" style="cursor:pointer" title="Weighted composite: 35% Momentum + 30% Potential + 35% SMA29 Extension. Higher = better entry opportunity. 0-100 scale. Scimode validated 2026-03-13.">Combined</th>
         <th onclick="sortTable(5,true)" style="cursor:pointer" title="SMA10 exit alert based on scimode PF validation (468 tickers). EXIT ALERT = 25%+ above SMA10 (PF=1.11, PF_median=0.90). EXIT WATCH = 15-25% (PF=1.59, PF_median=1.07).">Exit</th>
         <th onclick="sortTable(6,false)" style="cursor:pointer" title="Predicted path quality (the journey after entry). SMOOTH: Max Adverse Excursion better than -2%, green within 5 days. OK: moderate drawdown, eventually profitable. ROUGH: significant drawdown (-4 to -8%) before profit. CHOPPY: deep drawdown (worse than -8%), may never recover. Based on extension + VIX + sector from 52K historical observations, OOS validated.">Path</th>
         <th onclick="sortTable(7,true)" style="cursor:pointer" title="% distance of close above 29-day SMA. Positive = above SMA29, negative = below.">Ext %</th>
         <th onclick="sortTable(8,false)" style="cursor:pointer" title="SMA29 extension zone from scimode PF validation (468 tickers, trending filter). OPTIMAL = 0-10% above SMA29 (PF ~1.5). Zones scored by profit factor and median forward return.">Zone</th>
         <th onclick="sortTable(9,true)" style="cursor:pointer" title="Momentum ranker composite score (0-100). Blend of: multi-period returns (1d-1y), ratio quality (acceleration checks), and bad-SPY-day resilience. Gated by SMA structure.">Momentum</th>
-        <th onclick="sortTable(10,true)" style="cursor:pointer" title="Pullback health score (0-100). Blend of: drawdown severity (NATR-adjusted), SMA structure (30/50/100/200), slope stage, vol expansion, beta-adjusted DD, and historical recovery rate.">Health</th>
+        <th onclick="sortTable(10,true)" style="cursor:pointer" title="Pullback potential (0-100). Inverted health: deeper pullback = higher potential. VIX-boosted at elevated+ VIX. Scimode validated: low-health Q1 returns +2.17% 21d vs high-health Q5 +1.22%.">Potential</th>
         <th onclick="sortTable(11,true)" style="cursor:pointer" title="Extension bucket score (0-95). From SMA29 zone: OPTIMAL=90-95, GOOD=75, FAIR=55, CAUTION=40, WARNING=20-25, DANGER=10, EXTREME=0.">Ext Score</th>
         <th onclick="sortTable(12,true)" style="cursor:pointer" title="Profit Factor for this SMA29 extension zone = sum(wins)/sum(|losses|). From scimode PF validation (468 tickers, trending filter). PF>1.0 = profitable, PF<1.0 = losing. High-extension PF inflated by lottery tails.">PF</th>
         <th onclick="sortTable(13,true)" style="cursor:pointer" title="Median 21-day forward return for this SMA29 extension zone. From scimode OOS test. Negative in DANGER/EXTREME zones.">Med Fwd</th>
@@ -1277,7 +1306,7 @@ def build_html(results, vix_context=None):
         row += '<td class="tr" data-val="{}" style="color:{}">{}</td>'.format(r['extension_pct'], ext_color, ext_pct_str)
         row += '<td class="tc">{}</td>'.format(_ext_badge(r['extension_label']))
         row += '<td class="tr" data-val="{}">{:.0f}</td>'.format(r['momentum_score'], r['momentum_score'])
-        row += '<td class="tr" data-val="{}">{:.0f}</td>'.format(r['health_score'], r['health_score'])
+        row += '<td class="tr" data-val="{}">{:.0f}</td>'.format(r['potential_score'], r['potential_score'])
         row += '<td class="tr" data-val="{}">{}</td>'.format(r['extension_score'], r['extension_score'])
         row += '<td class="tr" data-val="{}" style="color:{}">{}</td>'.format(r['extension_pf'] or 0, pf_color, pf_str)
         row += '<td class="tr" data-val="{}" style="color:{}">{}</td>'.format(r['extension_fwd'] or 0, fwd_color, fwd_str)
@@ -1317,8 +1346,8 @@ def build_html(results, vix_context=None):
         banner_color = '#f59e0b'
     else:
         banner_color = '#ef4444'
-    banner_score = 'Weights: {}% Momentum + {}% Health + {}% Extension'.format(
-        int(W_MOMENTUM * 100), int(W_HEALTH * 100), int(W_EXTENSION * 100))
+    banner_score = 'Weights: {}% Momentum + {}% Potential + {}% Extension'.format(
+        int(W_MOMENTUM * 100), int(W_POTENTIAL * 100), int(W_EXTENSION * 100))
 
     # VIX regime banner
     vix_banner_html = ''
@@ -1378,7 +1407,7 @@ def main():
     output = clean_nan({
         'generated_at': datetime.now().isoformat(),
         'total': len(results),
-        'weights': {'momentum': W_MOMENTUM, 'health': W_HEALTH, 'extension': W_EXTENSION},
+        'weights': {'momentum': W_MOMENTUM, 'potential': W_POTENTIAL, 'extension': W_EXTENSION},
         'vix': vix_context,
         'results': results,
     })
@@ -1403,9 +1432,9 @@ def main():
         print("  Top 5:")
         for r in results[:5]:
             gf = ' [Au filtered]' if r.get('gold_filtered') else ''
-            print("    {} {:>7.1f}  ext={:+.1f}% [{}]  mom={:.0f}  health={:.0f}{}".format(
+            print("    {} {:>7.1f}  ext={:+.1f}% [{}]  mom={:.0f}  pot={:.0f}{}".format(
                 r['ticker'].ljust(6), r['combined_score'], r['extension_pct'],
-                r['extension_label'], r['momentum_score'], r['health_score'], gf))
+                r['extension_label'], r['momentum_score'], r['potential_score'], gf))
 
     out_path = build_html(results, vix_context)
     print()
