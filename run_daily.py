@@ -89,12 +89,15 @@ BACKENDS = [
     #     'slow': True,
     #     'required': False,
     # },
-    {
-        'script': 'stock_secrot_backend.py',
-        'name': 'Stock Sector Rotation',
-        'slow': False,
-        'required': False,
-    },
+    # stock_secrot_backend.py DISABLED 2026-03-14: redundant with smart_scanner_v1_6
+    # which already uses D-Stock as primary method in ALL drift tiers.
+    # Data source (stock_secrot_scores_*.csv) stopped generating Jan 2026.
+    # {
+    #     'script': 'stock_secrot_backend.py',
+    #     'name': 'Stock Sector Rotation',
+    #     'slow': False,
+    #     'required': False,
+    # },
     {
         'script': 'momentum_ranker_v1_18.py',
         'name': 'Momentum Ranker',

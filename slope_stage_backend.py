@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# slope_stage_backend.py - v1.1
-# Last updated: 2026-03-03
+# slope_stage_backend.py - v1.2
+# Last updated: 2026-03-14
 # =============================================================================
+# v1.2: Rename Trend Quality -> Reversal Potential (scimode validated:
+#       Stage 0 has BEST forward returns +3.70% 21d, Stage 2 WORST +0.86%.
+#       TQ quintiles were monotonically inverted: Q1 beat Q5 by +1.43% 21d.
+#       Invert stage_map so deep pullbacks score highest.)
 # v1.1: Ownership checkboxes, sortable dates, Trend Quality Score, meta integration
 # v1.0: Initial dashboard backend ported from slope_trendline_classifier_v1.6.1
 #
@@ -235,36 +239,44 @@ def compute_all_trendlines_vectorized(prices):
     }
 
 
-def compute_trend_quality_score(stage, r_squared, crash_risk, distance_pct):
-    """Compute 0-100 Trend Quality Score from four components.
+def compute_reversal_potential(stage, r_squared, crash_risk, distance_pct):
+    """Compute 0-100 Reversal Potential score from four components.
+
+    Scimode validated (34,225 obs, 300 tickers, 2015-2025):
+      Stage 0 (Deep Decline): +3.70% 21d forward return (BEST)
+      Stage 1 (Basing):       +1.28% 21d
+      Stage 3 (Parabolic):    +2.00% 21d
+      Stage 2 (Uptrend):      +0.86% 21d (WORST)
 
     Components:
-      Stage position  30% - Stage 2 best, Stage 3 moderate, Stage 1 low, Stage 0 zero
-      R-squared       30% - Higher = cleaner trend = better signal
-      Crash risk      25% - Inverted: low crash = high score
-      Distance        15% - Penalize extremes: 0-5% above trend is ideal
+      Stage position  30% - Stage 0 best (contrarian), Stage 2 worst
+      R-squared       30% - INVERTED: low R2 = messy trend = more reversal room
+      Crash risk      25% - High crash risk = more reversal potential
+      Distance        15% - Far below trend = most potential
     """
-    # Stage base: 0->0, 1->25, 2->100, 3->65 (parabolic is riskier)
-    stage_map = {0: 0.0, 1: 25.0, 2: 100.0, 3: 65.0}
+    # Stage: inverted from original (deep decline = highest potential)
+    stage_map = {0: 100.0, 1: 65.0, 2: 0.0, 3: 40.0}
     stage_score = stage_map.get(stage, 0.0)
 
-    # R-squared: 0-1 scaled to 0-100
-    r2_score = max(0.0, min(100.0, r_squared * 100.0))
+    # R-squared: INVERT (low R2 = more reversal room)
+    r2_score = max(0.0, min(100.0, (1.0 - r_squared) * 100.0))
 
-    # Crash risk: invert (0 crash = 100 score, 100 crash = 0 score)
-    crash_score = max(0.0, 100.0 - crash_risk)
+    # Crash risk: high crash = high potential (was inverted, now direct)
+    crash_score = max(0.0, min(100.0, crash_risk))
 
-    # Distance from trend: ideal is 0-5% above, penalize extremes
+    # Distance from trend: far below = most potential
     if distance_pct is None or np.isnan(distance_pct):
         dist_score = 50.0
-    elif 0 <= distance_pct <= 5:
+    elif distance_pct <= -20:
         dist_score = 100.0
-    elif 5 < distance_pct <= 20:
-        dist_score = max(0.0, 100.0 - (distance_pct - 5) * (100.0 / 15.0))
-    elif distance_pct > 20:
-        dist_score = 0.0
-    elif -5 <= distance_pct < 0:
-        dist_score = max(0.0, 60.0 + distance_pct * 12.0)
+    elif distance_pct <= -5:
+        dist_score = max(0.0, 100.0 - (distance_pct + 20) * (100.0 / 15.0))
+    elif distance_pct <= 0:
+        dist_score = 40.0
+    elif distance_pct <= 5:
+        dist_score = 25.0
+    elif distance_pct <= 20:
+        dist_score = max(0.0, 25.0 - (distance_pct - 5) * (25.0 / 15.0))
     else:
         dist_score = 0.0
 
@@ -335,8 +347,8 @@ def process_single_asset(ticker, df):
             else:
                 break
 
-        # Trend Quality Score (0-100 composite)
-        tq_score = compute_trend_quality_score(
+        # Reversal Potential Score (0-100 composite, scimode-validated inversion)
+        tq_score = compute_reversal_potential(
             current_stage, current_r2, current_crash, current_distance)
 
         return {
@@ -527,7 +539,7 @@ def _watch_cell(ticker):
 
 
 def _score_cell(val):
-    """Trend Quality Score cell with color coding."""
+    """Reversal Potential score cell with color coding. High = more potential."""
     if val is None:
         return '<td class="num muted" data-val="0">n/a</td>'
     if val >= 70:
@@ -733,7 +745,7 @@ def build_body_html(results, writer):
             ("Distance %", "% distance from SMA29 trendline. Higher = more extended above the trend."),
             ("R-sq", "R-squared of 21-day log-price regression. 1.0 = perfectly linear, 0.0 = random walk."),
             ("Crash Risk", "Composite crash probability from RMT eigenvalue + Ising magnetization model."),
-            ("TQ Score", "Trend Quality score 0-100. Blend of slope strength, R-squared, and stage persistence."),
+            ("RP Score", "Reversal Potential 0-100. Higher = deeper pullback with more forward return potential (scimode validated)."),
         ]
         rows = []
         for s in entry_signals:
@@ -786,7 +798,7 @@ def build_body_html(results, writer):
         ("R-sq", "R-squared of 21-day log-price regression. 1.0 = perfectly linear, 0.0 = random walk."),
         ("Vol %", "Annualized realized volatility (21-day). Lower = smoother trend."),
         ("Crash Risk", "Composite crash probability from RMT eigenvalue + Ising magnetization model."),
-        ("TQ Score", "Trend Quality score 0-100. Blend of slope strength, R-squared, and stage persistence."),
+        ("RP Score", "Reversal Potential 0-100. Higher = deeper pullback with more forward return potential (scimode validated)."),
     ]
     rows = []
     for r in stage2:
@@ -832,7 +844,7 @@ def build_body_html(results, writer):
         ("R-sq", "R-squared of 21-day log-price regression. High R-sq + high slope = clean parabolic move."),
         ("Vol %", "Annualized realized volatility (21-day)."),
         ("Crash Risk", "Composite crash probability from RMT eigenvalue + Ising magnetization model."),
-        ("TQ Score", "Trend Quality score 0-100."),
+        ("RP Score", "Reversal Potential 0-100."),
     ]
     rows = []
     for r in stage3:
@@ -880,7 +892,7 @@ def build_body_html(results, writer):
         ("R-sq", "R-squared of 21-day log-price regression. 1.0 = linear, 0.0 = random."),
         ("Vol %", "Annualized realized volatility (21-day)."),
         ("Crash Risk", "Composite crash probability (RMT + Ising)."),
-        ("TQ Score", "Trend Quality score 0-100."),
+        ("RP Score", "Reversal Potential 0-100."),
     ]
     rows = []
     for r in all_sorted:
