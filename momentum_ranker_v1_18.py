@@ -118,6 +118,11 @@ SMA_WINDOWS = [30, 50, 100, 200]
 BAD_SPY_LOOKBACK = 20
 BAD_SPY_COUNT    = 5
 
+# Regime detection: VIX proxy via SPY realized vol
+REGIME_VOL_WINDOW    = 20   # 20-day realized vol (annualised)
+REGIME_VOL_THRESHOLD = 20.0 # above 20% annualised vol -> stress regime
+REGIME_SMA_WINDOW    = 200  # SPY > 200 SMA -> growth
+
 MAX_WORKERS = 6
 
 # Reference assets for correlation tooltip
@@ -251,6 +256,38 @@ def compute_sma_flags(df: pd.DataFrame) -> dict:
             flags[f'sma{w}'] = bool(price > df['close'].iloc[-w:].mean())
     flags['all_above'] = all(flags[f'sma{w}'] for w in SMA_WINDOWS)
     return flags
+
+
+def detect_regime(spy_df: pd.DataFrame) -> dict:
+    """Determine growth vs stress regime from SPY data.
+
+    Growth = SPY > 200 SMA AND realized vol < 20%.
+    Stress = either condition fails.
+
+    Returns dict with regime label, sma_gate_active flag, and components.
+    Scimode validated: mean reversion 4x stronger in stress; momentum
+    continuation works in growth. SMA gate should only apply in growth.
+    """
+    if spy_df is None or len(spy_df) < REGIME_SMA_WINDOW:
+        return {'regime': 'unknown', 'sma_gate_active': True,
+                'spy_above_200': None, 'realized_vol': None}
+
+    price = spy_df['close'].iloc[-1]
+    sma200 = spy_df['close'].iloc[-REGIME_SMA_WINDOW:].mean()
+    spy_above_200 = bool(price > sma200)
+
+    # 20-day realised vol annualised (VIX proxy)
+    rets = spy_df['close'].iloc[-(REGIME_VOL_WINDOW + 1):].pct_change().dropna()
+    realized_vol = float(rets.std() * np.sqrt(252) * 100)
+
+    is_growth = spy_above_200 and realized_vol < REGIME_VOL_THRESHOLD
+
+    return {
+        'regime': 'growth' if is_growth else 'stress',
+        'sma_gate_active': is_growth,    # gate ON in growth, OFF in stress
+        'spy_above_200': spy_above_200,
+        'realized_vol': round(realized_vol, 1),
+    }
 
 
 def compute_bad_spy_score(df: pd.DataFrame, spy_df: pd.DataFrame) -> float:
@@ -627,8 +664,17 @@ def compute_all_metrics(price_cache: dict, benchmark_cache: dict) -> pd.DataFram
     return pd.DataFrame(rows)
 
 
-def add_scores(df: pd.DataFrame) -> pd.DataFrame:
-    """Percentile-rank 3 components, apply SMA gate, compute final score 0-100."""
+def add_scores(df: pd.DataFrame, regime: dict = None) -> pd.DataFrame:
+    """Percentile-rank 3 components, apply regime-conditional SMA gate, compute final score 0-100.
+
+    Regime conditioning (scimode validated 2026-03-14):
+    - Growth regime (SPY > 200 SMA, vol < 20%): SMA gate active (momentum continuation works)
+    - Stress regime: SMA gate OFF (mean reversion dominates, below-SMA stocks have 4x better returns)
+    """
+    if regime is None:
+        regime = {'sma_gate_active': True, 'regime': 'unknown'}
+
+    sma_gate_on = regime.get('sma_gate_active', True)
 
     def pct_rank(s: pd.Series) -> pd.Series:
         return s.rank(pct=True, na_option='bottom') * 100
@@ -646,8 +692,11 @@ def add_scores(df: pd.DataFrame) -> pd.DataFrame:
 
     raw_score = (df['score_returns'] + df['score_ratios'] + df['score_spy_days']) / 3.0
 
-    # SMA gate
-    df['score'] = np.where(df['sma_all'], raw_score, 0.0).round(1)
+    # Regime-conditional SMA gate
+    if sma_gate_on:
+        df['score'] = np.where(df['sma_all'], raw_score, 0.0).round(1)
+    else:
+        df['score'] = raw_score.round(1)
     df['rank']  = df['score'].rank(ascending=False, method='min').astype(int)
 
     # Pullback score gate — downgrade buy_today to none if score too low
@@ -1530,6 +1579,10 @@ def build_body_html(output, writer):
     data   = output['data']
     gen    = output['generated_at'][:10]
     n      = output['universe_size']
+    regime = output.get('regime', {})
+    regime_label = regime.get('regime', 'unknown').upper()
+    regime_vol   = regime.get('realized_vol', '?')
+    sma_gate_lbl = 'ON' if regime.get('sma_gate_active', True) else 'OFF'
     top    = data[0] if data else {}
     top_lbl = '{} {:.1f}'.format(top.get('ticker','--'), top.get('score', 0)) if top else '--'
     sma_ct  = sum(1 for r in data if r.get('sma_all'))
@@ -1540,9 +1593,13 @@ def build_body_html(output, writer):
     vol_confirmed_ct = sum(1 for r in data if r.get('vol_flag') == 'confirmed')
     pullback_buy_ct  = sum(1 for r in data if r.get('pullback_flag') == 'buy_today')
 
+    regime_tone = 'pos' if regime_label == 'GROWTH' else 'warn'
+
     parts = []
     parts.append(writer.stat_bar([
         ('Generated',      gen,                    'neutral'),
+        ('Regime',         '{} (vol {}%)'.format(regime_label, regime_vol), regime_tone),
+        ('SMA Gate',       sma_gate_lbl,           'pos' if sma_gate_lbl == 'ON' else 'warn'),
         ('Universe',       str(n),                 'neutral'),
         ('Above All SMAs', str(sma_ct),            'pos'  if sma_ct > 0          else 'neutral'),
         ('#1 Ticker',      top_lbl,                'pos'),
@@ -1708,7 +1765,14 @@ def main():
         print('\nERROR: No tickers passed filters.')
         return
 
-    df = add_scores(df)
+    # Detect regime for conditional SMA gate
+    regime = detect_regime(benchmark_cache.get('SPY'))
+    print(f'\nRegime: {regime["regime"].upper()} '
+          f'(SPY>200: {regime["spy_above_200"]}, '
+          f'RealVol: {regime["realized_vol"]}%)')
+    print(f'  SMA gate: {"ACTIVE (momentum mode)" if regime["sma_gate_active"] else "OFF (mean reversion mode)"}')
+
+    df = add_scores(df, regime=regime)
     print(f'\nFinal ranked universe: {len(df)} tickers')
 
     # Drop list columns before CSV (not CSV-friendly), keep in JSON
@@ -1735,6 +1799,7 @@ def main():
         'universe_size':    len(df),
         'filters':          {'min_price': MIN_PRICE, 'min_rows': MIN_ROWS, 'sma_windows': SMA_WINDOWS},
         'ratio_thresholds': RATIO_THRESHOLDS,
+        'regime':           regime,
         'columns':          list(df.columns),
         'pole_momentum':    pole_momentum,
         'corr_universe':    CORR_UNIVERSE,
