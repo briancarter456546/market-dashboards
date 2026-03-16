@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 # =============================================================================
-# rsi2_dashboard_backend.py - v1.3
-# Last updated: 2026-03-12
+# rsi2_dashboard_backend.py - v1.4
+# Last updated: 2026-03-15
 # =============================================================================
 # RSI(2) Mean-Reversion Scanner Dashboard Backend
 # Self-contained: simulates strategy from price_cache (no external state files).
 # Quality scoring suppresses CAUTION entries (above SMA200 only).
 #
+# v1.4: VIX > 35 kill switch -- blocks ALL MR entries (PF < 0.7 at VIX > 35)
 # v1.3: Self-contained simulation + quality scoring + CAUTION suppression
 # v1.0: Read JSON state files (broken on droplet -- files never synced)
 #
@@ -39,6 +40,7 @@ RSI_THRESHOLD = 10
 
 # Quality scoring
 VIX_ELEVATED = 22
+VIX_KILL_SWITCH = 35  # All MR PF < 0.7 above this level (confirmed across all param combos)
 LOOKBACK_DAYS = 120  # How far back to simulate for positions/trades
 
 # =============================================================================
@@ -227,6 +229,7 @@ def simulate_strategy(watchlist, vix_val):
     today_entries = []
     today_exits = []
     today_skipped = []
+    vix_killed = vix_val is not None and vix_val > VIX_KILL_SWITCH
 
     for ticker in watchlist:
         df = load_from_cache(ticker)
@@ -299,7 +302,11 @@ def simulate_strategy(watchlist, vix_val):
                         'quality_detail': detail,
                         'quality_css': css,
                     }
-                    if grade == 'CAUTION':
+                    if vix_killed:
+                        sig['quality_detail'] = 'VIX > {} KILL SWITCH -- all MR signals blocked'.format(VIX_KILL_SWITCH)
+                        sig['quality_css'] = 'grade-caution'
+                        today_skipped.append(sig)
+                    elif grade == 'CAUTION':
                         today_skipped.append(sig)
                     else:
                         today_entries.append(sig)
@@ -633,7 +640,7 @@ def build_watchlist_section(watchlist, positions):
 # =============================================================================
 
 def main():
-    print('RSI(2) Scanner Dashboard Backend v1.3')
+    print('RSI(2) Scanner Dashboard Backend v1.4')
     print('=' * 45)
 
     # Load watchlist
@@ -644,7 +651,25 @@ def main():
     vix_val = load_vix()
     if vix_val is not None:
         vix_flag = ' [ELEVATED]' if vix_val > VIX_ELEVATED else ''
+        if vix_val > VIX_KILL_SWITCH:
+            vix_flag = ' [KILL SWITCH]'
         print('  VIX: {:.1f}{}'.format(vix_val, vix_flag))
+
+    # Load macro data for regime context
+    macro_path = os.path.join(_DATA_DIR, 'macro_data.json')
+    yc_zscore = None
+    yc_label = '--'
+    if os.path.exists(macro_path):
+        try:
+            with open(macro_path, 'r', encoding='utf-8') as f:
+                macro = json.load(f)
+            yc_data = macro.get('yc_zscore') or {}
+            yc_zscore = yc_data.get('yc_zscore_63d')
+            yc_label = '{:.2f}'.format(yc_zscore) if yc_zscore is not None else '--'
+            if yc_zscore is not None:
+                print('  YC Z-Score: {}'.format(yc_label))
+        except Exception:
+            pass
 
     # Simulate strategy (self-contained, no state files)
     positions, trade_log, today_entries, today_exits, today_skipped, _ = simulate_strategy(watchlist, vix_val)
@@ -652,7 +677,13 @@ def main():
         len(positions), len(trade_log), len(today_entries), len(today_exits), len(today_skipped)))
 
     # Banner logic
-    if today_skipped and not today_entries:
+    vix_killed = vix_val is not None and vix_val > VIX_KILL_SWITCH
+    if vix_killed:
+        banner_label = 'VIX KILL SWITCH'
+        banner_color = '#991b1b'
+        banner_detail = 'VIX {:.1f} > {} -- ALL MR entries blocked. Every MR param combo has PF < 0.7 at this level.'.format(
+            vix_val, VIX_KILL_SWITCH)
+    elif today_skipped and not today_entries:
         banner_label = 'SIGNALS SUPPRESSED'
         banner_color = '#dc2626'
         banner_detail = '{} signal(s) suppressed -- CAUTION grade (above SMA200 only). All major drawdowns here.'.format(
@@ -678,7 +709,12 @@ def main():
     # Build dashboard
     writer = DashboardWriter('rsi2-scanner', 'RSI(2) Mean-Reversion Scanner')
 
-    body = writer.stat_bar(build_stat_bar(positions, trade_log, today_entries, today_exits, today_skipped, vix_val))
+    stat_items = build_stat_bar(positions, trade_log, today_entries, today_exits, today_skipped, vix_val)
+    # Add regime context to stat bar
+    stat_items.append(('YC Z', yc_label, 'pos' if yc_zscore and yc_zscore > 0 else 'neg' if yc_zscore and yc_zscore < 0 else 'neutral'))
+    if vix_killed:
+        stat_items.append(('Kill Switch', 'ACTIVE', 'neg'))
+    body = writer.stat_bar(stat_items)
     body += writer.regime_banner(banner_label, banner_detail, color=banner_color)
     body += writer.build_header('RSI(2)<{} | SMA200/SMA5 | Quality Filter'.format(RSI_THRESHOLD))
 

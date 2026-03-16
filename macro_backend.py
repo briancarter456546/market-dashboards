@@ -35,7 +35,10 @@ import os
 import sys
 import csv as _csv_mod
 import json
+import pickle
 import requests
+import numpy as np
+import pandas as pd
 from datetime import datetime
 
 # ---------------------------------------------------------------------------
@@ -66,6 +69,89 @@ MACRO_HISTORY_FILE = os.path.join(_DATA_DIR, "macro_history.json")
 MARKET_HEALTH_FILE = os.path.join(_DATA_DIR, "market_health_data.json")
 HYGLQD_FILE        = os.path.join(_DATA_DIR, "hyglqd_data.json")
 SECROT_FILE        = os.path.join(_DATA_DIR, "sector_rotation_1y_data.json")
+CACHE_DIR          = os.path.join(_DATA_DIR, "price_cache")
+
+
+# ==============================================================================
+# YIELD CURVE Z-SCORE (from price_cache, no API calls)
+# ==============================================================================
+
+def compute_yc_zscore():
+    """Compute IEF/SHY 63-day z-score as yield curve slope proxy.
+
+    IEF (7-10yr treasury) / SHY (1-3yr treasury) ratio captures yield curve
+    slope without requiring yield data. Rolling 63-day z-score normalizes.
+
+    Scimode finding (2026-03-15): Perfectly monotonic for D-Stock
+    (Q1 PF 1.38 -> Q5 PF 1.91). Independent of VIX (r=0.128).
+    """
+    ief_path = os.path.join(CACHE_DIR, 'IEF.pkl')
+    shy_path = os.path.join(CACHE_DIR, 'SHY.pkl')
+
+    if not os.path.exists(ief_path) or not os.path.exists(shy_path):
+        print("  [WARN] IEF.pkl or SHY.pkl not found in price_cache")
+        return None
+
+    try:
+        with open(ief_path, 'rb') as f:
+            ief_df = pickle.load(f)
+        with open(shy_path, 'rb') as f:
+            shy_df = pickle.load(f)
+
+        # Align to DatetimeIndex
+        for df in [ief_df, shy_df]:
+            if not isinstance(df.index, pd.DatetimeIndex):
+                if 'date' in df.columns:
+                    df['date'] = pd.to_datetime(df['date'])
+                    df.set_index('date', inplace=True)
+                else:
+                    return None
+
+        # Use adjClose if available, else close
+        ief_close = ief_df['adjClose'] if 'adjClose' in ief_df.columns else ief_df['close']
+        shy_close = shy_df['adjClose'] if 'adjClose' in shy_df.columns else shy_df['close']
+
+        # Align dates
+        ratio = (ief_close / shy_close).dropna()
+        if len(ratio) < 126:  # need 6 months minimum
+            return None
+
+        # Rolling 63-day z-score
+        rm = ratio.rolling(63, min_periods=42).mean()
+        rs = ratio.rolling(63, min_periods=42).std()
+        zscore = ((ratio - rm) / rs.replace(0, np.nan)).dropna()
+
+        if len(zscore) == 0:
+            return None
+
+        latest_z = float(zscore.iloc[-1])
+        latest_ratio = float(ratio.iloc[-1])
+        latest_date = str(zscore.index[-1].date())
+
+        # Classify
+        if latest_z > 1.0:
+            regime = 'steep'
+            label = 'Steep (YC expanding)'
+        elif latest_z < -1.0:
+            regime = 'flat'
+            label = 'Flat/Inverted (YC compressing)'
+        else:
+            regime = 'neutral'
+            label = 'Neutral'
+
+        print("  YC Z-Score: {:.2f} (ratio {:.4f}, {})".format(latest_z, latest_ratio, label))
+
+        return {
+            'yc_zscore_63d': round(latest_z, 3),
+            'ief_shy_ratio': round(latest_ratio, 4),
+            'regime': regime,
+            'regime_label': label,
+            'as_of': latest_date,
+        }
+    except Exception as e:
+        print("  [WARN] YC z-score computation failed: {}".format(e))
+        return None
+
 
 # ==============================================================================
 # API FETCHING
@@ -824,6 +910,8 @@ def append_to_history(macro_data):
         'overall_score':  (macro_data.get('overall_regime') or {}).get('net_score'),
         'spy_price':      (((macro_data.get('indices') or {}).get('quotes') or {}).get('SPY') or {}).get('price'),
         'spy_change':     (((macro_data.get('indices') or {}).get('quotes') or {}).get('SPY') or {}).get('change'),
+        'yc_zscore_63d':  (macro_data.get('yc_zscore') or {}).get('yc_zscore_63d'),
+        'yc_regime':      (macro_data.get('yc_zscore') or {}).get('regime'),
     }
 
     if today in existing_dates:
@@ -1545,6 +1633,9 @@ def main():
     macro_data['breadth']        = collect_breadth_from_secrot()
     macro_data['overall_regime'] = classify_overall_regime(macro_data)
 
+    # -- Yield curve z-score (from price_cache, no API calls) --
+    macro_data['yc_zscore']      = compute_yc_zscore()
+
     # -- v3.0+ enrichment --
     macro_data['trends']         = calculate_5d_trends(macro_data)
     macro_data['regime_changes'] = detect_regime_changes(macro_data)
@@ -1580,11 +1671,14 @@ def main():
     spread_val      = ((treas.get('spreads') or {}).get('10y_2y'))
     hyglqd_val      = cred.get('hyg_lqd_ratio')
     breadth_pct     = bread.get('pct_above_200ma')
+    yc_data         = macro_data.get('yc_zscore') or {}
+    yc_z_val        = yc_data.get('yc_zscore_63d')
 
     stat_items = [
         ('Overall Regime', regime_lbl, _stat_bar_class(regime_regime)),
         ('VIX', _fmt_val(vix_val, 1), _stat_bar_class(vol.get('regime', 'unknown'))),
         ('10Y-2Y Spread', _fmt_val(spread_val, 3, '%'), _stat_bar_class(treas.get('regime', 'unknown'))),
+        ('YC Z-Score', _fmt_val(yc_z_val, 2), _stat_bar_class(yc_data.get('regime', 'unknown'))),
         ('HYG/LQD Ratio', _fmt_val(hyglqd_val, 4), _stat_bar_class(cred.get('regime', 'unknown'))),
         ('Breadth %', _fmt_val(breadth_pct, 1, '%'), _stat_bar_class(bread.get('regime', 'unknown'))),
     ]

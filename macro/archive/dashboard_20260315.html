@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RSI(2) Mean-Reversion Scanner - 2026-03-16</title>
+<title>Macro Dashboard - 2026-03-15</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 
@@ -466,97 +466,93 @@ th.own-th { width: 30px; text-align: center; cursor: default; }
 th.watch-th { width: 30px; text-align: center; cursor: default; }
 
 
-.signal-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 0.78em;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-.signal-entry { background: #dbeafe; color: #1e40af; }
-.signal-exit  { background: #fef3c7; color: #92400e; }
-.signal-skip  { background: #fee2e2; color: #991b1b; }
-.signal-none  { background: #f3f4f6; color: #6b7280; }
-
-.grade-strong  { color: #15803d; font-weight: 700; }
-.grade-moderate { color: #ca8a04; font-weight: 600; }
-.grade-caution  { color: #dc2626; font-weight: 600; }
-
-.perf-card {
-    display: inline-block;
-    background: #f8fafc;
-    border: 1px solid #e2e4e8;
-    border-radius: 8px;
-    padding: 12px 18px;
-    margin: 4px;
-    text-align: center;
-    min-width: 110px;
-}
-.perf-card .value {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 1.5em;
-    font-weight: 600;
-}
-.perf-card .label {
-    font-size: 0.78em;
-    color: #888;
-    margin-top: 2px;
-}
-
-.skip-detail {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
+/* -- Alert rows -- */
+.alert-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
     border-radius: 6px;
-    padding: 8px 12px;
-    margin: 4px 0;
-    font-size: 0.82em;
-    color: #991b1b;
+    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 0.95em;
+}
+.alert-high   { background: #fef2f2; border-left: 4px solid #ef4444; color: #b91c1c; }
+.alert-medium { background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e; }
+.alert-icon   { font-size: 1.3em; }
+.alert-msg    { flex: 1; }
+.alert-sev    {
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.07);
+}
+
+/* -- Trend arrows -- */
+.trend-up   { color: #ef4444; font-weight: 700; }
+.trend-dn   { color: #22c55e; font-weight: 700; }
+.trend-flat { color: #888;    font-weight: 600; }
+
+/* -- Regime change table pills -- */
+.regime-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+.rp-from { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.rp-to   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+/* Two-column grid layout */
+.macro-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .alert-row { padding: 10px 12px; font-size: 0.85em; gap: 10px; }
+    .alert-icon { font-size: 1.1em; }
+    .alert-sev { font-size: 0.68em; padding: 2px 8px; }
+    .regime-pill { font-size: 0.78em; padding: 3px 10px; }
+    .macro-two-col { grid-template-columns: 1fr !important; }
 }
 
 </style>
 </head><body>
-<div class="stat-bar"><div class="stat"><div class="stat-label">Open Positions</div><div class="stat-value neutral">4</div></div><div class="stat"><div class="stat-label">Signals</div><div class="stat-value neutral">0</div></div><div class="stat"><div class="stat-label">Suppressed</div><div class="stat-value neutral">0</div></div><div class="stat"><div class="stat-label">Win Rate</div><div class="stat-value pos">79%</div></div><div class="stat"><div class="stat-label">VIX</div><div class="stat-value neg">26.9</div></div><div class="stat"><div class="stat-label">YC Z</div><div class="stat-value neg">-0.85</div></div></div><div class="regime-banner" style="border-left-color:#22c55e;"><div class="regime-label" style="color:#22c55e;">SCANNING</div><div class="regime-score">4 open position(s) -- monitoring for exits</div></div><div class="page-header">
-  <h1>RSI(2) Mean-Reversion Scanner</h1>
+<div class="stat-bar"><div class="stat"><div class="stat-label">Overall Regime</div><div class="stat-value warn">Neutral/Mixed</div></div><div class="stat"><div class="stat-label">VIX</div><div class="stat-value warn">27.2</div></div><div class="stat"><div class="stat-label">10Y-2Y Spread</div><div class="stat-value pos">0.550%</div></div><div class="stat"><div class="stat-label">YC Z-Score</div><div class="stat-value warn">-0.85</div></div><div class="stat"><div class="stat-label">HYG/LQD Ratio</div><div class="stat-value warn">0.7322</div></div><div class="stat"><div class="stat-label">Breadth %</div><div class="stat-value neg">0.0%</div></div></div>
+<div class="page-header">
+  <h1>Macro Dashboard</h1>
   <div class="meta">
-    RSI(2)<10 | SMA200/SMA5 | Quality Filter &nbsp;|&nbsp;
-    Data as of 2026-03-16 08:00 ET &nbsp;|&nbsp;
+    Generated 2026-03-15 21:40 &nbsp;|&nbsp;
+    Data as of 2026-03-13 17:00 ET &nbsp;|&nbsp;
     <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
   </div>
 </div>
 <div class="page-nav">
   <a href="#spreads" class="active">Dashboard</a>
-  <a href="archive/dashboard_20260316.html">Archive: 2026-03-16</a>
+  <a href="archive/dashboard_20260315.html">Archive: 2026-03-15</a>
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Daily scanner for RSI(2) mean-reversion pullback signals. Entry: close > SMA200, close < SMA5, RSI(2) < 10. Exit: close > SMA5. Shows active positions, today's signals, and running trade performance. Watchlist starts narrow (SPY) and expands as patterns are validated.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details><div style="background:#f0f4ff;border:1px solid #d0d8e8;border-radius:8px;padding:14px 18px;margin:16px 0;font-size:0.88em;color:#444;">Daily scanner for RSI(2) mean-reversion pullback signals. Entry: close > SMA200, close < SMA5, RSI(2) < 10. Exit: close > SMA5. Shows active positions, today's signals, and running trade performance. Watchlist starts narrow (SPY) and expands as patterns are validated.</div><div class="table-section"><div class="table-section-header"><h2>Today's Signals</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p style="color:#888;padding:8px 0;">No signals today -- quiet day.</p></div></div><div class="table-section"><div class="table-section-header"><h2>Open Positions</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="data-table" style="width:100%;"><thead><tr><th>Ticker</th><th>Entry Date</th><th>Entry $</th><th>Current</th><th>P/L</th><th>Days</th><th>Grade</th></tr></thead><tbody><tr><td style="font-weight:600;">DECK</td><td>2026-03-02</td><td style="font-family:'IBM Plex Mono',monospace;">$114.51</td><td style="font-family:'IBM Plex Mono',monospace;">$101.16</td><td class="neg" style="font-family:'IBM Plex Mono',monospace;">-11.66%</td><td>14</td><td>STRONG</td></tr>
-<tr><td style="font-weight:600;">GE</td><td>2026-03-12</td><td style="font-family:'IBM Plex Mono',monospace;">$306.70</td><td style="font-family:'IBM Plex Mono',monospace;">$302.68</td><td class="neg" style="font-family:'IBM Plex Mono',monospace;">-1.31%</td><td>4</td><td>CAUTION</td></tr>
-<tr><td style="font-weight:600;">HIG</td><td>2026-03-09</td><td style="font-family:'IBM Plex Mono',monospace;">$137.95</td><td style="font-family:'IBM Plex Mono',monospace;">$133.54</td><td class="neg" style="font-family:'IBM Plex Mono',monospace;">-3.20%</td><td>7</td><td>STRONG</td></tr>
-<tr><td style="font-weight:600;">SPY</td><td>2026-03-03</td><td style="font-family:'IBM Plex Mono',monospace;">$680.33</td><td style="font-family:'IBM Plex Mono',monospace;">$664.15</td><td class="neg" style="font-family:'IBM Plex Mono',monospace;">-2.38%</td><td>13</td><td>CAUTION</td></tr></tbody></table></div></div><div class="table-section"><div class="table-section-header"><h2>Recent Trades (Last 10)</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="data-table" style="width:100%;"><thead><tr><th>Ticker</th><th>Entry</th><th>Exit</th><th>Entry $</th><th>Exit $</th><th>Return</th><th>Days</th></tr></thead><tbody><tr><td style="font-weight:600;">TSN</td><td>2026-03-05</td><td>2026-03-12</td><td style="font-family:'IBM Plex Mono',monospace;">$62.06</td><td style="font-family:'IBM Plex Mono',monospace;">$61.03</td><td class="neg" style="font-family:'IBM Plex Mono',monospace;">-1.66%</td><td>7</td></tr>
-<tr><td style="font-weight:600;">LIN</td><td>2026-03-05</td><td>2026-03-12</td><td style="font-family:'IBM Plex Mono',monospace;">$490.06</td><td style="font-family:'IBM Plex Mono',monospace;">$490.41</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+0.07%</td><td>7</td></tr>
-<tr><td style="font-weight:600;">CSCO</td><td>2026-03-09</td><td>2026-03-12</td><td style="font-family:'IBM Plex Mono',monospace;">$76.21</td><td style="font-family:'IBM Plex Mono',monospace;">$77.74</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+2.01%</td><td>3</td></tr>
-<tr><td style="font-weight:600;">TSM</td><td>2026-03-03</td><td>2026-03-11</td><td style="font-family:'IBM Plex Mono',monospace;">$353.13</td><td style="font-family:'IBM Plex Mono',monospace;">$354.56</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+0.40%</td><td>8</td></tr>
-<tr><td style="font-weight:600;">COST</td><td>2026-03-05</td><td>2026-03-09</td><td style="font-family:'IBM Plex Mono',monospace;">$982.57</td><td style="font-family:'IBM Plex Mono',monospace;">$1005.30</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+2.31%</td><td>4</td></tr>
-<tr><td style="font-weight:600;">APH</td><td>2026-03-02</td><td>2026-03-05</td><td style="font-family:'IBM Plex Mono',monospace;">$135.16</td><td style="font-family:'IBM Plex Mono',monospace;">$136.24</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+0.80%</td><td>3</td></tr>
-<tr><td style="font-weight:600;">CSCO</td><td>2026-02-12</td><td>2026-02-19</td><td style="font-family:'IBM Plex Mono',monospace;">$75.00</td><td style="font-family:'IBM Plex Mono',monospace;">$78.56</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+4.75%</td><td>7</td></tr>
-<tr><td style="font-weight:600;">XLY</td><td>2026-02-12</td><td>2026-02-18</td><td style="font-family:'IBM Plex Mono',monospace;">$116.13</td><td style="font-family:'IBM Plex Mono',monospace;">$117.02</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+0.77%</td><td>6</td></tr>
-<tr><td style="font-weight:600;">TSN</td><td>2026-02-11</td><td>2026-02-18</td><td style="font-family:'IBM Plex Mono',monospace;">$64.34</td><td style="font-family:'IBM Plex Mono',monospace;">$63.96</td><td class="neg" style="font-family:'IBM Plex Mono',monospace;">-0.59%</td><td>7</td></tr>
-<tr><td style="font-weight:600;">SPY</td><td>2026-02-12</td><td>2026-02-18</td><td style="font-family:'IBM Plex Mono',monospace;">$681.27</td><td style="font-family:'IBM Plex Mono',monospace;">$686.29</td><td class="pos" style="font-family:'IBM Plex Mono',monospace;">+0.74%</td><td>6</td></tr></tbody></table></div></div><div class="table-section"><div class="table-section-header"><h2>Performance Summary</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div style="display:flex;flex-wrap:wrap;gap:4px;"><div class="perf-card"><div class="value neutral">52</div><div class="label">Total Trades</div></div><div class="perf-card"><div class="value pos">79%</div><div class="label">Win Rate</div></div><div class="perf-card"><div class="value pos">2.73</div><div class="label">Profit Factor</div></div><div class="perf-card"><div class="value pos">+0.86%</div><div class="label">Avg Return</div></div><div class="perf-card"><div class="value neutral">5.4d</div><div class="label">Avg Hold</div></div><div class="perf-card"><div class="value pos">+44.59%</div><div class="label">Cumulative</div></div><div class="perf-card"><div class="value pos">+1.71%</div><div class="label">Avg Win</div></div><div class="perf-card"><div class="value neg">-2.34%</div><div class="label">Avg Loss</div></div></div></div></div><div class="table-section"><div class="table-section-header"><h2>Watchlist Status</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table class="data-table" style="width:100%;"><thead><tr><th>Ticker</th><th>Close</th><th>RSI(2)</th><th>&gt; SMA200</th><th>Status</th></tr></thead><tbody><tr><td style="font-weight:600;">APH</td><td style="font-family:'IBM Plex Mono',monospace;">$133.72</td><td style="font-family:'IBM Plex Mono',monospace;">54.1</td><td>Yes</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
-<tr><td style="font-weight:600;">COST</td><td style="font-family:'IBM Plex Mono',monospace;">$1008.22</td><td style="font-family:'IBM Plex Mono',monospace;">81.0</td><td>Yes</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
-<tr><td style="font-weight:600;">CSCO</td><td style="font-family:'IBM Plex Mono',monospace;">$78.64</td><td style="font-family:'IBM Plex Mono',monospace;">75.4</td><td>Yes</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
-<tr><td style="font-weight:600;">DECK</td><td style="font-family:'IBM Plex Mono',monospace;">$101.16</td><td style="font-family:'IBM Plex Mono',monospace;">24.7</td><td>No</td><td><span class="signal-badge signal-entry">IN POSITION</span></td></tr>
-<tr><td style="font-weight:600;">GE</td><td style="font-family:'IBM Plex Mono',monospace;">$302.68</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">4.3</td><td>Yes</td><td><span class="signal-badge signal-entry">IN POSITION</span></td></tr>
-<tr><td style="font-weight:600;">HIG</td><td style="font-family:'IBM Plex Mono',monospace;">$133.54</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">0.5</td><td>Yes</td><td><span class="signal-badge signal-entry">IN POSITION</span></td></tr>
-<tr><td style="font-weight:600;">LIN</td><td style="font-family:'IBM Plex Mono',monospace;">$496.11</td><td style="font-family:'IBM Plex Mono',monospace;">90.6</td><td>Yes</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
-<tr><td style="font-weight:600;">MSFT</td><td style="font-family:'IBM Plex Mono',monospace;">$395.75</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">1.9</td><td>No</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
-<tr><td style="font-weight:600;">ORCL</td><td style="font-family:'IBM Plex Mono',monospace;">$155.17</td><td style="font-family:'IBM Plex Mono',monospace;">35.4</td><td>No</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
-<tr><td style="font-weight:600;">SNPS</td><td style="font-family:'IBM Plex Mono',monospace;">$411.82</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">2.2</td><td>No</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
-<tr><td style="font-weight:600;">SPY</td><td style="font-family:'IBM Plex Mono',monospace;">$664.15</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">5.0</td><td>Yes</td><td><span class="signal-badge signal-entry">IN POSITION</span></td></tr>
-<tr><td style="font-weight:600;">TSM</td><td style="font-family:'IBM Plex Mono',monospace;">$338.80</td><td style="font-family:'IBM Plex Mono',monospace;">32.1</td><td>Yes</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
-<tr><td style="font-weight:600;">TSN</td><td style="font-family:'IBM Plex Mono',monospace;">$60.60</td><td style="font-family:'IBM Plex Mono',monospace;">45.9</td><td>Yes</td><td><span class="signal-badge signal-none">WATCH</span></td></tr>
-<tr><td style="font-weight:600;">XLY</td><td style="font-family:'IBM Plex Mono',monospace;">$111.12</td><td style="font-family:'IBM Plex Mono',monospace;color:#1e40af;font-weight:700;">1.5</td><td>No</td><td><span class="signal-badge signal-none">WATCH</span></td></tr></tbody></table></div></div></div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-16 8:13 AM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+<div class="regime-banner" style="border-left-color:#f59e0b;"><div class="regime-label" style="color:#f59e0b;">NEUTRAL/MIXED</div><div class="regime-score">Net Score: -0.5 &nbsp;|&nbsp; Bullish: 1 &nbsp;|&nbsp; Bearish: 1.5<br>Confidence: Low</div></div>
+<div class="table-section"><div class="table-section-header"><h2>Regime Changes (0)</h2><span style="font-size:0.85em;color:#888;">vs yesterday</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p class="muted" style="padding:8px 0;">No regime changes detected since yesterday.</p></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Alerts (2)</h2><span style="font-size:0.85em;color:#888;">Threshold breaches</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div class="alert-row alert-high"><span class="alert-icon">&#9888;</span><span class="alert-msg">VIX Elevated: 27.2</span><span class="alert-sev">HIGH</span></div><div class="alert-row alert-high"><span class="alert-icon">&#9888;</span><span class="alert-msg">Breadth Weak: 0.0% above 200MA</span><span class="alert-sev">HIGH</span></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>5-Day Trends</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p class="muted">Not enough history to compute trends (need 2+ days).</p></div></div>
+<div class="table-section"><div class="table-section-header"><h2>VIX and Volatility</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div class="cards"><div class="card" style="border-top-color:#f59e0b;"><div class="label">VIX Level</div><div class="value warn">27.2</div><div class="sub">Elevated</div></div><div class="card"><div class="label">VVIX</div><div class="value neutral">131.1</div><div class="sub">Vol of Vol</div></div></div><table><thead><tr><th title="Volatility-related ETF ticker symbol">ETF Proxy</th><th title="Latest traded price in USD">Price</th></tr></thead><tbody><tr><td class="ticker">VIXY</td><td class="num">33.88</td></tr><tr><td class="ticker">UVXY</td><td class="num">52.29</td></tr><tr><td class="ticker">VXX</td><td class="num">35.10</td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Treasury Yield Curve</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div class="cards"><div class="card" style="border-top-color:#22c55e;"><div class="label">Curve Regime</div><div class="value pos">Normal</div><div class="sub">Date: 2026-03-13</div></div></div><div class="macro-two-col"><div><p class="pb-header">Yield Rates</p><table><thead><tr><th title="Treasury bond maturity length">Tenor</th><th title="Current Treasury yield as percentage">Rate</th></tr></thead><tbody><tr><td class="ticker">1M</td><td class="num">3.750%</td></tr><tr><td class="ticker">2M</td><td class="num">3.710%</td></tr><tr><td class="ticker">3M</td><td class="num">3.720%</td></tr><tr><td class="ticker">6M</td><td class="num">3.700%</td></tr><tr><td class="ticker">1Y</td><td class="num">3.660%</td></tr><tr><td class="ticker">2Y</td><td class="num">3.730%</td></tr><tr><td class="ticker">3Y</td><td class="num">3.740%</td></tr><tr><td class="ticker">5Y</td><td class="num">3.870%</td></tr><tr><td class="ticker">7Y</td><td class="num">4.070%</td></tr><tr><td class="ticker">10Y</td><td class="num">4.280%</td></tr><tr><td class="ticker">20Y</td><td class="num">4.890%</td></tr><tr><td class="ticker">30Y</td><td class="num">4.900%</td></tr></tbody></table></div><div><p class="pb-header">Key Spreads</p><table><thead><tr><th title="Yield curve spread between two tenors">Spread</th><th title="Current spread value in basis points">Value</th></tr></thead><tbody><tr><td>10Y - 2Y</td><td class="num pos">0.550%</td></tr><tr><td>10Y - 3M</td><td class="num pos">0.560%</td></tr><tr><td>30Y - 10Y</td><td class="num pos">0.620%</td></tr></tbody></table></div></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Credit Markets</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div class="cards"><div class="card" style="border-top-color:#f59e0b;"><div class="label">HYG/LQD Ratio</div><div class="value warn">0.7322</div><div class="sub">Neutral</div></div></div><table><thead><tr><th title="Credit market ETF ticker symbol">ETF</th><th title="Latest traded price in USD">Price</th><th title="1-day price change as percentage">1D Chg%</th></tr></thead><tbody><tr><td class="ticker">HYG</td><td class="num">79.20</td><td class="num neg">-0.20%</td></tr><tr><td class="ticker">LQD</td><td class="num">108.17</td><td class="num neg">-0.37%</td></tr><tr><td class="ticker">JNK</td><td class="num">95.25</td><td class="num muted"><span class="muted">N/A</span></td></tr><tr><td class="ticker">EMB</td><td class="num">94.38</td><td class="num muted"><span class="muted">N/A</span></td></tr><tr><td class="ticker">AGG</td><td class="num">99.21</td><td class="num muted"><span class="muted">N/A</span></td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Sector Performance</h2><span style="font-size:0.85em;color:#888;">Sorted best to worst</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table><thead><tr><th title="S&amp;P 500 sector name from FMP API">Sector</th><th title="1-day price change as percentage">1D Change %</th></tr></thead><tbody><tr><td>Energy</td><td class="num pos">1.05%</td></tr><tr><td>Consumer Defensive</td><td class="num pos">0.31%</td></tr><tr><td>Utilities</td><td class="num neg">-0.12%</td></tr><tr><td>Real Estate</td><td class="num neg">-0.80%</td></tr><tr><td>Industrials</td><td class="num neg">-0.91%</td></tr><tr><td>Consumer Cyclical</td><td class="num neg">-1.03%</td></tr><tr><td>Basic Materials</td><td class="num neg">-1.07%</td></tr><tr><td>Healthcare</td><td class="num neg">-1.24%</td></tr><tr><td>Communication Services</td><td class="num neg">-1.44%</td></tr><tr><td>Technology</td><td class="num neg">-1.49%</td></tr><tr><td>Financial Services</td><td class="num neg">-2.02%</td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Commodities</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div class="macro-two-col"><div><p class="pb-header">Futures</p><table><thead><tr><th title="Commodity futures contract name">Commodity</th><th title="Latest futures price in USD">Price</th><th title="1-day price change as percentage">1D %</th></tr></thead><tbody><tr><td>Gold</td><td class="num">4995.70</td><td class="num neg">-1.30%</td></tr><tr><td>Silver</td><td class="num">79.28</td><td class="num neg">-2.54%</td></tr><tr><td>Crude Oil</td><td class="num">98.25</td><td class="num neg">-0.47%</td></tr><tr><td>Natural Gas</td><td class="num">3.12</td><td class="num neg">-0.38%</td></tr><tr><td>Copper</td><td class="num">5.71</td><td class="num neg">-0.81%</td></tr></tbody></table></div><div><p class="pb-header">ETF Proxies</p><table><thead><tr><th title="Commodity or currency ETF ticker symbol">Symbol</th><th title="Latest traded price in USD">Price</th><th title="1-day price change as percentage">1D %</th></tr></thead><tbody><tr><td class="ticker">GLD</td><td class="num">460.84</td><td class="num neg">-1.29%</td></tr><tr><td class="ticker">SLV</td><td class="num">72.69</td><td class="num neg">-4.96%</td></tr><tr><td class="ticker">USO</td><td class="num">119.89</td><td class="num pos">1.27%</td></tr><tr><td class="ticker">UNG</td><td class="num">12.64</td><td class="num neg">-3.07%</td></tr><tr><td class="ticker">DBC</td><td class="num">28.71</td><td class="num neg">-0.52%</td></tr></tbody></table></div></div></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Indices</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div class="cards" style="margin-bottom:16px;"><div class="card"><div class="label">SPY vs 50MA</div><div class="value neg">Below</div><div class="sub">662.29 vs 686.38</div></div><div class="card"><div class="label">SPY vs 200MA</div><div class="value pos">Above</div><div class="sub">662.29 vs 658.60</div></div></div><table><thead><tr><th title="Index or ETF ticker symbol">Symbol</th><th title="Latest traded price in USD">Price</th><th title="1-day price change as percentage">1D %</th><th title="50-day moving average price level">50MA</th><th title="200-day moving average price level">200MA</th></tr></thead><tbody><tr><td class="ticker">^GSPC</td><td class="num">6632.19</td><td class="num neg">-0.61%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">^DJI</td><td class="num">46558.47</td><td class="num neg">-0.26%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">^IXIC</td><td class="num">22105.36</td><td class="num neg">-0.93%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-below">200MA</span></td></tr><tr><td class="ticker">^RUT</td><td class="num">2480.05</td><td class="num neg">-0.36%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">SPY</td><td class="num">662.29</td><td class="num neg">-0.57%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">QQQ</td><td class="num">593.72</td><td class="num neg">-0.59%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">IWM</td><td class="num">246.59</td><td class="num neg">-0.33%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr><tr><td class="ticker">DIA</td><td class="num">466.41</td><td class="num neg">-0.23%</td><td><span class="trend-below">50MA</span></td><td><span class="trend-above">200MA</span></td></tr></tbody></table></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Breadth (from sector_rotation_1y_data)</h2></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div class="cards"><div class="card" style="border-top-color:#ef4444;"><div class="label">Breadth Regime</div><div class="value neg">Weak</div><div class="sub">505 ETFs tracked</div></div><div class="card"><div class="label">Above 200MA Proxy</div><div class="value neg">0.0%</div><div class="sub">Strong trend>5.5</div></div></div><table><thead><tr><th title="Breadth indicator being measured">Metric</th><th title="Percentage of tracked ETFs meeting this criteria">Pct of Universe</th></tr></thead><tbody><tr><td>Above 200MA Proxy (trend_1w > 5.5)</td><td class="num neg">0.0%</td></tr><tr><td>Above 50MA Proxy (trend_1d > 5.5)</td><td class="num neg">0.0%</td></tr><tr><td>Above 20MA Proxy (mom_1d > 5.5)</td><td class="num neg">0.0%</td></tr><tr><td>Positive 5D Return</td><td class="num pos">79.2%</td></tr><tr><td>Bullish SecRot Score (>=60%)</td><td class="num neg">0.0%</td></tr></tbody></table></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-15 9:40 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
 
 /* --- Shared ownership state (localStorage, cross-dashboard) --- */
