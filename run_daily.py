@@ -148,7 +148,7 @@ BACKENDS = [
         'required': False,
     },
     {
-        'script': 'smart_scanner_v1_6.py',
+        'script': 'smart_scanner_v1_7.py',
         'name': 'Smart Scanner',
         'location': 'root',
         'slow': True,
@@ -196,6 +196,13 @@ BACKENDS = [
     {
         'script': 'gld_slv_ratio_signal_v1_0.py',
         'name': 'Gold/Silver Ratio Signal',
+        'slow': False,
+        'required': False,
+    },
+    {
+        'script': 'portfolio_allocator_v1_0.py',
+        'name': 'Portfolio Allocator (Regime-Aware)',
+        'location': 'root',
         'slow': False,
         'required': False,
     },

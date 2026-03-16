@@ -480,6 +480,17 @@ def main():
             regime_label.upper(), score_html, color=regime_color
         ))
 
+        # INFORMATIONAL ONLY banner (scimode invalidated: ratio does not predict SPY returns)
+        parts.append(
+            '<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;'
+            'padding:14px 24px;margin-bottom:18px;display:flex;align-items:center;gap:14px;">'
+            '<span style="font-weight:700;color:#92400e;font-size:1.1em;">INFORMATIONAL ONLY</span>'
+            '<span style="color:#78350f;font-size:0.92em;">'
+            'Scimode validation: HYG/LQD ratio does not predict forward SPY returns. '
+            'Use for credit spread monitoring context, not as a trading signal.</span>'
+            '</div>'
+        )
+
         # 4. Forward-return cards
         parts.append(build_forward_cards(expected_returns))
 

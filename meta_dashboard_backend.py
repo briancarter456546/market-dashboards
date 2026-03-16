@@ -1364,6 +1364,16 @@ def build_body(regime, agreement_full, agreement_trusted,
     parts = [
         _build_stat_bar(regime),
         _build_routing_banner(regime),
+        # Note: some aggregated sources (HYG/LQD, momentum qualifier composite)
+        # were invalidated by scimode. Meta dashboard keeps them for context but
+        # users should weight trusted sources (D-Stock, momentum ranker, pullback health).
+        '<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;'
+        'padding:14px 24px;margin:0 20px 18px 20px;display:flex;align-items:center;gap:14px;">'
+        '<span style="font-weight:700;color:#92400e;font-size:1.1em;">NOTE</span>'
+        '<span style="color:#78350f;font-size:0.92em;">'
+        'Some aggregated sources (HYG/LQD, Momentum Qualifier composite) were invalidated by scimode. '
+        'Weight Trusted-mode sources for trading decisions.</span>'
+        '</div>',
         '<div class="container">',
         toggle_html,
         agree_section,
