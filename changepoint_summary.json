@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-03-16T15:05:16.770248",
+  "generated_at": "2026-03-16T16:07:47.707710",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.19836317171026,
+  "norm_drift": 2.1976013983618143,
   "top_regime": "tariff_shock",
-  "top_sim": 31.7,
+  "top_sim": 31.8,
   "regime_similarity": [
     {
       "name": "tariff_shock",
       "desc": "Liberation Day / stagflation fears",
-      "sim": 31.7
+      "sim": 31.8
     },
     {
       "name": "covid",
@@ -28,7 +28,7 @@
     {
       "name": "recovery_04_06",
       "desc": "Mid-cycle expansion / housing boom",
-      "sim": -0.1
+      "sim": -0.0
     }
   ]
 }
