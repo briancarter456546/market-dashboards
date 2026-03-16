@@ -207,6 +207,27 @@ BACKENDS = [
         'required': False,
     },
     {
+        'script': 'portfolio_allocator_dashboard_v1_0.py',
+        'name': 'Portfolio Allocator Dashboard (Private)',
+        'location': 'root',
+        'slow': False,
+        'required': False,
+    },
+    {
+        'script': 'bear_hunter_backend.py',
+        'name': 'Bear Hunter Dashboard (Private)',
+        'location': 'root',
+        'slow': False,
+        'required': False,
+    },
+    {
+        'script': 'private_dashboard_landing_v1_0.py',
+        'name': 'Private Dashboard Landing Page',
+        'location': 'root',
+        'slow': False,
+        'required': False,
+    },
+    {
         'script': 'dashboard_llm_descriptions.py',
         'name': 'LLM Dashboard Descriptions',
         'slow': False,
