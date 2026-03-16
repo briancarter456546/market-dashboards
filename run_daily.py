@@ -200,6 +200,13 @@ BACKENDS = [
         'required': False,
     },
     {
+        'script': 'validated_signal_generator_v1_0.py',
+        'name': 'Validated System Signal Generator',
+        'location': 'root',
+        'slow': False,
+        'required': False,
+    },
+    {
         'script': 'portfolio_allocator_v1_0.py',
         'name': 'Portfolio Allocator (Regime-Aware)',
         'location': 'root',
