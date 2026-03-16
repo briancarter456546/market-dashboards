@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-03-16T11:05:38.075211",
+  "generated_at": "2026-03-16T12:08:48.318175",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.194802184776904,
+  "norm_drift": 2.1986462577006787,
   "top_regime": "tariff_shock",
-  "top_sim": 32.0,
+  "top_sim": 31.6,
   "regime_similarity": [
     {
       "name": "tariff_shock",
       "desc": "Liberation Day / stagflation fears",
-      "sim": 32.0
+      "sim": 31.6
     },
     {
       "name": "covid",
       "desc": "Crash + V-shaped recovery",
-      "sim": 19.6
+      "sim": 19.4
     },
     {
       "name": "ai_bull",
@@ -23,12 +23,12 @@
     {
       "name": "dot_com_bust",
       "desc": "Tech collapse / value rotation",
-      "sim": 3.8
+      "sim": 3.9
     },
     {
       "name": "recovery_04_06",
       "desc": "Mid-cycle expansion / housing boom",
-      "sim": 0.1
+      "sim": -0.0
     }
   ]
 }
