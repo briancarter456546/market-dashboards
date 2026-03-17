@@ -250,11 +250,16 @@ body {
       <thead>
         <tr>
           <th>If Added</th>
+          <th>Total Return</th>
           <th>Ann. Return</th>
           <th>Volatility</th>
           <th>Sortino</th>
           <th>Max Drawdown</th>
+          <th>Best Day</th>
+          <th>Worst Day</th>
+          <th>Best Month</th>
           <th>Worst Month</th>
+          <th>Days</th>
         </tr>
       </thead>
       <tbody id="candidateBody"></tbody>
@@ -658,9 +663,13 @@ function computeEWStats(tickers) {
     const dd = (cum / peak - 1) * 100;
     if (dd < maxDD) maxDD = dd;
   });
+  const bestDay = Math.max(...ewDailyRets) * 100;
+  const worstDay = Math.min(...ewDailyRets) * 100;
   const monthly = computeMonthlyReturnsFromDaily(ewDates, ewDailyRets);
+  const bestMonth = monthly.length ? Math.max(...monthly) : 0;
   const worstMonth = monthly.length ? Math.min(...monthly) : 0;
-  return { annRet, vol, sortino, maxDD, worstMonth };
+  const totalRet = (cumRet - 1) * 100;
+  return { totalRet, annRet, vol, sortino, maxDD, bestDay, worstDay, bestMonth, worstMonth, days: ewDailyRets.length };
 }
 
 function renderCandidateTable() {
@@ -696,11 +705,16 @@ function renderCandidateTable() {
     return '<tr class="candidate-row">' +
       '<td style="font-weight:600;color:#0891b2">' + ticker +
         '<span class="candidate-add" onclick="promoteCandidateToActive(\'' + ticker + '\')">add</span></td>' +
+      '<td>' + fmt('totalRet', hypo.totalRet, baseline.totalRet, true) + '</td>' +
       '<td>' + fmt('annRet', hypo.annRet, baseline.annRet, true) + '</td>' +
       '<td>' + fmt('vol', hypo.vol, baseline.vol, false) + '</td>' +
       '<td>' + fmtRatio(hypo.sortino, baseline.sortino) + '</td>' +
       '<td>' + fmt('maxDD', hypo.maxDD, baseline.maxDD, false) + '</td>' +
+      '<td>' + fmt('bestDay', hypo.bestDay, baseline.bestDay, true) + '</td>' +
+      '<td>' + fmt('worstDay', hypo.worstDay, baseline.worstDay, false) + '</td>' +
+      '<td>' + fmt('bestMonth', hypo.bestMonth, baseline.bestMonth, true) + '</td>' +
       '<td>' + fmt('worstMonth', hypo.worstMonth, baseline.worstMonth, false) + '</td>' +
+      '<td>' + hypo.days + '</td>' +
       '</tr>';
   }).join('');
 }
