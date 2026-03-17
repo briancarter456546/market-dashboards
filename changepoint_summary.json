@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-03-17T13:05:12.529187",
+  "generated_at": "2026-03-17T14:08:40.080453",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.1713414769183275,
+  "norm_drift": 2.1713511183002443,
   "top_regime": "tariff_shock",
-  "top_sim": 29.6,
+  "top_sim": 29.7,
   "regime_similarity": [
     {
       "name": "tariff_shock",
       "desc": "Liberation Day / stagflation fears",
-      "sim": 29.6
+      "sim": 29.7
     },
     {
       "name": "covid",
@@ -23,7 +23,7 @@
     {
       "name": "dot_com_bust",
       "desc": "Tech collapse / value rotation",
-      "sim": 2.5
+      "sim": 2.6
     },
     {
       "name": "recovery_04_06",
