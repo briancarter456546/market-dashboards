@@ -28,6 +28,8 @@ import shutil
 import sys
 import time
 
+import pandas as pd
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, '..', 'perplexity-user-data')
 PRICE_CACHE_DIR = os.path.join(DATA_DIR, 'price_cache')
@@ -70,10 +72,14 @@ def export_ticker(ticker, output_dir):
         print('[FAIL] {} - {}'.format(ticker, e))
         return False
 
+    # Skip non-DataFrame pkl files (some are dicts or other types)
+    if not isinstance(df, pd.DataFrame):
+        print('[SKIP] {} - not a DataFrame'.format(ticker))
+        return False
+
     # Ensure DatetimeIndex
     if not hasattr(df.index, 'strftime'):
         if 'date' in df.columns:
-            import pandas as pd
             df['date'] = pd.to_datetime(df['date'])
             df.set_index('date', inplace=True)
         else:
