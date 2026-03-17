@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ticker Compare - Market Dashboards</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  background: #f4f5f7; color: #1a1a2e;
+  font-size: 17px; line-height: 1.55;
+}
+.page-header {
+  background: #1e1e2e; color: #e2e2e8; padding: 18px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.page-header h1 { font-size: 22px; font-weight: 700; color: #fff; }
+.page-header a { color: #94a3b8; text-decoration: none; font-size: 14px; }
+.page-header a:hover { color: #fff; }
+.content { max-width: 1400px; margin: 0 auto; padding: 20px 24px; }
+
+/* Controls */
+.controls {
+  background: #fff; border-radius: 10px; padding: 20px 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 16px;
+}
+.controls-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.ticker-input-wrap { position: relative; flex: 1; min-width: 200px; }
+#tickerInput {
+  font-family: 'IBM Plex Mono', monospace; font-size: 16px;
+  padding: 10px 14px; border: 2px solid #d1d5db; border-radius: 8px;
+  width: 100%; outline: none; text-transform: uppercase;
+}
+#tickerInput:focus { border-color: #4f46e5; }
+#tickerInput::placeholder { text-transform: none; color: #9ca3af; }
+.autocomplete-list {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+  background: #fff; border: 1px solid #d1d5db; border-radius: 0 0 8px 8px;
+  max-height: 200px; overflow-y: auto; display: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.autocomplete-list div {
+  padding: 8px 14px; cursor: pointer; font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+}
+.autocomplete-list div:hover, .autocomplete-list div.active { background: #eef2ff; }
+.btn-add {
+  background: #4f46e5; color: #fff; border: none; border-radius: 8px;
+  padding: 10px 20px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.btn-add:hover { background: #4338ca; }
+
+/* Ticker chips */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px; font-size: 14px;
+  font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #fff;
+}
+.chip .remove {
+  cursor: pointer; font-size: 16px; opacity: 0.7; margin-left: 2px;
+}
+.chip .remove:hover { opacity: 1; }
+
+/* Timeframe buttons */
+.tf-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
+.tf-btn {
+  padding: 7px 14px; border: 2px solid #d1d5db; border-radius: 8px;
+  background: #fff; font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace; color: #374151;
+}
+.tf-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+.tf-btn.active { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+
+/* Chart */
+.chart-wrap {
+  background: #fff; border-radius: 10px; padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 16px;
+  position: relative;
+}
+.chart-wrap canvas { width: 100% !important; }
+.chart-empty {
+  text-align: center; color: #9ca3af; padding: 80px 20px;
+  font-size: 18px;
+}
+
+/* Stats table */
+.stats-section {
+  background: #fff; border-radius: 10px; padding: 20px 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 16px;
+}
+.stats-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: #1e1e2e; }
+.stats-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.stats-table th {
+  text-align: left; padding: 8px 12px; border-bottom: 2px solid #e5e7eb;
+  font-weight: 600; color: #6b7280; font-size: 13px; text-transform: uppercase;
+}
+.stats-table td {
+  padding: 8px 12px; border-bottom: 1px solid #f3f4f6;
+  font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+}
+.stats-table tr:hover td { background: #f9fafb; }
+.pos { color: #059669; } .neg { color: #dc2626; }
+
+/* Normalize toggle */
+.norm-toggle { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.norm-toggle label { font-size: 14px; font-weight: 500; color: #374151; cursor: pointer; }
+.norm-toggle select {
+  padding: 6px 10px; border: 2px solid #d1d5db; border-radius: 6px;
+  font-size: 14px; font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* Preset buttons */
+.preset-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.preset-btn {
+  padding: 5px 12px; border: 1px solid #d1d5db; border-radius: 6px;
+  background: #f9fafb; font-size: 13px; cursor: pointer; color: #4b5563;
+}
+.preset-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Ticker Compare</h1>
+  <a href="../index.html">All Dashboards</a>
+</div>
+
+<div class="content">
+  <div class="controls">
+    <div class="controls-row">
+      <div class="ticker-input-wrap">
+        <input type="text" id="tickerInput" placeholder="Type ticker and press Enter (e.g. SPY)" autocomplete="off">
+        <div class="autocomplete-list" id="autocomplete"></div>
+      </div>
+      <button class="btn-add" onclick="addTickerFromInput()">Add</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="preset-row">
+      <button class="preset-btn" onclick="loadPreset(['SPY','QQQ','IWM','DIA'])">Indexes</button>
+      <button class="preset-btn" onclick="loadPreset(['XLK','XLF','XLE','XLV','XLI','XLP','XLY','XLU','XLRE','XLB','XLC'])">Sectors</button>
+      <button class="preset-btn" onclick="loadPreset(['SPY','TLT','GLD','UUP'])">Macro 4</button>
+      <button class="preset-btn" onclick="loadPreset(['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA'])">Mag 7</button>
+      <button class="preset-btn" onclick="loadPreset(['TQQQ','UPRO','SOXL','TNA'])">Leveraged Bull</button>
+      <button class="preset-btn" onclick="clearAll()">Clear All</button>
+    </div>
+    <div class="tf-row" id="tfRow">
+      <button class="tf-btn" data-days="5">5D</button>
+      <button class="tf-btn" data-days="10">10D</button>
+      <button class="tf-btn active" data-days="21">21D</button>
+      <button class="tf-btn" data-days="63">63D</button>
+      <button class="tf-btn" data-days="126">126D</button>
+      <button class="tf-btn" data-days="252">1Y</button>
+      <button class="tf-btn" data-days="504">2Y</button>
+      <button class="tf-btn" data-days="756">3Y</button>
+      <button class="tf-btn" data-days="1260">5Y</button>
+      <button class="tf-btn" data-days="2520">10Y</button>
+      <button class="tf-btn" data-days="5040">20Y</button>
+    </div>
+    <div class="norm-toggle">
+      <label for="normMode">Display:</label>
+      <select id="normMode" onchange="redraw()">
+        <option value="cumret">Cumulative Return (%)</option>
+        <option value="indexed">Indexed to 100</option>
+        <option value="price">Raw Price</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-empty" id="chartEmpty">Add tickers above to see comparison chart</div>
+    <canvas id="mainChart" style="display:none;"></canvas>
+  </div>
+
+  <div class="stats-section" id="statsSection" style="display:none;">
+    <h3>Period Statistics</h3>
+    <table class="stats-table">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Total Return</th>
+          <th>Ann. Return</th>
+          <th>Volatility</th>
+          <th>Sharpe</th>
+          <th>Max Drawdown</th>
+          <th>Best Day</th>
+          <th>Worst Day</th>
+          <th>Days</th>
+        </tr>
+      </thead>
+      <tbody id="statsBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// State
+// ============================================================
+const COLORS = [
+  '#4f46e5','#dc2626','#059669','#d97706','#7c3aed','#0ea5e9',
+  '#ec4899','#14b8a6','#f97316','#6366f1','#84cc16','#06b6d4',
+  '#e11d48','#8b5cf6','#10b981','#eab308'
+];
+const EW_COLOR = '#1e1e2e';
+let allTickers = [];
+let tickerData = {};   // ticker -> {dates:[], adjClose:[]}
+let activeTickers = []; // ordered list of active tickers
+let selectedDays = 21;
+let chart = null;
+
+// ============================================================
+// Init: load ticker manifest
+// ============================================================
+fetch('./tickers.json')
+  .then(r => r.json())
+  .then(list => { allTickers = list; })
+  .catch(() => { console.warn('No tickers.json found - autocomplete disabled'); });
+
+// ============================================================
+// Autocomplete
+// ============================================================
+const input = document.getElementById('tickerInput');
+const acList = document.getElementById('autocomplete');
+let acIndex = -1;
+
+input.addEventListener('input', function() {
+  const val = this.value.toUpperCase().trim();
+  acList.innerHTML = '';
+  acIndex = -1;
+  if (!val || val.length < 1) { acList.style.display = 'none'; return; }
+  const matches = allTickers.filter(t =>
+    t.startsWith(val) && !activeTickers.includes(t)
+  ).slice(0, 12);
+  if (!matches.length) { acList.style.display = 'none'; return; }
+  matches.forEach(t => {
+    const d = document.createElement('div');
+    d.textContent = t;
+    d.onclick = () => { addTicker(t); acList.style.display = 'none'; input.value = ''; };
+    acList.appendChild(d);
+  });
+  acList.style.display = 'block';
+});
+
+input.addEventListener('keydown', function(e) {
+  const items = acList.querySelectorAll('div');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    acIndex = Math.min(acIndex + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('active', i === acIndex));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    acIndex = Math.max(acIndex - 1, 0);
+    items.forEach((el, i) => el.classList.toggle('active', i === acIndex));
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (acIndex >= 0 && items[acIndex]) {
+      items[acIndex].click();
+    } else {
+      addTickerFromInput();
+    }
+  } else if (e.key === 'Escape') {
+    acList.style.display = 'none';
+  }
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.ticker-input-wrap')) acList.style.display = 'none';
+});
+
+function addTickerFromInput() {
+  const val = input.value.toUpperCase().trim();
+  if (val) addTicker(val);
+  input.value = '';
+  acList.style.display = 'none';
+}
+
+// ============================================================
+// Ticker management
+// ============================================================
+function addTicker(ticker) {
+  ticker = ticker.toUpperCase();
+  if (activeTickers.includes(ticker)) return;
+  if (tickerData[ticker]) {
+    activeTickers.push(ticker);
+    renderChips();
+    redraw();
+    return;
+  }
+  // Fetch data
+  fetch('./data/' + ticker + '.json')
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(data => {
+      tickerData[ticker] = data;
+      activeTickers.push(ticker);
+      renderChips();
+      redraw();
+    })
+    .catch(() => {
+      alert(ticker + ' not found. Run the backend to export it.');
+    });
+}
+
+function removeTicker(ticker) {
+  activeTickers = activeTickers.filter(t => t !== ticker);
+  renderChips();
+  redraw();
+}
+
+function clearAll() {
+  activeTickers = [];
+  renderChips();
+  redraw();
+}
+
+function loadPreset(tickers) {
+  clearAll();
+  let loaded = 0;
+  const total = tickers.length;
+  tickers.forEach(t => {
+    t = t.toUpperCase();
+    if (tickerData[t]) {
+      activeTickers.push(t);
+      loaded++;
+      if (loaded === total) { renderChips(); redraw(); }
+    } else {
+      fetch('./data/' + t + '.json')
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(data => {
+          tickerData[t] = data;
+          activeTickers.push(t);
+          loaded++;
+          if (loaded === total) { renderChips(); redraw(); }
+        })
+        .catch(() => { loaded++; if (loaded === total) { renderChips(); redraw(); } });
+    }
+  });
+}
+
+function renderChips() {
+  const el = document.getElementById('chips');
+  el.innerHTML = activeTickers.map((t, i) => {
+    const c = COLORS[i % COLORS.length];
+    return '<span class="chip" style="background:' + c + '">' +
+      t + '<span class="remove" onclick="removeTicker(\'' + t + '\')">&times;</span></span>';
+  }).join('');
+  // EW portfolio chip
+  if (activeTickers.length >= 2) {
+    el.innerHTML += '<span class="chip" style="background:' + EW_COLOR +
+      ';border:2px dashed #6b7280;">EW Portfolio</span>';
+  }
+}
+
+// ============================================================
+// Timeframe buttons
+// ============================================================
+document.getElementById('tfRow').addEventListener('click', function(e) {
+  const btn = e.target.closest('.tf-btn');
+  if (!btn) return;
+  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedDays = parseInt(btn.dataset.days);
+  redraw();
+});
+
+// ============================================================
+// Chart rendering
+// ============================================================
+function redraw() {
+  const canvas = document.getElementById('mainChart');
+  const empty = document.getElementById('chartEmpty');
+  const statsSection = document.getElementById('statsSection');
+
+  if (!activeTickers.length) {
+    canvas.style.display = 'none';
+    empty.style.display = 'block';
+    statsSection.style.display = 'none';
+    if (chart) { chart.destroy(); chart = null; }
+    return;
+  }
+
+  canvas.style.display = 'block';
+  empty.style.display = 'none';
+  statsSection.style.display = 'block';
+
+  const mode = document.getElementById('normMode').value;
+  const datasets = [];
+  const statsRows = [];
+
+  // Find the common end date (most recent date across all tickers)
+  let maxDate = '';
+  activeTickers.forEach(t => {
+    const d = tickerData[t];
+    if (d && d.dates.length) {
+      const last = d.dates[d.dates.length - 1];
+      if (last > maxDate) maxDate = last;
+    }
+  });
+
+  // Build datasets for each ticker
+  activeTickers.forEach((ticker, idx) => {
+    const raw = tickerData[ticker];
+    if (!raw) return;
+
+    // Trim to selectedDays from end
+    const n = raw.dates.length;
+    const start = Math.max(0, n - selectedDays);
+    const dates = raw.dates.slice(start);
+    const prices = raw.adjClose.slice(start);
+
+    if (dates.length < 2) return;
+
+    const basePrice = prices[0];
+    const points = [];
+    for (let i = 0; i < dates.length; i++) {
+      let y;
+      if (mode === 'cumret') {
+        y = ((prices[i] / basePrice) - 1) * 100;
+      } else if (mode === 'indexed') {
+        y = (prices[i] / basePrice) * 100;
+      } else {
+        y = prices[i];
+      }
+      points.push({ x: dates[i], y: Math.round(y * 100) / 100 });
+    }
+
+    datasets.push({
+      label: ticker,
+      data: points,
+      borderColor: COLORS[idx % COLORS.length],
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHitRadius: 6,
+      tension: 0.1,
+    });
+
+    // Stats
+    const dailyReturns = [];
+    for (let i = 1; i < prices.length; i++) {
+      dailyReturns.push(prices[i] / prices[i - 1] - 1);
+    }
+    const totalRet = (prices[prices.length - 1] / prices[0] - 1) * 100;
+    const annFactor = 252 / dailyReturns.length;
+    const annRet = ((Math.pow(prices[prices.length - 1] / prices[0], annFactor)) - 1) * 100;
+    const mean = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+    const variance = dailyReturns.reduce((a, b) => a + (b - mean) ** 2, 0) / dailyReturns.length;
+    const vol = Math.sqrt(variance) * Math.sqrt(252) * 100;
+    const sharpe = vol > 0 ? (annRet / vol) : 0;
+    const bestDay = Math.max(...dailyReturns) * 100;
+    const worstDay = Math.min(...dailyReturns) * 100;
+
+    // Max drawdown
+    let peak = prices[0];
+    let maxDD = 0;
+    for (let i = 1; i < prices.length; i++) {
+      if (prices[i] > peak) peak = prices[i];
+      const dd = (prices[i] / peak - 1) * 100;
+      if (dd < maxDD) maxDD = dd;
+    }
+
+    statsRows.push({
+      ticker, totalRet, annRet, vol, sharpe, maxDD, bestDay, worstDay,
+      days: dates.length,
+      color: COLORS[idx % COLORS.length]
+    });
+  });
+
+  // Equal-weight portfolio line (2+ tickers)
+  if (activeTickers.length >= 2) {
+    // Build a date->returns map for each ticker
+    const tickerReturnsByDate = {};
+    activeTickers.forEach(ticker => {
+      const raw = tickerData[ticker];
+      if (!raw) return;
+      const n = raw.dates.length;
+      const start = Math.max(0, n - selectedDays);
+      const dates = raw.dates.slice(start);
+      const prices = raw.adjClose.slice(start);
+      for (let i = 1; i < dates.length; i++) {
+        const dt = dates[i];
+        if (!tickerReturnsByDate[dt]) tickerReturnsByDate[dt] = [];
+        tickerReturnsByDate[dt].push(prices[i] / prices[i - 1] - 1);
+      }
+    });
+
+    // Sort dates and compute cumulative EW return
+    const ewDates = Object.keys(tickerReturnsByDate).sort();
+    let cumRet = 1;
+    const ewPoints = [];
+
+    // Add starting point
+    if (ewDates.length > 0) {
+      // Find the day before the first return date for the starting point
+      // Use the earliest ticker's start date
+      let earliest = '';
+      activeTickers.forEach(ticker => {
+        const raw = tickerData[ticker];
+        if (!raw) return;
+        const n = raw.dates.length;
+        const start = Math.max(0, n - selectedDays);
+        const d0 = raw.dates[start];
+        if (!earliest || d0 < earliest) earliest = d0;
+      });
+      if (mode === 'cumret') ewPoints.push({ x: earliest, y: 0 });
+      else if (mode === 'indexed') ewPoints.push({ x: earliest, y: 100 });
+      else ewPoints.push({ x: earliest, y: 100 });
+    }
+
+    ewDates.forEach(dt => {
+      const rets = tickerReturnsByDate[dt];
+      const avgRet = rets.reduce((a, b) => a + b, 0) / rets.length;
+      cumRet *= (1 + avgRet);
+      let y;
+      if (mode === 'cumret') y = (cumRet - 1) * 100;
+      else if (mode === 'indexed') y = cumRet * 100;
+      else y = cumRet * 100;
+      ewPoints.push({ x: dt, y: Math.round(y * 100) / 100 });
+    });
+
+    datasets.push({
+      label: 'EW Portfolio',
+      data: ewPoints,
+      borderColor: EW_COLOR,
+      backgroundColor: 'transparent',
+      borderWidth: 3.5,
+      borderDash: [8, 4],
+      pointRadius: 0,
+      pointHitRadius: 6,
+      tension: 0.1,
+    });
+
+    // EW stats
+    const ewDailyRets = ewDates.map(dt => {
+      const rets = tickerReturnsByDate[dt];
+      return rets.reduce((a, b) => a + b, 0) / rets.length;
+    });
+    if (ewDailyRets.length > 0) {
+      const ewTotal = (cumRet - 1) * 100;
+      const annF = 252 / ewDailyRets.length;
+      const ewAnn = (Math.pow(cumRet, annF) - 1) * 100;
+      const ewMean = ewDailyRets.reduce((a, b) => a + b, 0) / ewDailyRets.length;
+      const ewVar = ewDailyRets.reduce((a, b) => a + (b - ewMean) ** 2, 0) / ewDailyRets.length;
+      const ewVol = Math.sqrt(ewVar) * Math.sqrt(252) * 100;
+      const ewSharpe = ewVol > 0 ? ewAnn / ewVol : 0;
+      const ewBest = Math.max(...ewDailyRets) * 100;
+      const ewWorst = Math.min(...ewDailyRets) * 100;
+      let ewPeak = 1, ewMaxDD = 0, ewCum = 1;
+      ewDailyRets.forEach(r => {
+        ewCum *= (1 + r);
+        if (ewCum > ewPeak) ewPeak = ewCum;
+        const dd = (ewCum / ewPeak - 1) * 100;
+        if (dd < ewMaxDD) ewMaxDD = dd;
+      });
+      statsRows.push({
+        ticker: 'EW Portfolio', totalRet: ewTotal, annRet: ewAnn,
+        vol: ewVol, sharpe: ewSharpe, maxDD: ewMaxDD,
+        bestDay: ewBest, worstDay: ewWorst, days: ewDailyRets.length,
+        color: EW_COLOR
+      });
+    }
+  }
+
+  // Render chart
+  if (chart) chart.destroy();
+  const ctx = canvas.getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { usePointStyle: true, pointStyle: 'line', padding: 16,
+                    font: { family: "'IBM Plex Sans'", size: 13 } }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const suffix = mode === 'cumret' ? '%' : mode === 'indexed' ? '' : '';
+              return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { unit: selectedDays <= 21 ? 'day' : selectedDays <= 252 ? 'week' : 'month',
+                  tooltipFormat: 'MMM d, yyyy' },
+          grid: { color: '#f0f0f0' },
+          ticks: { font: { family: "'IBM Plex Mono'", size: 12 }, maxTicksLimit: 15 }
+        },
+        y: {
+          title: {
+            display: true,
+            text: mode === 'cumret' ? 'Return (%)' : mode === 'indexed' ? 'Indexed (100)' : 'Price ($)',
+            font: { family: "'IBM Plex Sans'", size: 13 }
+          },
+          grid: { color: '#f0f0f0' },
+          ticks: {
+            font: { family: "'IBM Plex Mono'", size: 12 },
+            callback: function(v) {
+              return mode === 'cumret' ? v.toFixed(1) + '%' : v.toFixed(1);
+            }
+          }
+        }
+      }
+    }
+  });
+  // Force chart height
+  canvas.parentElement.style.height = '500px';
+
+  // Render stats table
+  const tbody = document.getElementById('statsBody');
+  tbody.innerHTML = statsRows.map(s => {
+    const rc = v => v >= 0 ? 'pos' : 'neg';
+    return '<tr>' +
+      '<td style="font-weight:600;color:' + s.color + '">' + s.ticker + '</td>' +
+      '<td class="' + rc(s.totalRet) + '">' + s.totalRet.toFixed(2) + '%</td>' +
+      '<td class="' + rc(s.annRet) + '">' + s.annRet.toFixed(2) + '%</td>' +
+      '<td>' + s.vol.toFixed(1) + '%</td>' +
+      '<td class="' + rc(s.sharpe) + '">' + s.sharpe.toFixed(2) + '</td>' +
+      '<td class="neg">' + s.maxDD.toFixed(2) + '%</td>' +
+      '<td class="pos">+' + s.bestDay.toFixed(2) + '%</td>' +
+      '<td class="neg">' + s.worstDay.toFixed(2) + '%</td>' +
+      '<td>' + s.days + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+// ============================================================
+// URL state (share comparisons via URL hash)
+// ============================================================
+function saveToHash() {
+  const params = new URLSearchParams();
+  if (activeTickers.length) params.set('t', activeTickers.join(','));
+  params.set('d', selectedDays);
+  params.set('m', document.getElementById('normMode').value);
+  window.location.hash = params.toString();
+}
+
+function loadFromHash() {
+  if (!window.location.hash) return;
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const t = params.get('t');
+  const d = params.get('d');
+  const m = params.get('m');
+  if (d) {
+    selectedDays = parseInt(d);
+    document.querySelectorAll('.tf-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.days) === selectedDays);
+    });
+  }
+  if (m) document.getElementById('normMode').value = m;
+  if (t) {
+    const tickers = t.split(',');
+    loadPreset(tickers);
+  }
+}
+
+// Save state on changes
+const origRedraw = redraw;
+redraw = function() {
+  origRedraw();
+  saveToHash();
+};
+
+// Load state from URL on page load
+window.addEventListener('load', loadFromHash);
+</script>
+</body>
+</html>

@@ -10,6 +10,9 @@ tom_*.csv
 # Backup copies
 *Copy*.py
 
+# Ticker compare data (1,388 per-ticker JSON files, ~35MB, regenerated on minerva)
+docs/ticker-compare/data/
+
 # Misc HTML artifacts
 index_preview.html
 cowork-vs-openclaw-quiz.html

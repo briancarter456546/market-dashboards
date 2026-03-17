@@ -864,6 +864,14 @@ DASHBOARD_DESCRIPTIONS = {
         "Sends email notification on signal activation, deactivation, and approach. "
         "Validated by scimode_gld_slv_signal_v1_0.py. KB finding #44746."
     ),
+    "ticker-compare": (
+        "Interactive multi-ticker comparison tool. Enter any tickers to see "
+        "normalized price lines on one chart across 11 timeframes (5D to 20Y). "
+        "Automatically computes an equal-weight portfolio return line that adjusts "
+        "for data availability -- if a ticker has less history, it only enters the "
+        "average when its data begins. Stats table shows total return, annualized "
+        "return, volatility, Sharpe ratio, max drawdown, and best/worst day."
+    ),
 }
 
 _LLM_DISCLAIMER = (
@@ -1318,6 +1326,16 @@ DASHBOARD_REGISTRY = [
         "icon":        "Au",
         "color":       "#d97706",
         "tag":         "Signal",
+    },
+    {
+        "slug":        "ticker-compare",
+        "title":       "Ticker Compare",
+        "description": "Interactive multi-ticker comparison. Input any tickers, view normalized "
+                       "price lines across 11 timeframes (5D to 20Y), with an equal-weight "
+                       "portfolio return line. Stats: total/annualized return, vol, Sharpe, max DD.",
+        "icon":        "VS",
+        "color":       "#0891b2",
+        "tag":         "Tool",
     },
 ]
 

@@ -235,6 +235,12 @@ BACKENDS = [
         'required': False,
     },
     {
+        'script': 'ticker_compare_backend.py',
+        'name': 'Ticker Compare Data Export',
+        'slow': True,
+        'required': False,
+    },
+    {
         'script': 'dashboard_llm_descriptions.py',
         'name': 'LLM Dashboard Descriptions',
         'slow': False,
