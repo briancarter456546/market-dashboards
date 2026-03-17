@@ -421,7 +421,7 @@ function renderChips() {
   // EW portfolio chip
   if (activeTickers.length >= 2) {
     el.innerHTML += '<span class="chip" style="background:' + EW_COLOR +
-      ';border:2px dashed #6b7280;">EW Portfolio</span>';
+      ';border:2px dashed #6b7280;">Equal-Weight Portfolio</span>';
   }
 }
 
@@ -884,7 +884,7 @@ function redraw() {
     });
 
     datasets.push({
-      label: 'EW Portfolio',
+      label: 'Equal-Weight Portfolio',
       data: ewPoints,
       borderColor: EW_COLOR,
       backgroundColor: 'transparent',
@@ -926,7 +926,7 @@ function redraw() {
       const ewBestMonth = ewMonthly.length ? Math.max(...ewMonthly) : 0;
       const ewWorstMonth = ewMonthly.length ? Math.min(...ewMonthly) : 0;
       statsRows.push({
-        ticker: 'EW Portfolio', totalRet: ewTotal, annRet: ewAnn,
+        ticker: 'Equal-Weight Portfolio', totalRet: ewTotal, annRet: ewAnn,
         vol: ewVol, sortino: ewSortino, maxDD: ewMaxDD,
         bestDay: ewBest, worstDay: ewWorst,
         bestMonth: ewBestMonth, worstMonth: ewWorstMonth,
