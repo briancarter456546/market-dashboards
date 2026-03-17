@@ -138,6 +138,18 @@ body {
   background: #fff; font-size: 13px; cursor: pointer; color: #9ca3af;
 }
 .save-current-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+
+/* Candidate impact deltas */
+.delta { font-size: 12px; font-weight: 500; margin-left: 4px; }
+.delta.better { color: #059669; }
+.delta.worse { color: #dc2626; }
+.delta.neutral { color: #9ca3af; }
+.candidate-row td { vertical-align: middle; }
+.candidate-add {
+  font-size: 12px; color: #4f46e5; cursor: pointer; text-decoration: underline;
+  margin-left: 6px;
+}
+.candidate-add:hover { color: #4338ca; }
 </style>
 </head>
 <body>
@@ -216,6 +228,36 @@ body {
         </tr>
       </thead>
       <tbody id="statsBody"></tbody>
+    </table>
+  </div>
+
+  <div class="stats-section" id="candidatesSection" style="display:none;">
+    <h3>Addition Candidates</h3>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:12px;">
+      Test how adding a ticker would change the EW portfolio without adding it to the chart.
+    </p>
+    <div class="controls-row" style="margin-bottom:14px;">
+      <div class="ticker-input-wrap">
+        <input type="text" id="candidateInput" placeholder="Type candidate ticker" autocomplete="off"
+               style="font-family:'IBM Plex Mono',monospace;font-size:15px;padding:8px 12px;border:2px solid #d1d5db;border-radius:8px;width:100%;outline:none;text-transform:uppercase;">
+        <div class="autocomplete-list" id="candidateAC"></div>
+      </div>
+      <button class="btn-add" onclick="addCandidateFromInput()" style="padding:8px 16px;font-size:14px;">Test</button>
+      <button class="preset-btn" onclick="clearCandidates()">Clear</button>
+    </div>
+    <div class="chips" id="candidateChips" style="margin-bottom:10px;"></div>
+    <table class="stats-table" id="candidateTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>If Added</th>
+          <th>Ann. Return</th>
+          <th>Volatility</th>
+          <th>Sortino</th>
+          <th>Max Drawdown</th>
+          <th>Worst Month</th>
+        </tr>
+      </thead>
+      <tbody id="candidateBody"></tbody>
     </table>
   </div>
 </div>
@@ -486,6 +528,183 @@ function computeMonthlyReturnsFromDaily(dates, dailyRets) {
   });
 }
 
+// ============================================================
+// Addition Candidates
+// ============================================================
+let candidateTickers = [];
+
+const candidateInput = document.getElementById('candidateInput');
+const candidateAC = document.getElementById('candidateAC');
+let candAcIndex = -1;
+
+candidateInput.addEventListener('input', function() {
+  const val = this.value.toUpperCase().trim();
+  candidateAC.innerHTML = ''; candAcIndex = -1;
+  if (!val) { candidateAC.style.display = 'none'; return; }
+  const exclude = [...activeTickers, ...candidateTickers];
+  const matches = allTickers.filter(t => t.startsWith(val) && !exclude.includes(t)).slice(0, 10);
+  if (!matches.length) { candidateAC.style.display = 'none'; return; }
+  matches.forEach(t => {
+    const d = document.createElement('div');
+    d.textContent = t;
+    d.onclick = () => { addCandidate(t); candidateAC.style.display = 'none'; candidateInput.value = ''; };
+    candidateAC.appendChild(d);
+  });
+  candidateAC.style.display = 'block';
+});
+
+candidateInput.addEventListener('keydown', function(e) {
+  const items = candidateAC.querySelectorAll('div');
+  if (e.key === 'ArrowDown') { e.preventDefault(); candAcIndex = Math.min(candAcIndex + 1, items.length - 1); items.forEach((el, i) => el.classList.toggle('active', i === candAcIndex)); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); candAcIndex = Math.max(candAcIndex - 1, 0); items.forEach((el, i) => el.classList.toggle('active', i === candAcIndex)); }
+  else if (e.key === 'Enter') { e.preventDefault(); if (candAcIndex >= 0 && items[candAcIndex]) items[candAcIndex].click(); else addCandidateFromInput(); }
+  else if (e.key === 'Escape') candidateAC.style.display = 'none';
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#candidatesSection')) candidateAC.style.display = 'none';
+});
+
+function addCandidateFromInput() {
+  const val = candidateInput.value.toUpperCase().trim();
+  if (val) addCandidate(val);
+  candidateInput.value = '';
+  candidateAC.style.display = 'none';
+}
+
+function addCandidate(ticker) {
+  ticker = ticker.toUpperCase();
+  if (candidateTickers.includes(ticker) || activeTickers.includes(ticker)) return;
+  if (tickerData[ticker]) {
+    candidateTickers.push(ticker);
+    renderCandidateChips();
+    renderCandidateTable();
+    return;
+  }
+  fetch('./data/' + ticker + '.json')
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(data => {
+      tickerData[ticker] = data;
+      candidateTickers.push(ticker);
+      renderCandidateChips();
+      renderCandidateTable();
+    })
+    .catch(() => alert(ticker + ' not found.'));
+}
+
+function removeCandidate(ticker) {
+  candidateTickers = candidateTickers.filter(t => t !== ticker);
+  renderCandidateChips();
+  renderCandidateTable();
+}
+
+function clearCandidates() {
+  candidateTickers = [];
+  renderCandidateChips();
+  renderCandidateTable();
+}
+
+function promoteCandidateToActive(ticker) {
+  removeCandidate(ticker);
+  addTicker(ticker);
+}
+
+function renderCandidateChips() {
+  const el = document.getElementById('candidateChips');
+  el.innerHTML = candidateTickers.map(t =>
+    '<span class="chip" style="background:#0891b2">' + t +
+    '<span class="remove" onclick="removeCandidate(\'' + t + '\')">&times;</span></span>'
+  ).join('');
+}
+
+// Compute EW portfolio stats for a given set of tickers
+function computeEWStats(tickers) {
+  if (tickers.length < 2) return null;
+  const tickerReturnsByDate = {};
+  tickers.forEach(ticker => {
+    const raw = tickerData[ticker];
+    if (!raw) return;
+    const n = raw.dates.length;
+    const start = Math.max(0, n - selectedDays);
+    const dates = raw.dates.slice(start);
+    const prices = raw.adjClose.slice(start);
+    for (let i = 1; i < dates.length; i++) {
+      const dt = dates[i];
+      if (!tickerReturnsByDate[dt]) tickerReturnsByDate[dt] = [];
+      tickerReturnsByDate[dt].push(prices[i] / prices[i - 1] - 1);
+    }
+  });
+  const ewDates = Object.keys(tickerReturnsByDate).sort();
+  if (!ewDates.length) return null;
+  const ewDailyRets = ewDates.map(dt => {
+    const rets = tickerReturnsByDate[dt];
+    return rets.reduce((a, b) => a + b, 0) / rets.length;
+  });
+  let cumRet = 1;
+  ewDailyRets.forEach(r => cumRet *= (1 + r));
+  const annF = 252 / ewDailyRets.length;
+  const annRet = (Math.pow(cumRet, annF) - 1) * 100;
+  const mean = ewDailyRets.reduce((a, b) => a + b, 0) / ewDailyRets.length;
+  const variance = ewDailyRets.reduce((a, b) => a + (b - mean) ** 2, 0) / ewDailyRets.length;
+  const vol = Math.sqrt(variance) * Math.sqrt(252) * 100;
+  const downRets = ewDailyRets.filter(r => r < 0);
+  const downVar = downRets.length > 0 ? downRets.reduce((a, b) => a + b ** 2, 0) / downRets.length : 0;
+  const downDev = Math.sqrt(downVar) * Math.sqrt(252) * 100;
+  const sortino = downDev > 0 ? annRet / downDev : 0;
+  let peak = 1, maxDD = 0, cum = 1;
+  ewDailyRets.forEach(r => {
+    cum *= (1 + r);
+    if (cum > peak) peak = cum;
+    const dd = (cum / peak - 1) * 100;
+    if (dd < maxDD) maxDD = dd;
+  });
+  const monthly = computeMonthlyReturnsFromDaily(ewDates, ewDailyRets);
+  const worstMonth = monthly.length ? Math.min(...monthly) : 0;
+  return { annRet, vol, sortino, maxDD, worstMonth };
+}
+
+function renderCandidateTable() {
+  const table = document.getElementById('candidateTable');
+  const tbody = document.getElementById('candidateBody');
+  if (!candidateTickers.length || activeTickers.length < 2) {
+    table.style.display = 'none';
+    return;
+  }
+  table.style.display = '';
+  const baseline = computeEWStats(activeTickers);
+  if (!baseline) { table.style.display = 'none'; return; }
+
+  tbody.innerHTML = candidateTickers.map(ticker => {
+    const hypo = computeEWStats([...activeTickers, ticker]);
+    if (!hypo) return '';
+
+    function fmt(key, val, baseVal, higherIsBetter) {
+      const diff = val - baseVal;
+      const sign = diff >= 0 ? '+' : '';
+      const cls = (higherIsBetter ? diff > 0.005 : diff < -0.005) ? 'better'
+                : (higherIsBetter ? diff < -0.005 : diff > 0.005) ? 'worse' : 'neutral';
+      return val.toFixed(2) + '%<span class="delta ' + cls + '">(' + sign + diff.toFixed(2) + ')</span>';
+    }
+
+    function fmtRatio(val, baseVal) {
+      const diff = val - baseVal;
+      const sign = diff >= 0 ? '+' : '';
+      const cls = diff > 0.005 ? 'better' : diff < -0.005 ? 'worse' : 'neutral';
+      return val.toFixed(2) + '<span class="delta ' + cls + '">(' + sign + diff.toFixed(2) + ')</span>';
+    }
+
+    return '<tr class="candidate-row">' +
+      '<td style="font-weight:600;color:#0891b2">' + ticker +
+        '<span class="candidate-add" onclick="promoteCandidateToActive(\'' + ticker + '\')">add</span></td>' +
+      '<td>' + fmt('annRet', hypo.annRet, baseline.annRet, true) + '</td>' +
+      '<td>' + fmt('vol', hypo.vol, baseline.vol, false) + '</td>' +
+      '<td>' + fmtRatio(hypo.sortino, baseline.sortino) + '</td>' +
+      '<td>' + fmt('maxDD', hypo.maxDD, baseline.maxDD, false) + '</td>' +
+      '<td>' + fmt('worstMonth', hypo.worstMonth, baseline.worstMonth, false) + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
 function redraw() {
   const canvas = document.getElementById('mainChart');
   const empty = document.getElementById('chartEmpty');
@@ -495,6 +714,7 @@ function redraw() {
     canvas.style.display = 'none';
     empty.style.display = 'block';
     statsSection.style.display = 'none';
+    document.getElementById('candidatesSection').style.display = 'none';
     if (chart) { chart.destroy(); chart = null; }
     return;
   }
@@ -502,6 +722,8 @@ function redraw() {
   canvas.style.display = 'block';
   empty.style.display = 'none';
   statsSection.style.display = 'block';
+  document.getElementById('candidatesSection').style.display =
+    activeTickers.length >= 2 ? 'block' : 'none';
 
   const mode = document.getElementById('normMode').value;
   const datasets = [];
@@ -770,6 +992,9 @@ function redraw() {
       '<td>' + s.days + '</td>' +
       '</tr>';
   }).join('');
+
+  // Re-render candidates when portfolio changes
+  if (candidateTickers.length) renderCandidateTable();
 }
 
 // ============================================================
