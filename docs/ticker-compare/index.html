@@ -121,6 +121,23 @@ body {
   background: #f9fafb; font-size: 13px; cursor: pointer; color: #4b5563;
 }
 .preset-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+
+/* Saved combos */
+.saved-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+.saved-row .label { font-size: 13px; font-weight: 600; color: #6b7280; }
+.saved-btn {
+  padding: 5px 12px; border: 1px solid #0891b2; border-radius: 6px;
+  background: #ecfeff; font-size: 13px; cursor: pointer; color: #0e7490;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.saved-btn:hover { background: #cffafe; }
+.saved-btn .del { font-size: 14px; color: #94a3b8; cursor: pointer; margin-left: 2px; }
+.saved-btn .del:hover { color: #dc2626; }
+.save-current-btn {
+  padding: 5px 12px; border: 1px dashed #d1d5db; border-radius: 6px;
+  background: #fff; font-size: 13px; cursor: pointer; color: #9ca3af;
+}
+.save-current-btn:hover { border-color: #4f46e5; color: #4f46e5; }
 </style>
 </head>
 <body>
@@ -147,6 +164,10 @@ body {
       <button class="preset-btn" onclick="loadPreset(['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA'])">Mag 7</button>
       <button class="preset-btn" onclick="loadPreset(['TQQQ','UPRO','SOXL','TNA'])">Leveraged Bull</button>
       <button class="preset-btn" onclick="clearAll()">Clear All</button>
+    </div>
+    <div class="saved-row" id="savedRow">
+      <span class="label">Saved:</span>
+      <button class="save-current-btn" onclick="saveCurrentCombo()">+ Save current</button>
     </div>
     <div class="tf-row" id="tfRow">
       <button class="tf-btn" data-days="5">5D</button>
@@ -185,10 +206,12 @@ body {
           <th>Total Return</th>
           <th>Ann. Return</th>
           <th>Volatility</th>
-          <th>Sharpe</th>
+          <th>Sortino</th>
           <th>Max Drawdown</th>
           <th>Best Day</th>
           <th>Worst Day</th>
+          <th>Best Month</th>
+          <th>Worst Month</th>
           <th>Days</th>
         </tr>
       </thead>
@@ -370,6 +393,99 @@ document.getElementById('tfRow').addEventListener('click', function(e) {
 // ============================================================
 // Chart rendering
 // ============================================================
+// ============================================================
+// Saved combos (localStorage)
+// ============================================================
+const COMBOS_KEY = 'ticker_compare_combos';
+
+function getSavedCombos() {
+  try { return JSON.parse(localStorage.getItem(COMBOS_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveCombos(combos) {
+  localStorage.setItem(COMBOS_KEY, JSON.stringify(combos));
+}
+
+function saveCurrentCombo() {
+  if (!activeTickers.length) { alert('Add tickers first.'); return; }
+  const name = prompt('Name this combo:', activeTickers.join(', '));
+  if (!name) return;
+  const combos = getSavedCombos();
+  combos.push({ name, tickers: [...activeTickers] });
+  saveCombos(combos);
+  renderSavedCombos();
+}
+
+function loadCombo(idx) {
+  const combos = getSavedCombos();
+  if (combos[idx]) loadPreset(combos[idx].tickers);
+}
+
+function deleteCombo(idx, e) {
+  e.stopPropagation();
+  const combos = getSavedCombos();
+  combos.splice(idx, 1);
+  saveCombos(combos);
+  renderSavedCombos();
+}
+
+function renderSavedCombos() {
+  const row = document.getElementById('savedRow');
+  const combos = getSavedCombos();
+  let html = '<span class="label">Saved:</span>';
+  combos.forEach((c, i) => {
+    html += '<button class="saved-btn" onclick="loadCombo(' + i + ')" title="' +
+      c.tickers.join(', ') + '">' + c.name +
+      '<span class="del" onclick="deleteCombo(' + i + ', event)">&times;</span></button>';
+  });
+  html += '<button class="save-current-btn" onclick="saveCurrentCombo()">+ Save current</button>';
+  row.innerHTML = html;
+}
+
+// Init saved combos on load
+renderSavedCombos();
+
+// ============================================================
+// Monthly return helpers
+// ============================================================
+
+// Compute monthly returns from dates + prices arrays
+function computeMonthlyReturns(dates, prices) {
+  if (dates.length < 2) return [];
+  const months = {};
+  for (let i = 0; i < dates.length; i++) {
+    const key = dates[i].slice(0, 7); // YYYY-MM
+    if (!months[key]) months[key] = { first: prices[i], last: prices[i] };
+    else months[key].last = prices[i];
+  }
+  const keys = Object.keys(months).sort();
+  // Skip first partial month if less than 15 days
+  const rets = [];
+  for (let i = 1; i < keys.length; i++) {
+    const prev = months[keys[i - 1]];
+    const cur = months[keys[i]];
+    rets.push((cur.last / prev.last - 1) * 100);
+  }
+  return rets;
+}
+
+// Compute monthly returns from daily return arrays (for EW portfolio)
+function computeMonthlyReturnsFromDaily(dates, dailyRets) {
+  if (!dates.length) return [];
+  const months = {};
+  for (let i = 0; i < dates.length; i++) {
+    const key = dates[i].slice(0, 7);
+    if (!months[key]) months[key] = [];
+    months[key].push(dailyRets[i]);
+  }
+  const keys = Object.keys(months).sort();
+  return keys.map(k => {
+    const cum = months[k].reduce((a, r) => a * (1 + r), 1);
+    return (cum - 1) * 100;
+  });
+}
+
 function redraw() {
   const canvas = document.getElementById('mainChart');
   const empty = document.getElementById('chartEmpty');
@@ -450,9 +566,18 @@ function redraw() {
     const mean = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
     const variance = dailyReturns.reduce((a, b) => a + (b - mean) ** 2, 0) / dailyReturns.length;
     const vol = Math.sqrt(variance) * Math.sqrt(252) * 100;
-    const sharpe = vol > 0 ? (annRet / vol) : 0;
+    const downReturns = dailyReturns.filter(r => r < 0);
+    const downVar = downReturns.length > 0
+      ? downReturns.reduce((a, b) => a + b ** 2, 0) / downReturns.length : 0;
+    const downDev = Math.sqrt(downVar) * Math.sqrt(252) * 100;
+    const sortino = downDev > 0 ? (annRet / downDev) : 0;
     const bestDay = Math.max(...dailyReturns) * 100;
     const worstDay = Math.min(...dailyReturns) * 100;
+
+    // Monthly returns
+    const monthlyRets = computeMonthlyReturns(dates, prices);
+    const bestMonth = monthlyRets.length ? Math.max(...monthlyRets) : 0;
+    const worstMonth = monthlyRets.length ? Math.min(...monthlyRets) : 0;
 
     // Max drawdown
     let peak = prices[0];
@@ -464,8 +589,8 @@ function redraw() {
     }
 
     statsRows.push({
-      ticker, totalRet, annRet, vol, sharpe, maxDD, bestDay, worstDay,
-      days: dates.length,
+      ticker, totalRet, annRet, vol, sortino, maxDD, bestDay, worstDay,
+      bestMonth, worstMonth, days: dates.length,
       color: COLORS[idx % COLORS.length]
     });
   });
@@ -546,7 +671,11 @@ function redraw() {
       const ewMean = ewDailyRets.reduce((a, b) => a + b, 0) / ewDailyRets.length;
       const ewVar = ewDailyRets.reduce((a, b) => a + (b - ewMean) ** 2, 0) / ewDailyRets.length;
       const ewVol = Math.sqrt(ewVar) * Math.sqrt(252) * 100;
-      const ewSharpe = ewVol > 0 ? ewAnn / ewVol : 0;
+      const ewDownRets = ewDailyRets.filter(r => r < 0);
+      const ewDownVar = ewDownRets.length > 0
+        ? ewDownRets.reduce((a, b) => a + b ** 2, 0) / ewDownRets.length : 0;
+      const ewDownDev = Math.sqrt(ewDownVar) * Math.sqrt(252) * 100;
+      const ewSortino = ewDownDev > 0 ? ewAnn / ewDownDev : 0;
       const ewBest = Math.max(...ewDailyRets) * 100;
       const ewWorst = Math.min(...ewDailyRets) * 100;
       let ewPeak = 1, ewMaxDD = 0, ewCum = 1;
@@ -556,11 +685,16 @@ function redraw() {
         const dd = (ewCum / ewPeak - 1) * 100;
         if (dd < ewMaxDD) ewMaxDD = dd;
       });
+      // EW monthly returns from daily
+      const ewMonthly = computeMonthlyReturnsFromDaily(ewDates, ewDailyRets);
+      const ewBestMonth = ewMonthly.length ? Math.max(...ewMonthly) : 0;
+      const ewWorstMonth = ewMonthly.length ? Math.min(...ewMonthly) : 0;
       statsRows.push({
         ticker: 'EW Portfolio', totalRet: ewTotal, annRet: ewAnn,
-        vol: ewVol, sharpe: ewSharpe, maxDD: ewMaxDD,
-        bestDay: ewBest, worstDay: ewWorst, days: ewDailyRets.length,
-        color: EW_COLOR
+        vol: ewVol, sortino: ewSortino, maxDD: ewMaxDD,
+        bestDay: ewBest, worstDay: ewWorst,
+        bestMonth: ewBestMonth, worstMonth: ewWorstMonth,
+        days: ewDailyRets.length, color: EW_COLOR
       });
     }
   }
@@ -627,10 +761,12 @@ function redraw() {
       '<td class="' + rc(s.totalRet) + '">' + s.totalRet.toFixed(2) + '%</td>' +
       '<td class="' + rc(s.annRet) + '">' + s.annRet.toFixed(2) + '%</td>' +
       '<td>' + s.vol.toFixed(1) + '%</td>' +
-      '<td class="' + rc(s.sharpe) + '">' + s.sharpe.toFixed(2) + '</td>' +
+      '<td class="' + rc(s.sortino) + '">' + s.sortino.toFixed(2) + '</td>' +
       '<td class="neg">' + s.maxDD.toFixed(2) + '%</td>' +
       '<td class="pos">+' + s.bestDay.toFixed(2) + '%</td>' +
       '<td class="neg">' + s.worstDay.toFixed(2) + '%</td>' +
+      '<td class="pos">+' + s.bestMonth.toFixed(2) + '%</td>' +
+      '<td class="neg">' + s.worstMonth.toFixed(2) + '%</td>' +
       '<td>' + s.days + '</td>' +
       '</tr>';
   }).join('');
