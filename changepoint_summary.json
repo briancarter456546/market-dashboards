@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-03-18T15:06:07.132970",
+  "generated_at": "2026-03-18T16:08:26.939463",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.1608934256712575,
+  "norm_drift": 2.1645487654689863,
   "top_regime": "tariff_shock",
-  "top_sim": 26.4,
+  "top_sim": 26.0,
   "regime_similarity": [
     {
       "name": "tariff_shock",
       "desc": "Liberation Day / stagflation fears",
-      "sim": 26.4
+      "sim": 26.0
     },
     {
       "name": "covid",
@@ -18,12 +18,12 @@
     {
       "name": "ai_bull",
       "desc": "AI-led growth / rate cut cycle",
-      "sim": 10.2
+      "sim": 10.3
     },
     {
       "name": "dot_com_bust",
       "desc": "Tech collapse / value rotation",
-      "sim": 0.8
+      "sim": 0.6
     },
     {
       "name": "recovery_04_06",
