@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-18T12:08:19.536240",
+  "generated_at": "2026-03-18T13:04:56.920695",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.161122218477566,
+  "norm_drift": 2.161105338975732,
   "top_regime": "tariff_shock",
   "top_sim": 26.3,
   "regime_similarity": [
@@ -18,7 +18,7 @@
     {
       "name": "ai_bull",
       "desc": "AI-led growth / rate cut cycle",
-      "sim": 10.3
+      "sim": 10.2
     },
     {
       "name": "dot_com_bust",
