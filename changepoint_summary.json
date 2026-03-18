@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-18T14:08:11.843876",
+  "generated_at": "2026-03-18T15:06:07.132970",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.1609495226744224,
+  "norm_drift": 2.1608934256712575,
   "top_regime": "tariff_shock",
   "top_sim": 26.4,
   "regime_similarity": [
