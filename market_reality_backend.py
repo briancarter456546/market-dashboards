@@ -1,22 +1,29 @@
 # ============================================================================
-# market_reality_backend.py - v1.1
-# Last updated: 2026-03-08
+# market_reality_backend.py - v1.2
+# Last updated: 2026-03-17
 # ============================================================================
-# v1.1: Context filtering (market-as-person, not people-as-emotional),
-#       date column, more feeds, raised max_per_feed, synonyms,
-#       actual measured values in table
+# v1.2: 3-tier metaphor architecture (anthropomorphism / magnitude / narrative),
+#       per-Morris et al agent vs object distinction, ADX/RSI/ATR/breadth
+#       computed for full verdict coverage, subject-aware magnitude verdicts,
+#       fixed ALWAYS_MARKET overmatch, updated methodology section
+# v1.1: Context filtering, date column, more feeds, synonyms, measured values
 # v1.0: Initial build - RSS scan, anthro detection, quant reality from cache
 # ============================================================================
 """
 Market Reality Check Backend
 ============================
-Scans financial commentary RSS feeds for anthropomorphic language,
-cross-references with quantitative market data from price_cache,
-and generates a static dashboard via DashboardWriter.
+Scans financial commentary RSS feeds for three types of misleading language:
 
-Based on Morris et al. (2007) research: agent metaphors cause investors
-to expect trend continuance. This dashboard translates emotional language
-into what the data actually shows.
+  TIER 1 - ANTHROPOMORPHISM: Agent metaphors that treat markets as people
+           with emotions/will (Morris et al. 2007). These cause investors
+           to expect trend continuance.
+  TIER 2 - MAGNITUDE HYPERBOLE: Dramatic words that exaggerate the size
+           of a move (soaring, plunging, freefall). Reality check: what
+           was the actual % move?
+  TIER 3 - UNFALSIFIABLE NARRATIVE: Post-hoc explanations that sound
+           meaningful but can't be tested (profit-taking, bargain hunting).
+
+Cross-references all detections with quantitative market data from price_cache.
 
 Run:  python market_reality_backend.py
 """
@@ -51,128 +58,177 @@ _DATA_DIR   = _SCRIPT_DIR / '..' / 'perplexity-user-data'
 CACHE_DIR   = _DATA_DIR / 'price_cache'
 
 # ============================================================================
-# ANTHROPOMORPHISM LEXICON
+# 3-TIER LEXICON
 # ============================================================================
-# Maps emotional/anthropomorphic phrases -> what they claim -> what to measure
+# TIER 1: ANTHROPOMORPHISM (agent metaphors -- market treated as person)
+# These are the Morris et al. finding: attributing will/emotion to markets
+# causes investors to expect trend continuance.
 
-ANTHRO_LEXICON = {
-    # FEAR / NERVOUSNESS
-    "skittish":     {"category": "fear",        "implies": "irrational nervousness",   "measure": ["VIX", "put/call", "SKEW"]},
-    "nervous":      {"category": "fear",        "implies": "anxiety without cause",     "measure": ["VIX", "put/call"]},
-    "jittery":      {"category": "fear",        "implies": "fragile confidence",        "measure": ["VIX", "put/call", "SKEW"]},
-    "fearful":      {"category": "fear",        "implies": "emotional selling",         "measure": ["VIX", "correlation"]},
-    "scared":       {"category": "fear",        "implies": "irrational avoidance",      "measure": ["VIX", "put/call"]},
-    "worried":      {"category": "fear",        "implies": "anxiety",                   "measure": ["VIX", "SKEW"]},
-    "spooked":      {"category": "fear",        "implies": "startled reaction",         "measure": ["VIX", "put/call"]},
-    "anxious":      {"category": "fear",        "implies": "generalized worry",         "measure": ["VIX", "SKEW"]},
-    "rattled":      {"category": "fear",        "implies": "shaken confidence",         "measure": ["VIX", "breadth"]},
-    "on edge":      {"category": "fear",        "implies": "ready to bolt",             "measure": ["VIX", "put/call"]},
-    "uneasy":       {"category": "fear",        "implies": "discomfort, doubt",         "measure": ["VIX", "SKEW"]},
-    "trembling":    {"category": "fear",        "implies": "shaking with fear",         "measure": ["VIX", "put/call"]},
-    "twitchy":      {"category": "fear",        "implies": "jumpy, reactive",           "measure": ["VIX", "put/call"]},
-    "apprehensive": {"category": "fear",        "implies": "dread of what's next",      "measure": ["VIX", "SKEW"]},
-    "wary":         {"category": "fear",        "implies": "guarded, watchful",         "measure": ["VIX", "put/call"]},
+TIER1_ANTHROPOMORPHISM = {
+    # FEAR / NERVOUSNESS -- market treated as a scared person
+    "skittish":     {"category": "fear",        "implies": "market is irrationally nervous",    "measure": ["VIX", "SKEW"]},
+    "nervous":      {"category": "fear",        "implies": "market has anxiety",                "measure": ["VIX", "SKEW"]},
+    "jittery":      {"category": "fear",        "implies": "market has fragile confidence",     "measure": ["VIX", "SKEW"]},
+    "fearful":      {"category": "fear",        "implies": "market is emotionally selling",     "measure": ["VIX", "correlation"]},
+    "scared":       {"category": "fear",        "implies": "market is irrationally avoiding",   "measure": ["VIX", "SKEW"]},
+    "worried":      {"category": "fear",        "implies": "market has anxiety",                "measure": ["VIX", "SKEW"]},
+    "spooked":      {"category": "fear",        "implies": "market was startled",               "measure": ["VIX", "SKEW"]},
+    "anxious":      {"category": "fear",        "implies": "market has generalized worry",      "measure": ["VIX", "SKEW"]},
+    "rattled":      {"category": "fear",        "implies": "market's confidence is shaken",     "measure": ["VIX", "breadth"]},
+    "on edge":      {"category": "fear",        "implies": "market is ready to bolt",           "measure": ["VIX", "SKEW"]},
+    "uneasy":       {"category": "fear",        "implies": "market feels discomfort",           "measure": ["VIX", "SKEW"]},
+    "trembling":    {"category": "fear",        "implies": "market is shaking with fear",       "measure": ["VIX", "SKEW"]},
+    "twitchy":      {"category": "fear",        "implies": "market is jumpy and reactive",      "measure": ["VIX", "SKEW"]},
+    "apprehensive": {"category": "fear",        "implies": "market dreads what's next",         "measure": ["VIX", "SKEW"]},
+    "wary":         {"category": "fear",        "implies": "market is guarded and watchful",    "measure": ["VIX", "SKEW"]},
+    "panicking":    {"category": "fear",        "implies": "market is in irrational liquidation","measure": ["VIX term structure", "correlation", "breadth"]},
+    "panic":        {"category": "fear",        "implies": "market has mass irrational fear",   "measure": ["VIX term structure", "correlation"]},
+    "capitulating": {"category": "fear",        "implies": "market is surrendering",            "measure": ["VIX term structure", "breadth"]},
+    "capitulation": {"category": "fear",        "implies": "market is giving up",               "measure": ["VIX term structure", "breadth"]},
 
-    # PANIC
-    "panicking":    {"category": "panic",       "implies": "irrational liquidation",    "measure": ["VIX term structure", "correlation", "breadth"]},
-    "panic":        {"category": "panic",       "implies": "mass irrational fear",      "measure": ["VIX term structure", "correlation"]},
-    "capitulation": {"category": "panic",       "implies": "giving up / surrender",     "measure": ["VIX term structure", "breadth", "volume"]},
-    "capitulating": {"category": "panic",       "implies": "surrendering positions",    "measure": ["VIX term structure", "breadth", "volume"]},
-    "meltdown":     {"category": "panic",       "implies": "system collapse",           "measure": ["VIX term structure", "correlation"]},
-    "bloodbath":    {"category": "panic",       "implies": "violent destruction",        "measure": ["VIX", "breadth"]},
-    "carnage":      {"category": "panic",       "implies": "mass destruction",          "measure": ["VIX", "breadth", "correlation"]},
-    "freefall":     {"category": "panic",       "implies": "uncontrolled descent",      "measure": ["VIX term structure", "breadth"]},
-    "free fall":    {"category": "panic",       "implies": "uncontrolled descent",      "measure": ["VIX term structure", "breadth"]},
-    "cratering":    {"category": "panic",       "implies": "collapsing violently",      "measure": ["VIX term structure", "breadth"]},
-    "imploding":    {"category": "panic",       "implies": "collapsing inward",         "measure": ["VIX term structure", "correlation"]},
-    "tanking":      {"category": "panic",       "implies": "rapid uncontrolled fall",   "measure": ["VIX", "breadth"]},
-    "plunging":     {"category": "panic",       "implies": "diving headfirst",          "measure": ["VIX", "breadth"]},
-    "crashing":     {"category": "panic",       "implies": "violent impact",            "measure": ["VIX term structure", "correlation"]},
+    # EXHAUSTION -- market treated as a tired person
+    "tired":        {"category": "exhaustion",  "implies": "market needs rest",                 "measure": ["ADX", "RSI"]},
+    "exhausted":    {"category": "exhaustion",  "implies": "market's energy is depleted",       "measure": ["ADX", "RSI"]},
+    "fatigued":     {"category": "exhaustion",  "implies": "market's momentum is weakening",    "measure": ["ADX", "RSI"]},
+    "running out of steam": {"category": "exhaustion", "implies": "market is decelerating",     "measure": ["ADX", "RSI"]},
+    "losing steam": {"category": "exhaustion",  "implies": "market's momentum is fading",       "measure": ["ADX", "RSI"]},
+    "out of gas":   {"category": "exhaustion",  "implies": "market has no fuel left",           "measure": ["ADX", "RSI"]},
+    "winded":       {"category": "exhaustion",  "implies": "market needs to catch its breath",  "measure": ["ADX", "RSI"]},
+    "spent":        {"category": "exhaustion",  "implies": "market used up all energy",         "measure": ["ADX", "RSI"]},
+    "running on fumes": {"category": "exhaustion", "implies": "market is nearly depleted",      "measure": ["ADX", "RSI"]},
+    "petering out": {"category": "exhaustion",  "implies": "market is gradually dying",         "measure": ["ADX", "RSI"]},
 
-    # EXHAUSTION
-    "tired":        {"category": "exhaustion",  "implies": "fatigue, needs rest",       "measure": ["ADX", "OBV", "breadth"]},
-    "exhausted":    {"category": "exhaustion",  "implies": "energy depleted",           "measure": ["ADX", "RSI", "volume"]},
-    "fatigued":     {"category": "exhaustion",  "implies": "weakening momentum",        "measure": ["ADX", "OBV"]},
-    "running out of steam": {"category": "exhaustion", "implies": "decelerating",       "measure": ["ADX", "RSI"]},
-    "losing steam": {"category": "exhaustion",  "implies": "momentum fading",           "measure": ["ADX", "RSI", "OBV"]},
-    "out of gas":   {"category": "exhaustion",  "implies": "no fuel left",              "measure": ["ADX", "RSI", "OBV"]},
-    "winded":       {"category": "exhaustion",  "implies": "needs to catch breath",     "measure": ["ADX", "RSI"]},
-    "spent":        {"category": "exhaustion",  "implies": "used up all energy",        "measure": ["ADX", "volume"]},
-    "running on fumes": {"category": "exhaustion", "implies": "nearly depleted",        "measure": ["ADX", "RSI", "OBV"]},
-    "petering out": {"category": "exhaustion",  "implies": "gradually dying",           "measure": ["ADX", "RSI"]},
+    # CONSOLIDATION -- market treated as a thinking person
+    "digesting":    {"category": "consolidation", "implies": "market is thoughtfully processing", "measure": ["ATR", "ADX"]},
+    "absorbing":    {"category": "consolidation", "implies": "market is taking in information",   "measure": ["ATR", "ADX"]},
+    "mulling":      {"category": "consolidation", "implies": "market is deliberating",            "measure": ["ATR", "ADX"]},
+    "processing":   {"category": "consolidation", "implies": "market is doing cognitive work",    "measure": ["ATR", "ADX"]},
+    "pausing":      {"category": "consolidation", "implies": "market chose to stop temporarily",  "measure": ["ATR", "ADX"]},
+    "catching its breath": {"category": "consolidation", "implies": "market is resting before next move", "measure": ["ATR", "ADX"]},
+    "taking a breather": {"category": "consolidation", "implies": "market chose a brief rest",    "measure": ["ATR", "ADX"]},
+    "treading water": {"category": "consolidation", "implies": "market is staying afloat",        "measure": ["ATR", "ADX"]},
 
-    # CONSOLIDATION
-    "digesting":    {"category": "consolidation", "implies": "thoughtful processing",   "measure": ["ATR", "Bollinger width"]},
-    "absorbing":    {"category": "consolidation", "implies": "taking in information",   "measure": ["ATR", "Bollinger width"]},
-    "mulling":      {"category": "consolidation", "implies": "deliberating",            "measure": ["ATR", "volume"]},
-    "processing":   {"category": "consolidation", "implies": "cognitive work",          "measure": ["ATR", "Bollinger width"]},
-    "pausing":      {"category": "consolidation", "implies": "temporary halt",          "measure": ["ATR", "volume"]},
-    "catching its breath": {"category": "consolidation", "implies": "resting before next move", "measure": ["ATR", "volume"]},
-    "taking a breather": {"category": "consolidation", "implies": "brief rest",         "measure": ["ATR", "volume"]},
-    "treading water": {"category": "consolidation", "implies": "staying afloat, no progress", "measure": ["ATR", "Bollinger width"]},
+    # CONFUSION -- market treated as a disoriented person
+    "confused":     {"category": "confusion",   "implies": "market doesn't know what to do",    "measure": ["dispersion", "correlation"]},
+    "uncertain":    {"category": "confusion",   "implies": "market lacks direction",            "measure": ["VIX", "dispersion"]},
+    "mixed signals": {"category": "confusion",  "implies": "market is sending contradictions",  "measure": ["dispersion", "breadth"]},
+    "indecisive":   {"category": "confusion",   "implies": "market can't make up its mind",     "measure": ["ATR", "dispersion"]},
+    "directionless": {"category": "confusion",  "implies": "market has no sense of purpose",    "measure": ["ADX", "dispersion"]},
+    "lost":         {"category": "confusion",   "implies": "market doesn't know where to go",   "measure": ["ADX", "dispersion"]},
+    "torn":         {"category": "confusion",   "implies": "market is pulled both ways",        "measure": ["dispersion", "correlation"]},
+    "searching for direction": {"category": "confusion", "implies": "market is aimlessly moving", "measure": ["ADX", "dispersion"]},
+    "at a crossroads": {"category": "confusion", "implies": "market faces a decision",          "measure": ["ATR", "VIX"]},
 
-    # CONFUSION
-    "confused":     {"category": "confusion",   "implies": "market doesn't know",       "measure": ["dispersion", "correlation"]},
-    "uncertain":    {"category": "confusion",   "implies": "lack of direction",         "measure": ["VIX", "dispersion"]},
-    "mixed signals": {"category": "confusion",  "implies": "contradictory data",        "measure": ["dispersion", "breadth"]},
-    "indecisive":   {"category": "confusion",   "implies": "can't make up its mind",    "measure": ["ATR", "dispersion"]},
-    "directionless": {"category": "confusion",  "implies": "no trend",                  "measure": ["ADX", "dispersion"]},
-    "lost":         {"category": "confusion",   "implies": "doesn't know where to go",  "measure": ["ADX", "dispersion"]},
-    "torn":         {"category": "confusion",   "implies": "pulled both ways",          "measure": ["dispersion", "correlation"]},
-    "searching for direction": {"category": "confusion", "implies": "aimless movement", "measure": ["ADX", "dispersion"]},
-    "at a crossroads": {"category": "confusion", "implies": "decision point",           "measure": ["ATR", "VIX"]},
+    # EUPHORIA -- market treated as an ecstatic person
+    "euphoric":     {"category": "euphoria",    "implies": "market has irrational exuberance",  "measure": ["VIX", "RSI"]},
+    "exuberant":    {"category": "euphoria",    "implies": "market is excessively optimistic",  "measure": ["VIX", "RSI"]},
+    "giddy":        {"category": "euphoria",    "implies": "market is childlike with excitement","measure": ["VIX", "RSI"]},
+    "ecstatic":     {"category": "euphoria",    "implies": "market feels extreme joy",          "measure": ["VIX", "RSI"]},
+    "frothy":       {"category": "euphoria",    "implies": "market is bubbly and overvalued",   "measure": ["VIX", "RSI"]},
+    "bubbly":       {"category": "euphoria",    "implies": "market has unsustainable optimism", "measure": ["VIX", "RSI"]},
+    "ebullient":    {"category": "euphoria",    "implies": "market is enthusiastically optimistic", "measure": ["VIX", "RSI"]},
+    "intoxicated":  {"category": "euphoria",    "implies": "market is drunk on gains",          "measure": ["VIX", "RSI"]},
 
-    # EUPHORIA
-    "euphoric":     {"category": "euphoria",    "implies": "irrational exuberance",     "measure": ["VIX (low)", "bullish %"]},
-    "exuberant":    {"category": "euphoria",    "implies": "excessive optimism",        "measure": ["VIX (low)", "bullish %"]},
-    "giddy":        {"category": "euphoria",    "implies": "childlike excitement",      "measure": ["VIX (low)", "put/call (low)"]},
-    "ecstatic":     {"category": "euphoria",    "implies": "extreme joy",               "measure": ["VIX (low)", "bullish %"]},
-    "frothy":       {"category": "euphoria",    "implies": "bubbly, overvalued",        "measure": ["VIX (low)", "breadth (high)"]},
-    "bubbly":       {"category": "euphoria",    "implies": "unsustainable optimism",    "measure": ["VIX (low)", "bullish %"]},
-    "ebullient":    {"category": "euphoria",    "implies": "enthusiastically optimistic", "measure": ["VIX (low)", "bullish %"]},
-    "intoxicated":  {"category": "euphoria",    "implies": "drunk on gains",            "measure": ["VIX (low)", "bullish %"]},
-    "soaring":      {"category": "euphoria",    "implies": "flying high, unstoppable",  "measure": ["VIX (low)", "RSI"]},
+    # AGGRESSION -- market treated as a fighter
+    "fighting":     {"category": "aggression",  "implies": "market is willfully struggling",    "measure": ["breadth", "ADX"]},
+    "battling":     {"category": "aggression",  "implies": "market is in combat at levels",     "measure": ["breadth", "ADX"]},
+    "struggling":   {"category": "aggression",  "implies": "market has difficulty advancing",   "measure": ["breadth", "ADX"]},
+    "wrestling":    {"category": "aggression",  "implies": "market is on contested ground",     "measure": ["breadth", "ADX"]},
+    "clawing back": {"category": "aggression",  "implies": "market is desperately recovering",  "measure": ["breadth", "RSI"]},
+    "defending":    {"category": "aggression",  "implies": "market is holding a line",          "measure": ["breadth", "ADX"]},
+    "under attack": {"category": "aggression",  "implies": "market is being assaulted",         "measure": ["VIX", "breadth"]},
+    "under siege":  {"category": "aggression",  "implies": "market faces sustained assault",    "measure": ["VIX", "breadth"]},
+    "punished":     {"category": "aggression",  "implies": "market is suffering consequences",  "measure": ["VIX", "breadth"]},
 
-    # AGGRESSION
-    "fighting":     {"category": "aggression",  "implies": "willful struggle",          "measure": ["volume at price", "order flow"]},
-    "battling":     {"category": "aggression",  "implies": "combat at levels",          "measure": ["volume at price", "order flow"]},
-    "struggling":   {"category": "aggression",  "implies": "difficulty advancing",      "measure": ["volume at price", "breadth"]},
-    "wrestling":    {"category": "aggression",  "implies": "contested ground",          "measure": ["volume at price", "order flow"]},
-    "clawing back": {"category": "aggression",  "implies": "desperate recovery",        "measure": ["breadth", "volume"]},
-    "defending":    {"category": "aggression",  "implies": "holding a line",            "measure": ["volume at price", "breadth"]},
-    "under attack": {"category": "aggression",  "implies": "being assaulted",           "measure": ["VIX", "breadth"]},
-    "under siege":  {"category": "aggression",  "implies": "sustained assault",         "measure": ["VIX", "breadth"]},
-    "punished":     {"category": "aggression",  "implies": "suffering consequences",    "measure": ["VIX", "breadth"]},
+    # HEALTH / SICKNESS -- market treated as a patient
+    "healthy":      {"category": "health",      "implies": "market is in good condition",       "measure": ["breadth", "ADX"]},
+    "sick":         {"category": "health",      "implies": "market is diseased",                "measure": ["breadth", "correlation"]},
+    "recovering":   {"category": "health",      "implies": "market is healing from illness",    "measure": ["breadth", "RSI"]},
+    "ailing":       {"category": "health",      "implies": "market is persistently ill",        "measure": ["breadth", "ADX"]},
+    "wounded":      {"category": "health",      "implies": "market is injured but alive",       "measure": ["breadth", "RSI"]},
+    "limping":      {"category": "health",      "implies": "market is moving but impaired",     "measure": ["breadth", "ADX"]},
+    "bruised":      {"category": "health",      "implies": "market is hurt but not broken",     "measure": ["breadth", "RSI"]},
+    "bleeding":     {"category": "health",      "implies": "market is losing life force",       "measure": ["breadth", "RSI"]},
+    "contagion":    {"category": "health",      "implies": "market sickness is spreading",      "measure": ["correlation", "breadth"]},
+    "infected":     {"category": "health",      "implies": "market disease is spreading",       "measure": ["correlation", "breadth"]},
 
-    # HEALTH / SICKNESS
-    "healthy":      {"category": "health",      "implies": "good condition",            "measure": ["breadth", "ADX", "volume"]},
-    "sick":         {"category": "health",      "implies": "diseased, broken",          "measure": ["breadth", "correlation"]},
-    "recovering":   {"category": "health",      "implies": "healing from illness",      "measure": ["breadth", "RSI"]},
-    "ailing":       {"category": "health",      "implies": "persistently ill",          "measure": ["breadth", "ADX"]},
-    "wounded":      {"category": "health",      "implies": "injured but alive",         "measure": ["breadth", "volume"]},
-    "limping":      {"category": "health",      "implies": "moving but impaired",       "measure": ["breadth", "ADX"]},
-    "bruised":      {"category": "health",      "implies": "hurt but not broken",       "measure": ["breadth", "RSI"]},
-    "bleeding":     {"category": "health",      "implies": "losing life force",         "measure": ["breadth", "volume"]},
-    "contagion":    {"category": "health",      "implies": "spreading sickness",        "measure": ["correlation", "breadth"]},
-    "infected":     {"category": "health",      "implies": "disease spreading",         "measure": ["correlation", "breadth"]},
+    # CAUTION (agent -- market choosing to be careful)
+    "cautious":     {"category": "caution",     "implies": "market chose to be careful",        "measure": ["VIX", "ATR"]},
+    "resilient":    {"category": "caution",     "implies": "market is strong despite adversity","measure": ["breadth", "RSI"]},
+    "bracing for":  {"category": "caution",     "implies": "market is preparing for impact",    "measure": ["VIX", "SKEW"]},
+}
 
-    # FILLER (common but unfalsifiable)
-    "profit-taking": {"category": "filler",     "implies": "intentional selling",       "measure": ["UNFALSIFIABLE"]},
-    "profit taking": {"category": "filler",     "implies": "intentional selling",       "measure": ["UNFALSIFIABLE"]},
-    "bargain hunting": {"category": "filler",   "implies": "intentional buying",        "measure": ["UNFALSIFIABLE"]},
-    "sidelined":    {"category": "filler",      "implies": "waiting to act",            "measure": ["volume", "money flow"]},
-    "cautious":     {"category": "filler",      "implies": "careful behavior",          "measure": ["VIX", "put/call"]},
-    "resilient":    {"category": "filler",      "implies": "strong despite adversity",  "measure": ["breadth", "RSI"]},
-    "shrugging off": {"category": "filler",     "implies": "ignoring bad news",         "measure": ["UNFALSIFIABLE"]},
-    "betting on":   {"category": "filler",      "implies": "wagering / gambling",       "measure": ["UNFALSIFIABLE"]},
-    "bracing for":  {"category": "filler",      "implies": "preparing for impact",      "measure": ["VIX", "put/call"]},
+# TIER 2: MAGNITUDE HYPERBOLE (object/physics metaphors -- dramatic size words)
+# These describe HOW MUCH something moved, not market emotions.
+# The reality check: what was the actual % move?
+
+TIER2_MAGNITUDE = {
+    "soaring":      {"category": "magnitude_up",   "implies": "extremely large upward move"},
+    "surging":      {"category": "magnitude_up",   "implies": "extremely large upward move"},
+    "skyrocketing": {"category": "magnitude_up",   "implies": "explosive upward move"},
+    "moonshot":     {"category": "magnitude_up",   "implies": "absurdly large upward move"},
+    "exploding":    {"category": "magnitude_up",   "implies": "violent upward move"},
+
+    "plunging":     {"category": "magnitude_down", "implies": "extremely large downward move"},
+    "crashing":     {"category": "magnitude_down", "implies": "violent downward impact"},
+    "cratering":    {"category": "magnitude_down", "implies": "collapsing violently"},
+    "tanking":      {"category": "magnitude_down", "implies": "rapid uncontrolled fall"},
+    "freefall":     {"category": "magnitude_down", "implies": "uncontrolled descent"},
+    "free fall":    {"category": "magnitude_down", "implies": "uncontrolled descent"},
+    "imploding":    {"category": "magnitude_down", "implies": "collapsing inward"},
+    "meltdown":     {"category": "magnitude_down", "implies": "total system collapse"},
+    "bloodbath":    {"category": "magnitude_down", "implies": "extreme destruction"},
+    "carnage":      {"category": "magnitude_down", "implies": "mass destruction"},
+    "hammered":     {"category": "magnitude_down", "implies": "beaten down severely"},
+    "decimated":    {"category": "magnitude_down", "implies": "destroyed by large fraction"},
+    "obliterated":  {"category": "magnitude_down", "implies": "completely destroyed"},
+    "wiped out":    {"category": "magnitude_down", "implies": "total loss"},
+    "gutted":       {"category": "magnitude_down", "implies": "hollowed out"},
+}
+
+# TIER 3: UNFALSIFIABLE NARRATIVE (post-hoc explanations that can't be tested)
+TIER3_UNFALSIFIABLE = {
+    "profit-taking":  {"category": "unfalsifiable", "implies": "intentional selling (unverifiable)"},
+    "profit taking":  {"category": "unfalsifiable", "implies": "intentional selling (unverifiable)"},
+    "bargain hunting": {"category": "unfalsifiable", "implies": "intentional buying (unverifiable)"},
+    "sidelined":      {"category": "unfalsifiable", "implies": "waiting to act (unverifiable)"},
+    "shrugging off":  {"category": "unfalsifiable", "implies": "ignoring bad news (unverifiable)"},
+    "betting on":     {"category": "unfalsifiable", "implies": "wagering / gambling (unverifiable)"},
+    "positioning for": {"category": "unfalsifiable", "implies": "strategic placement (unverifiable)"},
+    "pricing in":     {"category": "unfalsifiable", "implies": "already accounted for (unverifiable)"},
+    "front-running":  {"category": "unfalsifiable", "implies": "acting ahead of news (unverifiable)"},
+}
+
+# Tier label and color mapping
+TIER_LABELS = {
+    1: "Anthropomorphism",
+    2: "Magnitude Hyperbole",
+    3: "Unfalsifiable Narrative",
+}
+
+TIER_COLORS = {
+    1: "#8b5cf6",   # purple -- agent metaphor
+    2: "#f97316",   # orange -- dramatic size word
+    3: "#6b7280",   # gray -- unfalsifiable filler
+}
+
+CATEGORY_COLORS = {
+    "fear":           "#e74c3c",
+    "exhaustion":     "#e67e22",
+    "consolidation":  "#27ae60",
+    "confusion":      "#f1c40f",
+    "euphoria":       "#3498db",
+    "aggression":     "#8e44ad",
+    "health":         "#1abc9c",
+    "caution":        "#95a5a6",
+    "magnitude_up":   "#f97316",
+    "magnitude_down": "#dc2626",
+    "unfalsifiable":  "#6b7280",
 }
 
 # ============================================================================
 # MARKET SUBJECT CONTEXT FILTER
 # ============================================================================
-# The anthro word must be near a market subject, not describing people/consumers.
-# This prevents false positives like "middle class is spending in a nervous way"
 
 MARKET_SUBJECTS = [
     "market", "markets", "wall street", "stocks", "stock market",
@@ -190,61 +246,77 @@ MARKET_SUBJECTS = [
     "earnings", "revenue", "gdp",
 ]
 
-# People/non-market subjects -- only reject when these appear WITHOUT any market subject
 NON_MARKET_SUBJECTS = [
     "middle class", "households", "families", "voters",
     "police", "capitol", "congress", "election",
     "patients", "students", "children",
     "he said", "she said",
+    "rent ", "housing prices", "home prices",
+    "reputation", "career", "popularity",
 ]
 
+# Only words that are EXCLUSIVELY used in financial context bypass context check
+# Removed: soaring, plunging, crashing, tanking, imploding (used outside finance)
+ALWAYS_MARKET = {
+    "bloodbath", "carnage", "capitulation", "capitulating",
+    "meltdown", "frothy", "bubbly", "profit-taking",
+    "profit taking", "bargain hunting", "sidelined",
+    "clawing back", "pricing in",
+}
 
-def is_market_anthropomorphism(text, phrase):
-    """Check if the anthro phrase is describing the market/financial context, not unrelated topics."""
+
+def is_market_context(text, phrase):
+    """Check if the phrase is in a financial context, not describing people/rent/etc."""
     text_lower = text.lower()
     pos = text_lower.find(phrase.lower())
     if pos == -1:
         return False
 
-    # Some phrases are almost always about markets in financial news context
-    ALWAYS_MARKET = {
-        "bloodbath", "carnage", "freefall", "free fall", "capitulation",
-        "capitulating", "meltdown", "frothy", "bubbly", "profit-taking",
-        "profit taking", "bargain hunting", "sidelined", "cratering",
-        "imploding", "tanking", "contagion", "soaring", "plunging",
-        "crashing", "clawing back",
-    }
     if phrase.lower() in ALWAYS_MARKET:
         return True
 
-    # Look at a window around the phrase (100 chars each side)
     window_start = max(0, pos - 100)
     window_end = min(len(text_lower), pos + len(phrase) + 100)
     window = text_lower[window_start:window_end]
 
-    # Check for market subjects nearby
     has_market = any(subj in window for subj in MARKET_SUBJECTS)
-    # Check for clearly non-market context
     has_non_market = any(subj in window for subj in NON_MARKET_SUBJECTS)
 
-    # If clearly non-market context with no market subjects -> reject
     if has_non_market and not has_market:
         return False
 
-    # Default: require at least one market subject nearby
     return has_market
 
-CATEGORY_COLORS = {
-    "fear":           "#e74c3c",
-    "panic":          "#c0392b",
-    "exhaustion":     "#e67e22",
-    "consolidation":  "#27ae60",
-    "confusion":      "#f1c40f",
-    "euphoria":       "#3498db",
-    "aggression":     "#8e44ad",
-    "health":         "#1abc9c",
-    "filler":         "#95a5a6",
+
+# ============================================================================
+# SUBJECT EXTRACTION (for magnitude hyperbole)
+# ============================================================================
+
+# Map subjects found in headlines to tickers we can check
+SUBJECT_TICKERS = {
+    "oil": "USO", "crude": "USO", "brent": "USO", "wti": "USO",
+    "gold": "GLD", "silver": "SLV",
+    "bitcoin": "BITO", "btc": "BITO", "crypto": "BITO",
+    "nasdaq": "QQQ", "tech": "QQQ",
+    "dow": "DIA", "s&p": "SPY", "s&p 500": "SPY",
+    "spy": "SPY", "qqq": "QQQ", "dia": "DIA", "iwm": "IWM",
+    "russell": "IWM",
+    "treasury": "TLT", "treasuries": "TLT", "bond": "TLT", "bonds": "TLT",
+    "india": "INDA", "china": "FXI", "japan": "EWJ", "europe": "VGK",
+    "emerging": "EEM",
+    "financials": "XLF", "banks": "XLF", "energy": "XLE",
+    "semiconductor": "SMH", "chips": "SMH",
 }
+
+
+def extract_subject_ticker(text):
+    """Try to find what asset is being described, return ticker or 'SPY' default."""
+    text_lower = text.lower()
+    for subject, ticker in SUBJECT_TICKERS.items():
+        if subject in text_lower:
+            return ticker, subject
+    return "SPY", "market"
+
 
 # ============================================================================
 # RSS FEEDS
@@ -302,7 +374,6 @@ def parse_pub_date(date_str):
         return dt.strftime("%Y-%m-%d %H:%M")
     except Exception:
         pass
-    # Try ISO format
     for fmt in ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"]:
         try:
             dt = datetime.strptime(date_str[:19], fmt[:len(date_str)])
@@ -339,32 +410,53 @@ def fetch_headlines(max_per_feed=50):
 
 
 # ============================================================================
-# ANTHROPOMORPHISM DETECTION
+# 3-TIER DETECTION
 # ============================================================================
 
-def detect_anthropomorphisms(text):
-    """Scan text for anthropomorphic market language with context filtering."""
+def _phrase_in_text(phrase, text_lower):
+    """Check if phrase appears in text (word-boundary for single words, substring for multi)."""
+    if " " in phrase:
+        return phrase in text_lower
+    pattern = r"\b" + re.escape(phrase) + r"\b"
+    return bool(re.search(pattern, text_lower))
+
+
+def detect_all_tiers(text):
+    """Scan text for all 3 tiers of misleading language. Returns list of match dicts."""
     text_lower = text.lower()
     matches = []
-    for phrase, meta in ANTHRO_LEXICON.items():
-        found = False
-        if " " in phrase:
-            found = phrase in text_lower
-        else:
-            pattern = r"\b" + re.escape(phrase) + r"\b"
-            found = bool(re.search(pattern, text_lower))
-        if found and is_market_anthropomorphism(text, phrase):
-            matches.append({"phrase": phrase, **meta})
+
+    # Tier 1: Anthropomorphism
+    for phrase, meta in TIER1_ANTHROPOMORPHISM.items():
+        if _phrase_in_text(phrase, text_lower) and is_market_context(text, phrase):
+            matches.append({"phrase": phrase, "tier": 1, **meta})
+
+    # Tier 2: Magnitude hyperbole
+    for phrase, meta in TIER2_MAGNITUDE.items():
+        if _phrase_in_text(phrase, text_lower) and is_market_context(text, phrase):
+            matches.append({"phrase": phrase, "tier": 2, **meta})
+
+    # Tier 3: Unfalsifiable narrative
+    for phrase, meta in TIER3_UNFALSIFIABLE.items():
+        if _phrase_in_text(phrase, text_lower) and is_market_context(text, phrase):
+            matches.append({"phrase": phrase, "tier": 3, **meta})
+
     return matches
 
 
 def analyze_articles(articles):
-    """Add anthropomorphism analysis to each article."""
+    """Add 3-tier analysis to each article."""
     for art in articles:
-        matches = detect_anthropomorphisms(art["text"])
+        matches = detect_all_tiers(art["text"])
+        art["match_count"] = len(matches)
+        art["match_details"] = matches
+        art["match_phrases"] = [m["phrase"] for m in matches]
+        art["match_tiers"] = list(set(m["tier"] for m in matches))
+        art["match_categories"] = list(set(m["category"] for m in matches))
+        # Back-compat aliases
         art["anthro_count"] = len(matches)
-        art["anthro_phrases"] = [m["phrase"] for m in matches]
-        art["anthro_categories"] = list(set(m["category"] for m in matches))
+        art["anthro_phrases"] = art["match_phrases"]
+        art["anthro_categories"] = art["match_categories"]
         art["anthro_details"] = matches
     return articles
 
@@ -374,7 +466,7 @@ def analyze_articles(articles):
 # ============================================================================
 
 def compute_market_reality():
-    """Compute quantitative metrics from price_cache to replace anthropomorphic claims."""
+    """Compute quantitative metrics from price_cache -- covers all 3 tiers."""
     reality = {}
 
     # --- VIX ---
@@ -387,7 +479,6 @@ def compute_market_reality():
         )
         vix_sma20 = float(vix_close.iloc[-20:].mean())
         reality["vix_vs_sma20"] = round(float(vix_close.iloc[-1]) / vix_sma20, 2)
-        # Stress level based on VIX vs its own 20d average
         if reality["vix_vs_sma20"] > 1.3:
             reality["vix_stress"] = "ACUTE STRESS (VIX 30%+ above 20d avg)"
         elif reality["vix_vs_sma20"] > 1.1:
@@ -416,37 +507,102 @@ def compute_market_reality():
     if skew_df is not None:
         reality["skew"] = round(float(skew_df['close'].iloc[-1]), 2)
 
-    # --- SPY realized vol ---
+    # --- SPY metrics (RSI, ADX, ATR, realized vol) ---
     spy_df = load_ticker("SPY")
-    if spy_df is not None and len(spy_df) > 21:
-        spy_ret = spy_df['close'].pct_change().dropna()
+    if spy_df is not None and len(spy_df) > 30:
+        spy_close = spy_df['close']
+        spy_high = spy_df['high']
+        spy_low = spy_df['low']
+        spy_ret = spy_close.pct_change().dropna()
+
+        # Realized vol
         reality["spy_20d_vol"] = round(float(spy_ret.iloc[-20:].std() * np.sqrt(252) * 100), 1)
 
-    # --- Sector dispersion + correlation ---
+        # RSI(14)
+        delta = spy_close.diff()
+        gain = delta.clip(lower=0)
+        loss = (-delta.clip(upper=0))
+        avg_gain = gain.iloc[-14:].mean()
+        avg_loss = loss.iloc[-14:].mean()
+        if avg_loss > 0:
+            rs = float(avg_gain / avg_loss)
+            reality["spy_rsi"] = round(100 - (100 / (1 + rs)), 1)
+        else:
+            reality["spy_rsi"] = 100.0
+
+        # ADX(14) -- simplified: average of +DI/-DI directional movement
+        tr_vals = []
+        plus_dm_vals = []
+        minus_dm_vals = []
+        for i in range(-15, 0):
+            h = float(spy_high.iloc[i])
+            l = float(spy_low.iloc[i])
+            c_prev = float(spy_close.iloc[i - 1])
+            tr_vals.append(max(h - l, abs(h - c_prev), abs(l - c_prev)))
+            up_move = h - float(spy_high.iloc[i - 1])
+            down_move = float(spy_low.iloc[i - 1]) - l
+            plus_dm_vals.append(up_move if up_move > down_move and up_move > 0 else 0)
+            minus_dm_vals.append(down_move if down_move > up_move and down_move > 0 else 0)
+
+        atr14 = np.mean(tr_vals[-14:])
+        reality["spy_atr"] = round(float(atr14), 2)
+        reality["spy_atr_pct"] = round(float(atr14 / float(spy_close.iloc[-1]) * 100), 2)
+
+        if atr14 > 0:
+            plus_di = (np.mean(plus_dm_vals[-14:]) / atr14) * 100
+            minus_di = (np.mean(minus_dm_vals[-14:]) / atr14) * 100
+            dx = abs(plus_di - minus_di) / max(plus_di + minus_di, 0.001) * 100
+            reality["spy_adx"] = round(float(dx), 1)
+        else:
+            reality["spy_adx"] = 0.0
+
+        # Recent moves for magnitude calibration
+        reality["spy_1d_ret"] = round(float(spy_ret.iloc[-1] * 100), 2)
+        reality["spy_5d_ret"] = round(
+            (float(spy_close.iloc[-1]) / float(spy_close.iloc[-5]) - 1) * 100, 2
+        )
+        reality["spy_20d_ret"] = round(
+            (float(spy_close.iloc[-1]) / float(spy_close.iloc[-21]) - 1) * 100, 2
+        )
+
+        # Historical daily return distribution for magnitude calibration
+        daily_abs = spy_ret.abs().iloc[-252:]  # last year
+        reality["spy_daily_p50"] = round(float(daily_abs.quantile(0.5) * 100), 2)
+        reality["spy_daily_p90"] = round(float(daily_abs.quantile(0.9) * 100), 2)
+        reality["spy_daily_p95"] = round(float(daily_abs.quantile(0.95) * 100), 2)
+        reality["spy_daily_p99"] = round(float(daily_abs.quantile(0.99) * 100), 2)
+
+    # --- Breadth (% of S&P sectors above 20d SMA) ---
     sectors = ["XLK", "XLF", "XLE", "XLV", "XLI", "XLP", "XLY", "XLU", "XLB", "XLRE", "XLC"]
     sector_returns = {}
     sector_period_ret = {}
+    above_sma20 = 0
+    sector_count = 0
     for s in sectors:
         df = load_ticker(s)
         if df is not None and len(df) > 21:
             ret = df['close'].pct_change().dropna()
             sector_returns[s] = ret.iloc[-20:]
             sector_period_ret[s] = (float(df['close'].iloc[-1]) / float(df['close'].iloc[-21]) - 1) * 100
+            sma20 = float(df['close'].iloc[-20:].mean())
+            sector_count += 1
+            if float(df['close'].iloc[-1]) > sma20:
+                above_sma20 += 1
+
+    if sector_count > 0:
+        reality["breadth_pct"] = round(above_sma20 / sector_count * 100, 0)
+        reality["breadth_label"] = f"{above_sma20}/{sector_count} sectors above 20d SMA"
 
     if len(sector_returns) >= 8:
         ret_df = pd.DataFrame(sector_returns)
-
-        # Cross-sectional dispersion
         daily_disp = ret_df.std(axis=1)
         reality["sector_dispersion"] = round(float(daily_disp.mean() * 100), 3)
 
-        # Average pairwise correlation
         corr = ret_df.corr()
         mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
         avg_corr = float(corr.where(mask).stack().mean())
         reality["avg_sector_corr"] = round(avg_corr, 3)
 
-        # Rotation vs panic classification
         if reality["sector_dispersion"] > 0.6 and avg_corr < 0.5:
             reality["flow_verdict"] = "ROTATION -- capital moving between sectors, not leaving"
         elif avg_corr > 0.8:
@@ -456,12 +612,28 @@ def compute_market_reality():
         else:
             reality["flow_verdict"] = "DISPERSED -- low correlation, idiosyncratic moves"
 
-        # Best/worst sector
         if sector_period_ret:
             best = max(sector_period_ret, key=sector_period_ret.get)
             worst = min(sector_period_ret, key=sector_period_ret.get)
             reality["best_sector"] = f"{best} ({sector_period_ret[best]:+.1f}%)"
             reality["worst_sector"] = f"{worst} ({sector_period_ret[worst]:+.1f}%)"
+
+    # --- Pre-compute recent returns for common magnitude subjects ---
+    magnitude_tickers = set(SUBJECT_TICKERS.values())
+    magnitude_returns = {}
+    for ticker in magnitude_tickers:
+        df = load_ticker(ticker)
+        if df is not None and len(df) > 21:
+            c = df['close']
+            ret_1d = (float(c.iloc[-1]) / float(c.iloc[-2]) - 1) * 100
+            ret_5d = (float(c.iloc[-1]) / float(c.iloc[-5]) - 1) * 100
+            ret_20d = (float(c.iloc[-1]) / float(c.iloc[-21]) - 1) * 100
+            magnitude_returns[ticker] = {
+                "1d": round(ret_1d, 2),
+                "5d": round(ret_5d, 2),
+                "20d": round(ret_20d, 2),
+            }
+    reality["magnitude_returns"] = magnitude_returns
 
     return reality
 
@@ -484,6 +656,34 @@ def generate_reality_verdicts(reality):
     if term:
         verdicts.append(f"VIX term structure: {term}")
 
+    # New: RSI/ADX summary
+    rsi = reality.get("spy_rsi")
+    adx = reality.get("spy_adx")
+    if rsi is not None:
+        if rsi > 70:
+            verdicts.append(f"SPY RSI(14) {rsi}: overbought territory")
+        elif rsi < 30:
+            verdicts.append(f"SPY RSI(14) {rsi}: oversold territory")
+        else:
+            verdicts.append(f"SPY RSI(14) {rsi}: neutral momentum")
+
+    if adx is not None:
+        if adx > 25:
+            verdicts.append(f"SPY ADX {adx}: strong directional trend")
+        else:
+            verdicts.append(f"SPY ADX {adx}: weak/no trend")
+
+    # Breadth
+    breadth = reality.get("breadth_label")
+    if breadth:
+        pct = reality.get("breadth_pct", 0)
+        if pct > 70:
+            verdicts.append(f"Breadth: {breadth} -- broad participation")
+        elif pct < 30:
+            verdicts.append(f"Breadth: {breadth} -- narrow, most sectors below average")
+        else:
+            verdicts.append(f"Breadth: {breadth} -- mixed participation")
+
     flow = reality.get("flow_verdict", "")
     disp = reality.get("sector_dispersion", 0)
     corr = reality.get("avg_sector_corr", 0)
@@ -499,6 +699,176 @@ def generate_reality_verdicts(reality):
 
 
 # ============================================================================
+# PER-ARTICLE VERDICT GENERATION (3-tier aware)
+# ============================================================================
+
+def _tier1_verdict(article, reality):
+    """Verdict for anthropomorphism: what emotion is claimed, what does data show?"""
+    details = [d for d in article["match_details"] if d["tier"] == 1]
+    if not details:
+        return []
+
+    verdicts = []
+    categories = set(d["category"] for d in details)
+    measures_needed = set()
+    for d in details:
+        for m in d.get("measure", []):
+            measures_needed.add(m)
+
+    phrases_str = ", ".join(f'"{d["phrase"]}"' for d in details)
+
+    # VIX-based verdicts (fear, euphoria, caution)
+    vix = reality.get("vix")
+    if vix is not None and measures_needed & {"VIX", "SKEW"}:
+        if categories & {"fear"}:
+            if vix > 30:
+                verdicts.append(f"Claims: {phrases_str}. VIX {vix} confirms elevated stress -- hedging IS heavy")
+            elif vix > 20:
+                verdicts.append(f"Claims: {phrases_str}. VIX {vix} shows moderate hedging -- concern, not panic")
+            else:
+                verdicts.append(f"Claims: {phrases_str}. VIX {vix} is LOW -- options market shows no fear")
+        if categories & {"euphoria"}:
+            rsi = reality.get("spy_rsi")
+            if vix < 15 and rsi and rsi > 70:
+                verdicts.append(f"Claims: {phrases_str}. VIX {vix}, RSI {rsi} -- complacency + overbought confirms euphoria signal")
+            elif vix < 15:
+                verdicts.append(f"Claims: {phrases_str}. VIX {vix} low (complacency zone) but RSI {rsi} not extreme")
+            else:
+                verdicts.append(f"Claims: {phrases_str}. VIX {vix} shows active hedging -- not consistent with euphoria")
+
+    # Term structure (panic/capitulation)
+    term_ratio = reality.get("vix_term_ratio")
+    if term_ratio is not None and "VIX term structure" in measures_needed:
+        if term_ratio > 1.0:
+            verdicts.append(f"VIX/VIX3M {term_ratio} backwardated -- acute stress confirmed")
+        else:
+            verdicts.append(f"VIX/VIX3M {term_ratio} contango -- orderly, not panic")
+
+    # ADX/RSI (exhaustion, consolidation, confusion)
+    adx = reality.get("spy_adx")
+    rsi = reality.get("spy_rsi")
+    if adx is not None and "ADX" in measures_needed:
+        if categories & {"exhaustion"}:
+            if adx < 20:
+                verdicts.append(f"Claims: {phrases_str}. ADX {adx} confirms weak trend -- momentum IS fading")
+            else:
+                verdicts.append(f"Claims: {phrases_str}. ADX {adx} shows trend still intact -- not exhausted")
+        if categories & {"consolidation"}:
+            atr_pct = reality.get("spy_atr_pct")
+            verdicts.append(f"Claims: {phrases_str}. ADX {adx}, ATR {atr_pct}% of price -- {'low vol = consolidation plausible' if adx < 20 else 'directional trend active, not consolidating'}")
+        if categories & {"confusion"}:
+            disp = reality.get("sector_dispersion", 0)
+            verdicts.append(f"Claims: {phrases_str}. ADX {adx}, sector dispersion {disp}% -- {'low direction confirms confusion' if adx < 20 else 'clear directional trend exists'}")
+
+    # RSI for aggression/health
+    if rsi is not None and "RSI" in measures_needed:
+        if categories & {"aggression", "health"}:
+            breadth = reality.get("breadth_label", "N/A")
+            verdicts.append(f"Claims: {phrases_str}. RSI {rsi}, breadth: {breadth}")
+
+    # Breadth
+    if "breadth" in measures_needed:
+        breadth = reality.get("breadth_label")
+        if breadth and not any("breadth" in v for v in verdicts):
+            verdicts.append(f"Breadth: {breadth}")
+
+    # Correlation/dispersion
+    corr = reality.get("avg_sector_corr")
+    disp = reality.get("sector_dispersion")
+    if corr is not None and measures_needed & {"correlation", "dispersion"}:
+        if corr > 0.7:
+            verdicts.append(f"Sector corr {corr} -- broad selling together")
+        elif corr < 0.4 and disp and disp > 0.5:
+            verdicts.append(f"Corr {corr}, disp {disp}% -- rotation, not panic")
+
+    # SKEW
+    skew = reality.get("skew")
+    if skew is not None and "SKEW" in measures_needed and not any("SKEW" in v for v in verdicts):
+        verdicts.append(f"SKEW {skew} -- {'elevated tail hedging' if skew > 150 else 'normal tail risk pricing'}")
+
+    if not verdicts:
+        verdicts.append(f"Agent metaphor detected ({phrases_str}) -- treats market as person with emotions")
+
+    return verdicts
+
+
+def _tier2_verdict(article, reality):
+    """Verdict for magnitude hyperbole: how much did it actually move?"""
+    details = [d for d in article["match_details"] if d["tier"] == 2]
+    if not details:
+        return []
+
+    verdicts = []
+    mag_returns = reality.get("magnitude_returns", {})
+
+    # Find what subject this headline is about
+    ticker, subject = extract_subject_ticker(article["text"])
+
+    phrases_str = ", ".join(f'"{d["phrase"]}"' for d in details)
+    is_down = any(d["category"] == "magnitude_down" for d in details)
+
+    if ticker in mag_returns:
+        rets = mag_returns[ticker]
+        ret_1d = rets["1d"]
+        ret_5d = rets["5d"]
+        ret_20d = rets["20d"]
+
+        # Calibrate against SPY daily distribution
+        p90 = reality.get("spy_daily_p90", 1.5)
+        p95 = reality.get("spy_daily_p95", 2.0)
+
+        actual_1d = abs(ret_1d)
+        if actual_1d > p95:
+            calibration = "extreme (>95th percentile)"
+        elif actual_1d > p90:
+            calibration = "large (>90th percentile)"
+        else:
+            calibration = f"within normal range (90th pctl = {p90}%)"
+
+        verdicts.append(
+            f'Headline says {phrases_str} about {subject}. '
+            f'Actual: {ticker} {ret_1d:+.1f}% (1d), {ret_5d:+.1f}% (5d), {ret_20d:+.1f}% (20d). '
+            f'Daily move is {calibration}'
+        )
+    else:
+        # Fallback to SPY
+        spy_1d = reality.get("spy_1d_ret")
+        spy_5d = reality.get("spy_5d_ret")
+        if spy_1d is not None:
+            verdicts.append(
+                f'Headline says {phrases_str}. '
+                f'No data for {subject}; SPY ref: {spy_1d:+.1f}% (1d), {spy_5d:+.1f}% (5d)'
+            )
+        else:
+            verdicts.append(f'Headline says {phrases_str} -- magnitude claim, no price data to verify')
+
+    return verdicts
+
+
+def _tier3_verdict(article, reality):
+    """Verdict for unfalsifiable: flag as empty explanation."""
+    details = [d for d in article["match_details"] if d["tier"] == 3]
+    if not details:
+        return []
+
+    phrases_str = ", ".join(f'"{d["phrase"]}"' for d in details)
+    return [f'{phrases_str} -- sounds explanatory but no data can confirm or deny this. Treat as noise.']
+
+
+def generate_article_verdict(article, reality):
+    """Generate tier-aware verdict for a single flagged article."""
+    all_verdicts = []
+    all_verdicts.extend(_tier1_verdict(article, reality))
+    all_verdicts.extend(_tier2_verdict(article, reality))
+    all_verdicts.extend(_tier3_verdict(article, reality))
+
+    if not all_verdicts:
+        all_verdicts.append("Flagged but no verdict data available")
+
+    return " | ".join(all_verdicts)
+
+
+# ============================================================================
 # HTML GENERATION
 # ============================================================================
 
@@ -511,6 +881,17 @@ EXTRA_CSS = """
     font-weight: 600;
     color: #fff;
     margin: 1px 2px;
+}
+.tier-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7em;
+    font-weight: 700;
+    color: #fff;
+    margin-right: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 .verdict-item {
     padding: 8px 12px;
@@ -573,6 +954,27 @@ a.article-link:hover { text-decoration: underline; }
     color: #92400e;
     margin-top: 12px;
 }
+.tier-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+    padding: 10px 14px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    font-size: 0.82em;
+}
+.tier-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.tier-legend .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
 """
 
 
@@ -580,37 +982,37 @@ def build_stat_bar(writer, reality, articles, flagged_count):
     """Build the top stat bar."""
     vix = reality.get("vix", "N/A")
     term_ratio = reality.get("vix_term_ratio", "N/A")
-    disp = reality.get("sector_dispersion", "N/A")
-    corr = reality.get("avg_sector_corr", "N/A")
+    rsi = reality.get("spy_rsi", "N/A")
+    breadth = reality.get("breadth_pct", "N/A")
     total = len(articles)
     pct = f"{flagged_count}/{total}"
 
-    # Color VIX
     vix_class = "neg" if isinstance(vix, (int, float)) and vix > 25 else "warn" if isinstance(vix, (int, float)) and vix > 18 else "pos"
-    # Color term ratio
     tr_class = "neg" if isinstance(term_ratio, (int, float)) and term_ratio > 1.0 else "pos"
-    # Color correlation
-    corr_class = "neg" if isinstance(corr, (int, float)) and corr > 0.7 else "warn" if isinstance(corr, (int, float)) and corr > 0.5 else "pos"
+    rsi_class = "neg" if isinstance(rsi, (int, float)) and rsi > 70 else "warn" if isinstance(rsi, (int, float)) and rsi < 30 else "pos"
 
     stats = [
         ("VIX", str(vix), vix_class),
         ("VIX/VIX3M", str(term_ratio), tr_class),
-        ("Sector Disp %", str(disp), "neutral"),
-        ("Avg Correlation", str(corr), corr_class),
-        ("Anthro Rate", pct, "warn" if flagged_count > total * 0.4 else "neutral"),
+        ("SPY RSI(14)", str(rsi), rsi_class),
+        ("Breadth %", f"{breadth}%" if breadth != "N/A" else "N/A", "pos" if isinstance(breadth, (int, float)) and breadth > 50 else "warn"),
+        ("Flagged", pct, "warn" if flagged_count > total * 0.4 else "neutral"),
     ]
     return writer.stat_bar(stats)
 
 
 def build_reality_section(writer, reality, verdicts):
     """Build the quantitative reality panel."""
-    # Metric cards
     metrics = [
         ("VIX", reality.get("vix", "N/A"), reality.get("vix_stress", "")),
         ("VIX 5d Change", f"{reality.get('vix_5d_chg', 'N/A')}%", ""),
         ("VIX3M", reality.get("vix3m", "N/A"), reality.get("vix_term_structure", "")),
         ("SKEW", reality.get("skew", "N/A"), "Tail risk pricing"),
+        ("SPY RSI(14)", reality.get("spy_rsi", "N/A"), ""),
+        ("SPY ADX(14)", reality.get("spy_adx", "N/A"), "Trend strength"),
+        ("SPY ATR(14)", f"{reality.get('spy_atr', 'N/A')} ({reality.get('spy_atr_pct', 'N/A')}%)", ""),
         ("SPY 20d Vol (ann.)", f"{reality.get('spy_20d_vol', 'N/A')}%", ""),
+        ("Breadth", reality.get("breadth_label", "N/A"), ""),
         ("Sector Dispersion", f"{reality.get('sector_dispersion', 'N/A')}%", ""),
         ("Avg Sector Corr", reality.get("avg_sector_corr", "N/A"), reality.get("flow_verdict", "")),
         ("Best Sector (20d)", reality.get("best_sector", "N/A"), ""),
@@ -623,11 +1025,10 @@ def build_reality_section(writer, reality, verdicts):
         <div class="reality-card">
             <div class="label">{label}</div>
             <div class="value">{value}</div>
-            {"<div style='font-size:0.75em;color:#64748b;margin-top:2px;'>" + note + "</div>" if note else ""}
+            {"<div style='font-size:0.75em;color:#64748b;margin-top:2px;'>" + str(note) + "</div>" if note else ""}
         </div>'''
     cards_html += '</div>'
 
-    # Verdicts
     verdict_html = '<h3 style="margin-top:16px;color:#1e40af;">Reality Verdict</h3>'
     for v in verdicts:
         verdict_html += f'<div class="verdict-item">{v}</div>'
@@ -636,117 +1037,29 @@ def build_reality_section(writer, reality, verdicts):
                           hint="What the data actually shows -- no emotion, no metaphors")
 
 
-def format_measured_value(measure_name, reality):
-    """Turn a measure name into the actual current value from reality data."""
-    mapping = {
-        "VIX": ("vix", "VIX={v}"),
-        "VIX (low)": ("vix", "VIX={v}"),
-        "put/call": None,
-        "put/call (low)": None,
-        "SKEW": ("skew", "SKEW={v}"),
-        "VIX term structure": ("vix_term_ratio", "VIX/VIX3M={v}"),
-        "correlation": ("avg_sector_corr", "SectorCorr={v}"),
-        "breadth": None,
-        "breadth (high)": None,
-        "volume": None,
-        "volume at price": None,
-        "order flow": None,
-        "money flow": None,
-        "dispersion": ("sector_dispersion", "Disp={v}%"),
-        "ADX": None,
-        "RSI": None,
-        "OBV": None,
-        "ATR": None,
-        "Bollinger width": None,
-        "bullish %": None,
-    }
-    info = mapping.get(measure_name)
-    if info is None:
-        return measure_name
-    key, fmt = info
-    val = reality.get(key)
-    if val is None:
-        return measure_name
-    return fmt.format(v=val)
-
-
-def generate_article_verdict(article, reality):
-    """Generate a data-driven verdict for a single flagged article."""
-    phrases = [d["phrase"] for d in article["anthro_details"]]
-    categories = set(d["category"] for d in article["anthro_details"])
-    measures_needed = set()
-    for d in article["anthro_details"]:
-        for m in d["measure"]:
-            if m != "UNFALSIFIABLE":
-                measures_needed.add(m)
-
-    verdicts = []
-
-    # VIX-related verdicts
-    vix = reality.get("vix")
-    if vix is not None and measures_needed & {"VIX", "VIX (low)", "put/call", "put/call (low)"}:
-        if "fear" in categories or "panic" in categories:
-            if vix > 30:
-                verdicts.append(f"VIX {vix} confirms elevated stress")
-            elif vix > 20:
-                verdicts.append(f"VIX {vix} shows moderate hedging, not panic")
-            else:
-                verdicts.append(f"VIX {vix} is LOW -- no fear in options market")
-        if "euphoria" in categories:
-            if vix < 15:
-                verdicts.append(f"VIX {vix} confirms complacency zone")
-            else:
-                verdicts.append(f"VIX {vix} too high for euphoria -- hedging active")
-
-    # Term structure verdicts
-    term_ratio = reality.get("vix_term_ratio")
-    if term_ratio is not None and "VIX term structure" in measures_needed:
-        if term_ratio > 1.0:
-            verdicts.append(f"VIX/VIX3M {term_ratio} backwardated -- acute stress confirmed")
-        else:
-            verdicts.append(f"VIX/VIX3M {term_ratio} contango -- orderly, NOT panic")
-
-    # Correlation/dispersion verdicts
-    corr = reality.get("avg_sector_corr")
-    disp = reality.get("sector_dispersion")
-    if corr is not None and measures_needed & {"correlation", "dispersion"}:
-        if corr > 0.7:
-            verdicts.append(f"Sector corr {corr} -- broad selling together")
-        elif corr < 0.4 and disp and disp > 0.5:
-            verdicts.append(f"Corr {corr}, disp {disp}% -- rotation, not panic")
-        else:
-            verdicts.append(f"Sector corr {corr} -- mixed, not extreme")
-
-    # SKEW
-    skew = reality.get("skew")
-    if skew is not None and "SKEW" in measures_needed:
-        if skew > 150:
-            verdicts.append(f"SKEW {skew} elevated -- tail hedging active")
-        else:
-            verdicts.append(f"SKEW {skew} -- normal tail risk pricing")
-
-    # Unfalsifiable
-    has_unfalsifiable = any(
-        "UNFALSIFIABLE" in d["measure"] for d in article["anthro_details"]
-    )
-    if has_unfalsifiable:
-        verdicts.append("Contains unfalsifiable claims -- no data can verify or refute")
-
-    if not verdicts:
-        verdicts.append("No cached data available for these metrics")
-
-    return " | ".join(verdicts)
-
-
 def build_commentary_section(writer, articles, reality):
-    """Build the commentary scan table with actual values and verdicts."""
-    flagged = [a for a in articles if a["anthro_count"] > 0]
-    flagged.sort(key=lambda x: x["anthro_count"], reverse=True)
+    """Build the commentary scan with 3-tier awareness."""
+    flagged = [a for a in articles if a["match_count"] > 0]
+    flagged.sort(key=lambda x: x["match_count"], reverse=True)
+
+    # Tier distribution
+    tier_counts = Counter()
+    for a in flagged:
+        for d in a["match_details"]:
+            tier_counts[d["tier"]] += 1
+
+    tier_html = '<div class="tier-legend">'
+    for t in [1, 2, 3]:
+        count = tier_counts.get(t, 0)
+        color = TIER_COLORS[t]
+        label = TIER_LABELS[t]
+        tier_html += f'<span class="legend-item"><span class="dot" style="background:{color}"></span>{label}: {count}</span>'
+    tier_html += '</div>'
 
     # Category distribution
     all_cats = []
     for a in flagged:
-        all_cats.extend(a["anthro_categories"])
+        all_cats.extend(a["match_categories"])
     cat_counts = Counter(all_cats)
 
     cat_html = '<div class="category-bar">'
@@ -758,21 +1071,19 @@ def build_commentary_section(writer, articles, reality):
     # Phrase frequency
     all_phrases = []
     for a in flagged:
-        all_phrases.extend(a["anthro_phrases"])
+        all_phrases.extend(a["match_phrases"])
     phrase_counts = Counter(all_phrases).most_common(10)
 
     phrase_html = '<div style="margin:8px 0;font-size:0.85em;color:#64748b;">Top phrases: '
     phrase_html += ', '.join(f'<strong>{p}</strong> ({c})' for p, c in phrase_counts)
     phrase_html += '</div>'
 
-    # Build article cards (not a table -- each article gets a card with verdict)
+    # Article cards
     cards_html = ''
     for a in flagged[:30]:
-        # Date
         pub_date = a.get("published", "")
         date_display = pub_date[:10] if len(pub_date) >= 10 else pub_date
 
-        # Build clickable headline
         link = a.get("link", "")
         title = a.get("title", "(no title)")
         title_safe = title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
@@ -781,84 +1092,88 @@ def build_commentary_section(writer, articles, reality):
         else:
             headline_html = title_safe
 
-        # Build phrase tags
+        # Phrase tags with tier badges
         phrase_tags = ""
-        measure_values = []
-        for det in a["anthro_details"]:
-            color = CATEGORY_COLORS.get(det["category"], "#95a5a6")
-            phrase_tags += f'<span class="anthro-tag" style="background:{color}">{det["phrase"]}</span> '
-            for m in det["measure"]:
-                if m == "UNFALSIFIABLE":
-                    continue
-                val_str = format_measured_value(m, reality)
-                if val_str not in measure_values:
-                    measure_values.append(val_str)
+        for det in a["match_details"]:
+            tier = det["tier"]
+            tier_color = TIER_COLORS[tier]
+            tier_label = f"T{tier}"
+            cat_color = CATEGORY_COLORS.get(det["category"], "#95a5a6")
+            phrase_tags += f'<span class="tier-badge" style="background:{tier_color}">{tier_label}</span>'
+            phrase_tags += f'<span class="anthro-tag" style="background:{cat_color}">{det["phrase"]}</span> '
 
-        has_unfals = any("UNFALSIFIABLE" in det["measure"] for det in a["anthro_details"])
-        if has_unfals:
-            phrase_tags += '<span class="anthro-tag" style="background:#dc2626">UNFALSIFIABLE</span> '
-
-        measures_str = ", ".join(measure_values) if measure_values else "N/A"
-
-        # Generate per-article verdict
+        # Per-article verdict
         verdict = generate_article_verdict(a, reality)
 
+        # Card border color: use highest-priority tier
+        tiers_present = [d["tier"] for d in a["match_details"]]
+        primary_tier = min(tiers_present) if tiers_present else 1
+        border_color = TIER_COLORS.get(primary_tier, "#95a5a6")
+
         cards_html += f'''
-        <div style="background:#f8f9fa;border-radius:8px;padding:12px 16px;margin:8px 0;border-left:3px solid {CATEGORY_COLORS.get(a["anthro_categories"][0], "#95a5a6") if a["anthro_categories"] else "#95a5a6"};">
+        <div style="background:#f8f9fa;border-radius:8px;padding:12px 16px;margin:8px 0;border-left:3px solid {border_color};">
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
                 <div>{headline_html}</div>
                 <div style="font-size:0.75em;color:#94a3b8;white-space:nowrap;margin-left:12px;">{a["source"]} | {date_display}</div>
             </div>
             <div style="margin-bottom:6px;">{phrase_tags}</div>
-            <div style="font-size:0.82em;color:#475569;margin-bottom:4px;"><strong>Measured:</strong> {measures_str}</div>
             <div style="font-size:0.82em;color:#1e40af;background:#eff6ff;padding:6px 10px;border-radius:4px;"><strong>Verdict:</strong> {verdict}</div>
-        </div>'''
-
-    # Filler warning
-    filler_count = sum(
-        1 for a in flagged
-        for d in a["anthro_details"]
-        if d["category"] == "filler"
-    )
-    filler_html = ""
-    if filler_count > 0:
-        filler_html = f'''
-        <div class="filler-warning">
-            {filler_count} instance(s) of unfalsifiable language detected
-            (e.g. "profit-taking", "bargain hunting"). These phrases sound
-            explanatory but cannot be verified or disproven with any data.
         </div>'''
 
     total = len(articles)
     flagged_count = len(flagged)
-    total_anthros = sum(a["anthro_count"] for a in articles)
+    total_matches = sum(a["match_count"] for a in articles)
     summary = (
         f"<p style='font-size:0.9em;color:#475569;'>"
         f"Scanned <strong>{total}</strong> articles | "
-        f"<strong>{flagged_count}</strong> contain anthropomorphisms | "
-        f"<strong>{total_anthros}</strong> total emotional phrases | "
-        f"<strong>{flagged_count * 100 // max(total, 1)}%</strong> anthropomorphism rate</p>"
+        f"<strong>{flagged_count}</strong> flagged | "
+        f"<strong>{total_matches}</strong> total detections "
+        f"(T1 anthropomorphism: {tier_counts.get(1, 0)}, "
+        f"T2 magnitude: {tier_counts.get(2, 0)}, "
+        f"T3 unfalsifiable: {tier_counts.get(3, 0)})</p>"
     )
 
-    content = summary + cat_html + phrase_html + cards_html + filler_html
-    return writer.section("Commentary Anthropomorphism Scanner", content,
+    content = summary + tier_html + cat_html + phrase_html + cards_html
+    return writer.section("Commentary Scanner", content,
                           hint="Click headlines to read the original article")
 
 
 def build_methodology_section(writer):
-    """Short methodology note."""
+    """Methodology note explaining the 3-tier system."""
     content = '''
     <p style="font-size:0.85em;color:#475569;line-height:1.6;">
-    Based on <strong>Morris et al. (2007)</strong>: agent metaphors ("the market climbed")
-    cause investors to expect trend continuance, while object metaphors ("the market was pushed")
-    do not. This dashboard scans live commentary for 80+ anthropomorphic phrases, classifies them
-    by category (fear, panic, exhaustion, euphoria, etc.), cross-references with quantitative
-    metrics from price_cache, and generates per-article verdicts comparing claims to reality.
-    Context filtering ensures only market-as-person language is flagged (not "nervous consumers").
-    <br><br>
-    <strong>Key distinction:</strong> "skittish" implies irrational fear that should revert.
-    "Rotating" implies orderly capital reallocation that may persist. These carry opposite trading
-    implications, yet commentators use them interchangeably. Check the data, not the metaphor.
+    Based on <strong>Morris et al. (2007)</strong>: <em>agent</em> metaphors ("the market climbed,"
+    "the market is nervous") cause investors to expect trend continuance, while <em>object</em>
+    metaphors ("the market was pushed down") do not. This dashboard detects three distinct
+    types of misleading financial language:
+    </p>
+    <div style="margin:12px 0;font-size:0.85em;">
+        <div style="padding:8px 12px;margin:4px 0;border-left:3px solid #8b5cf6;background:#f5f3ff;">
+            <strong style="color:#8b5cf6;">TIER 1 -- Anthropomorphism</strong> (agent metaphors):
+            Words that treat the market as a person with emotions, will, or intentions
+            ("skittish," "exhausted," "confused," "fighting"). These are the Morris et al. finding --
+            they create a cognitive bias toward expecting the trend to continue. <em>Reality check:
+            what do VIX, RSI, ADX, and breadth actually show?</em>
+        </div>
+        <div style="padding:8px 12px;margin:4px 0;border-left:3px solid #f97316;background:#fff7ed;">
+            <strong style="color:#f97316;">TIER 2 -- Magnitude Hyperbole</strong> (object metaphors):
+            Dramatic words that exaggerate the size of a move ("soaring," "plunging,"
+            "freefall," "bloodbath"). These are physics/disaster metaphors, not emotions --
+            they describe trajectory, not intention. <em>Reality check: what was the actual %
+            move, and how does it compare to the historical distribution?</em>
+        </div>
+        <div style="padding:8px 12px;margin:4px 0;border-left:3px solid #6b7280;background:#f9fafb;">
+            <strong style="color:#6b7280;">TIER 3 -- Unfalsifiable Narrative</strong>:
+            Post-hoc explanations that sound meaningful but cannot be tested
+            ("profit-taking," "bargain hunting," "pricing in"). No data can confirm
+            or deny these claims. <em>Flagged as noise -- treat with skepticism.</em>
+        </div>
+    </div>
+    <p style="font-size:0.85em;color:#475569;line-height:1.6;">
+    Context filtering ensures only financial usage is flagged ("oil soaring" in a market
+    headline, not "rent soaring" in a housing story). Subject extraction maps magnitude
+    words to the asset being described, so verdicts compare the claimed drama to that
+    specific asset's actual move.
     </p>
     '''
     return writer.section("Methodology", content,
@@ -871,7 +1186,7 @@ def build_methodology_section(writer):
 
 def main():
     print("=" * 60)
-    print("  Market Reality Check Backend v1.1")
+    print("  Market Reality Check Backend v1.2")
     print("=" * 60)
     t0 = time.time()
 
@@ -890,12 +1205,21 @@ def main():
             "published": datetime.now().isoformat(),
         }]
 
-    # 2. Analyze for anthropomorphisms
-    print("[SCAN] Detecting anthropomorphisms...")
+    # 2. Analyze with 3-tier detection
+    print("[SCAN] Detecting misleading language (3-tier)...")
     articles = analyze_articles(articles)
-    flagged = [a for a in articles if a["anthro_count"] > 0]
-    total_anthros = sum(a["anthro_count"] for a in articles)
-    print(f"  {len(flagged)}/{len(articles)} articles flagged, {total_anthros} total phrases")
+    flagged = [a for a in articles if a["match_count"] > 0]
+    total_matches = sum(a["match_count"] for a in articles)
+
+    tier_counts = Counter()
+    for a in articles:
+        for d in a.get("match_details", []):
+            tier_counts[d["tier"]] += 1
+
+    print(f"  {len(flagged)}/{len(articles)} articles flagged, {total_matches} total detections")
+    print(f"  T1 anthropomorphism: {tier_counts.get(1, 0)}")
+    print(f"  T2 magnitude:        {tier_counts.get(2, 0)}")
+    print(f"  T3 unfalsifiable:    {tier_counts.get(3, 0)}")
 
     # 3. Compute quantitative reality
     print("[DATA] Computing market reality from price_cache...")
@@ -909,7 +1233,7 @@ def main():
     writer = DashboardWriter("market-reality", "Market Reality Check")
 
     parts = []
-    parts.append(writer.build_header("Anthropomorphism vs Quantitative Truth"))
+    parts.append(writer.build_header("3-Tier Language Analysis: Agent Metaphors, Magnitude Hyperbole, Unfalsifiable Claims"))
     parts.append(build_stat_bar(writer, reality, articles, len(flagged)))
     parts.append(build_reality_section(writer, reality, verdicts))
     parts.append(build_commentary_section(writer, articles, reality))
@@ -923,22 +1247,28 @@ def main():
     # 5. Save data snapshot
     snapshot = {
         "generated_at": datetime.now().isoformat(),
+        "version": "1.2",
         "reality": reality,
         "verdicts": verdicts,
         "total_articles": len(articles),
         "flagged_articles": len(flagged),
-        "total_anthros": total_anthros,
+        "total_detections": total_matches,
+        "tier_counts": dict(tier_counts),
         "top_phrases": Counter(
-            p for a in articles for p in a["anthro_phrases"]
+            p for a in articles for p in a.get("match_phrases", [])
         ).most_common(15),
     }
+    # Remove magnitude_returns from snapshot (too large)
+    if "magnitude_returns" in snapshot["reality"]:
+        del snapshot["reality"]["magnitude_returns"]
+
     snap_path = _SCRIPT_DIR / 'market-reality' / 'market_reality_data.json'
     os.makedirs(snap_path.parent, exist_ok=True)
     with open(snap_path, 'w', encoding='utf-8') as f:
         json.dump(snapshot, f, indent=2, default=str)
 
     elapsed = time.time() - t0
-    print(f"\n[OK] Market Reality Check complete in {elapsed:.1f}s")
+    print(f"\n[OK] Market Reality Check v1.2 complete in {elapsed:.1f}s")
     print(f"[OK] Dashboard: market-reality/index.html")
     return snapshot
 
