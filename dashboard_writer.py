@@ -872,6 +872,14 @@ DASHBOARD_DESCRIPTIONS = {
         "average when its data begins. Stats table shows total return, annualized "
         "return, volatility, Sharpe ratio, max drawdown, and best/worst day."
     ),
+    "clenow-plunger": (
+        "Clenow Plunger scanner measuring ATR-normalized pullback from 20-day "
+        "extremes across 1,300+ tickers. Formula: uptrend (EMA50>EMA100) = "
+        "(20d High - Close) / ATR(50); downtrend = (Close - 20d Low) / ATR(50). "
+        "Pain zone (>=3.0) indicates trend followers hitting stops -- potential "
+        "counter-trend entry or re-entry point. Market breadth distribution shows "
+        "what percentage of the universe is in pain vs trend-intact."
+    ),
 }
 
 _LLM_DISCLAIMER = (
@@ -1336,6 +1344,15 @@ DASHBOARD_REGISTRY = [
         "icon":        "VS",
         "color":       "#0891b2",
         "tag":         "Tool",
+    },
+    {
+        "slug":        "clenow-plunger",
+        "title":       "Clenow Plunger Scanner",
+        "description": "ATR-normalized pullback from 20-day extremes for 1,300+ tickers. "
+                       "Pain zone (>=3.0 ATR) = trend followers hitting stops. Market breadth distribution.",
+        "icon":        "CP",
+        "color":       "#b91c1c",
+        "tag":         "Scanner",
     },
 ]
 

@@ -200,6 +200,12 @@ BACKENDS = [
         'required': False,
     },
     {
+        'script': 'clenow_plunger_backend.py',
+        'name': 'Clenow Plunger Scanner',
+        'slow': True,
+        'required': False,
+    },
+    {
         'script': 'validated_signal_generator_v1_0.py',
         'name': 'Validated System Signal Generator',
         'location': 'root',
