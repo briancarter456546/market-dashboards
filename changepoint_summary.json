@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-20T12:09:06.757589",
+  "generated_at": "2026-03-20T13:09:07.164900",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.1512215349971373,
+  "norm_drift": 2.1505879637968324,
   "top_regime": "tariff_shock",
   "top_sim": 16.5,
   "regime_similarity": [
@@ -28,7 +28,7 @@
     {
       "name": "recovery_04_06",
       "desc": "Mid-cycle expansion / housing boom",
-      "sim": -3.9
+      "sim": -4.0
     }
   ]
 }
