@@ -500,7 +500,108 @@ p { color: #94a3b8; font-size: 13px; margin-bottom: 8px; }
   <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
 </div>
 <div class="content">
-<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Real institutional positioning from regulatory filings. 13F quarterly institutional holder conviction (adding vs reducing). CFTC Commitment of Traders leveraged money and asset manager positioning in key futures (S&P, Nasdaq, crude, gold, bonds, VIX). FINRA Reg SHO daily short volume ratios. SEC Form 4 insider purchases (open-market buys only, not grants/exercises). Replaces smart-money dashboard which failed validation against this real data.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details><div class="stat-row"></div></div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-23 12:17 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Real institutional positioning from regulatory filings. 13F quarterly institutional holder conviction (adding vs reducing). CFTC Commitment of Traders leveraged money and asset manager positioning in key futures (S&P, Nasdaq, crude, gold, bonds, VIX). FINRA Reg SHO daily short volume ratios. SEC Form 4 insider purchases (open-market buys only, not grants/exercises). Replaces smart-money dashboard which failed validation against this real data.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details><div class="stat-row"><div class="stat-card"><div class="stat-label">13F Top Conviction</div><div class="stat-value">NFLX</div><div class="stat-sub">1347 tickers, 47.5% avg adding</div></div>
+<div class="stat-card"><div class="stat-label">COT Extremes</div><div class="stat-value">1</div><div class="stat-sub">9 contracts tracked</div></div>
+<div class="stat-card"><div class="stat-label">High Short (2026-03-20)</div><div class="stat-value">574</div><div class="stat-sub">1115 tickers, 50.2% avg ratio</div></div>
+<div class="stat-card"><div class="stat-label">Insider Purchases</div><div class="stat-value">1202</div><div class="stat-sub">217 tickers, $1.8B total</div></div></div><h3>13F Institutional Conviction (Top 30)</h3><p>Quarterly 13F filings: how many institutional holders added vs reduced positions.</p><table class="data-table"><thead><tr><th>Ticker</th><th title="Net conviction = holders adding minus holders reducing. Positive = institutional accumulation.">Net Conv.</th><th title="Number of 13F filers who increased their position this quarter">Adding</th><th title="Number of 13F filers who decreased their position this quarter">Reducing</th><th title="Total number of institutional holders reporting this stock in 13F filings">Total Holders</th><th title="Percentage of reporting holders who increased position (adding / total)">% Adding</th><th title="Total shares held across all reporting institutions">Total Shares</th></tr></thead><tbody><tr><td><b>NFLX</b></td><td style="color:#16a34a">+2924</td><td>3648</td><td>724</td><td>4480</td><td>81.4%</td><td>3.4B</td></tr>
+<tr><td><b>XLK</b></td><td style="color:#16a34a">+2053</td><td>2490</td><td>437</td><td>3032</td><td>82.1%</td><td>392.8M</td></tr>
+<tr><td><b>NOW</b></td><td style="color:#16a34a">+1892</td><td>2384</td><td>492</td><td>2947</td><td>80.9%</td><td>944.1M</td></tr>
+<tr><td><b>XLE</b></td><td style="color:#16a34a">+1456</td><td>1929</td><td>473</td><td>2472</td><td>78.0%</td><td>426.7M</td></tr>
+<tr><td><b>XLU</b></td><td style="color:#16a34a">+1208</td><td>1564</td><td>356</td><td>1999</td><td>78.2%</td><td>345.2M</td></tr>
+<tr><td><b>XLY</b></td><td style="color:#16a34a">+1085</td><td>1417</td><td>332</td><td>1811</td><td>78.2%</td><td>191.5M</td></tr>
+<tr><td><b>AMZN</b></td><td style="color:#16a34a">+994</td><td>3846</td><td>2852</td><td>7272</td><td>52.9%</td><td>8.0B</td></tr>
+<tr><td><b>VOO</b></td><td style="color:#16a34a">+864</td><td>2353</td><td>1489</td><td>4312</td><td>54.6%</td><td>611.2M</td></tr>
+<tr><td><b>VEA</b></td><td style="color:#16a34a">+760</td><td>1878</td><td>1118</td><td>3370</td><td>55.7%</td><td>2.7B</td></tr>
+<tr><td><b>BN</b></td><td style="color:#16a34a">+755</td><td>894</td><td>139</td><td>1067</td><td>83.8%</td><td>1.6B</td></tr>
+<tr><td><b>TSLA</b></td><td style="color:#16a34a">+703</td><td>2570</td><td>1867</td><td>5005</td><td>51.3%</td><td>1.8B</td></tr>
+<tr><td><b>META</b></td><td style="color:#16a34a">+671</td><td>3287</td><td>2616</td><td>6402</td><td>51.3%</td><td>2.2B</td></tr>
+<tr><td><b>IEMG</b></td><td style="color:#16a34a">+661</td><td>1543</td><td>882</td><td>2669</td><td>57.8%</td><td>1.8B</td></tr>
+<tr><td><b>XLB</b></td><td style="color:#16a34a">+614</td><td>861</td><td>247</td><td>1176</td><td>73.2%</td><td>111.4M</td></tr>
+<tr><td><b>IEFA</b></td><td style="color:#16a34a">+602</td><td>1528</td><td>926</td><td>2791</td><td>54.7%</td><td>1.8B</td></tr>
+<tr><td><b>GEV</b></td><td style="color:#16a34a">+565</td><td>1533</td><td>968</td><td>2912</td><td>52.6%</td><td>227.6M</td></tr>
+<tr><td><b>AGG</b></td><td style="color:#16a34a">+561</td><td>1479</td><td>918</td><td>2689</td><td>55.0%</td><td>1.5B</td></tr>
+<tr><td><b>VXUS</b></td><td style="color:#16a34a">+552</td><td>1093</td><td>541</td><td>1899</td><td>57.6%</td><td>428.3M</td></tr>
+<tr><td><b>VTV</b></td><td style="color:#16a34a">+540</td><td>1615</td><td>1075</td><td>3142</td><td>51.4%</td><td>663.4M</td></tr>
+<tr><td><b>ISRG</b></td><td style="color:#16a34a">+530</td><td>1586</td><td>1056</td><td>2993</td><td>53.0%</td><td>352.0M</td></tr>
+<tr><td><b>MU</b></td><td style="color:#16a34a">+524</td><td>1733</td><td>1209</td><td>3207</td><td>54.0%</td><td>1.2B</td></tr>
+<tr><td><b>VWO</b></td><td style="color:#16a34a">+511</td><td>1674</td><td>1163</td><td>3160</td><td>53.0%</td><td>1.6B</td></tr>
+<tr><td><b>BND</b></td><td style="color:#16a34a">+501</td><td>1271</td><td>770</td><td>2247</td><td>56.6%</td><td>1.3B</td></tr>
+<tr><td><b>VCIT</b></td><td style="color:#16a34a">+465</td><td>977</td><td>512</td><td>1654</td><td>59.1%</td><td>551.7M</td></tr>
+<tr><td><b>IVV</b></td><td style="color:#16a34a">+443</td><td>2291</td><td>1848</td><td>4732</td><td>48.4%</td><td>1.0B</td></tr>
+<tr><td><b>SCHF</b></td><td style="color:#16a34a">+405</td><td>993</td><td>588</td><td>1827</td><td>54.4%</td><td>1.7B</td></tr>
+<tr><td><b>BNDX</b></td><td style="color:#16a34a">+392</td><td>818</td><td>426</td><td>1356</td><td>60.3%</td><td>896.1M</td></tr>
+<tr><td><b>VTI</b></td><td style="color:#16a34a">+390</td><td>2006</td><td>1616</td><td>4140</td><td>48.5%</td><td>614.5M</td></tr>
+<tr><td><b>VEU</b></td><td style="color:#16a34a">+386</td><td>981</td><td>595</td><td>1916</td><td>51.2%</td><td>420.7M</td></tr>
+<tr><td><b>BAI</b></td><td style="color:#16a34a">+386</td><td>432</td><td>46</td><td>489</td><td>88.3%</td><td>250.0M</td></tr></tbody></table>
+<h3>COT Positioning: Leveraged Money & Asset Managers</h3><p>CFTC Commitment of Traders (Traders in Financial Futures). Leveraged Money = hedge funds. Extremes are contrarian signals.</p><table class="data-table"><thead><tr><th title="Futures contract (e.g. ES = S&P 500 E-mini, NQ = Nasdaq 100)">Contract</th><th title="Leveraged Money (hedge funds) net position: long minus short contracts. Extremes are contrarian.">Lev Net</th><th title="Leveraged Money net as % of total open interest. Extreme readings signal crowded positioning.">Lev % OI</th><th title="Asset Manager (pension/mutual funds) net position. Typically trend-following, not contrarian.">AM Net</th><th title="CFTC report date (published Friday, data as of Tuesday)">Report Date</th></tr></thead><tbody><tr><td><b>S&P 500</b></td><td style="color:#dc2626">-341K</td><td>-16.6%</td><td style="color:#16a34a">887K</td><td>2026-03-17</td></tr>
+<tr><td><b>Nasdaq 100</b> [EXTREME]</td><td style="color:#dc2626">-96K</td><td>-79.1%</td><td style="color:#16a34a">11K</td><td>2026-03-17</td></tr>
+<tr><td><b>JPY</b></td><td style="color:#dc2626">-65K</td><td>-22.8%</td><td style="color:#dc2626">-439</td><td>2026-03-17</td></tr>
+<tr><td><b>VIX</b></td><td style="color:#dc2626">-65K</td><td>-17.7%</td><td style="color:#16a34a">18K</td><td>2026-03-17</td></tr>
+<tr><td><b>Russell 2000</b></td><td style="color:#dc2626">-54K</td><td>-12.0%</td><td style="color:#16a34a">44K</td><td>2026-03-17</td></tr>
+<tr><td><b>Nasdaq 100</b></td><td style="color:#dc2626">-41K</td><td>-14.9%</td><td style="color:#16a34a">61K</td><td>2026-03-17</td></tr>
+<tr><td><b>GBP</b></td><td style="color:#16a34a">12K</td><td>5.4%</td><td style="color:#dc2626">-96K</td><td>2026-03-17</td></tr>
+<tr><td><b>EUR/USD</b></td><td style="color:#dc2626">-7K</td><td>-1.0%</td><td style="color:#16a34a">295K</td><td>2026-03-17</td></tr>
+<tr><td><b>Bitcoin</b></td><td style="color:#dc2626">-5K</td><td>-27.5%</td><td style="color:#dc2626">-1K</td><td>2026-03-17</td></tr></tbody></table>
+<h3>Short Volume Monitor (2026-03-20)</h3><p>FINRA Reg SHO daily short volume. Tickers with >50% short ratio and >100K volume. High short ratio may indicate squeeze potential.</p><table class="data-table"><thead><tr><th>Ticker</th><th title="Short volume / total volume for most recent trading day. Above 50% = heavily shorted. Potential squeeze candidate.">Short Ratio</th><th title="Number of shares sold short on most recent day">Short Vol</th><th title="Total shares traded on most recent day">Total Vol</th></tr></thead><tbody><tr><td><b>JHEM</b></td><td style="color:#dc2626">100.0%</td><td>1.3M</td><td>1.3M</td></tr>
+<tr><td><b>BLCR</b></td><td style="color:#dc2626">94.0%</td><td>532K</td><td>566K</td></tr>
+<tr><td><b>EMXC</b></td><td style="color:#dc2626">91.6%</td><td>5.7M</td><td>6.2M</td></tr>
+<tr><td><b>QLTY</b></td><td style="color:#dc2626">91.4%</td><td>511K</td><td>559K</td></tr>
+<tr><td><b>FAN</b></td><td style="color:#dc2626">91.0%</td><td>124K</td><td>137K</td></tr>
+<tr><td><b>DEM</b></td><td style="color:#dc2626">89.8%</td><td>534K</td><td>595K</td></tr>
+<tr><td><b>FFBC</b></td><td style="color:#dc2626">89.8%</td><td>198K</td><td>220K</td></tr>
+<tr><td><b>EWBC</b></td><td style="color:#dc2626">88.0%</td><td>697K</td><td>792K</td></tr>
+<tr><td><b>EDV</b></td><td style="color:#dc2626">87.4%</td><td>4.6M</td><td>5.2M</td></tr>
+<tr><td><b>INCY</b></td><td style="color:#dc2626">87.2%</td><td>692K</td><td>793K</td></tr>
+<tr><td><b>CSCO</b></td><td style="color:#dc2626">86.2%</td><td>22.1M</td><td>25.7M</td></tr>
+<tr><td><b>EWM</b></td><td style="color:#dc2626">85.6%</td><td>470K</td><td>549K</td></tr>
+<tr><td><b>EWO</b></td><td style="color:#dc2626">85.6%</td><td>104K</td><td>122K</td></tr>
+<tr><td><b>HDGE</b></td><td style="color:#dc2626">85.5%</td><td>104K</td><td>122K</td></tr>
+<tr><td><b>UPWK</b></td><td style="color:#dc2626">84.4%</td><td>1.1M</td><td>1.2M</td></tr>
+<tr><td><b>IMNM</b></td><td style="color:#dc2626">84.4%</td><td>512K</td><td>607K</td></tr>
+<tr><td><b>ANAB</b></td><td style="color:#dc2626">84.2%</td><td>406K</td><td>482K</td></tr>
+<tr><td><b>AVDE</b></td><td style="color:#dc2626">83.3%</td><td>744K</td><td>893K</td></tr>
+<tr><td><b>VTIP</b></td><td style="color:#dc2626">83.0%</td><td>1.6M</td><td>1.9M</td></tr>
+<tr><td><b>JNK</b></td><td style="color:#dc2626">82.7%</td><td>3.9M</td><td>4.7M</td></tr>
+<tr><td><b>TD</b></td><td style="color:#dc2626">81.7%</td><td>1.0M</td><td>1.3M</td></tr>
+<tr><td><b>VDE</b></td><td style="color:#dc2626">81.4%</td><td>539K</td><td>662K</td></tr>
+<tr><td><b>EWS</b></td><td style="color:#dc2626">81.3%</td><td>556K</td><td>684K</td></tr>
+<tr><td><b>KBE</b></td><td style="color:#dc2626">81.2%</td><td>741K</td><td>913K</td></tr>
+<tr><td><b>CROX</b></td><td style="color:#dc2626">81.1%</td><td>392K</td><td>483K</td></tr>
+<tr><td><b>FLCH</b></td><td style="color:#dc2626">81.1%</td><td>169K</td><td>208K</td></tr>
+<tr><td><b>ITT</b></td><td style="color:#dc2626">80.5%</td><td>359K</td><td>446K</td></tr>
+<tr><td><b>CELH</b></td><td style="color:#dc2626">80.0%</td><td>2.0M</td><td>2.5M</td></tr>
+<tr><td><b>TXT</b></td><td style="color:#dc2626">79.8%</td><td>626K</td><td>784K</td></tr>
+<tr><td><b>CAMT</b></td><td style="color:#dc2626">79.5%</td><td>97K</td><td>122K</td></tr></tbody></table>
+<h3>Largest Insider Purchases (Open Market Buys)</h3><p>Form 4 filings: P-Purchase transactions only (excludes grants, exercises, awards). Sorted by dollar value.</p><table class="data-table"><thead><tr><th>Ticker</th><th title="Name of the insider making the purchase">Insider</th><th title="Corporate role (CEO, CFO, Director, 10% Owner, etc.)">Role</th><th title="Transaction date from SEC Form 4 filing">Date</th><th title="Purchase price per share">Price</th><th title="Number of shares purchased">Shares</th><th title="Total dollar value of the purchase (price x shares)">Value</th></tr></thead><tbody><tr><td><b>PSA</b></td><td>Mitra Shankh</td><td>director</td><td>2026-02-20</td><td>$350.00</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$393.70</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$394.76</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$391.76</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$392.78</td>
+<tr><td><b>TSLA</b></td><td>Musk Elon</td><td>director, 10 percent owner, officer: CEO</td><td>2025-09-12</td><td>$395.53</td>
+<tr><td><b>MGM</b></td><td>IAC Inc.</td><td>10 percent owner</td><td>2025-12-05</td><td>$36.30</td>
+<tr><td><b>PSA</b></td><td>HAVNER RONALD L JR</td><td>director</td><td>2026-02-20</td><td>$350.00</td>
+<tr><td><b>KMI</b></td><td>KINDER RICHARD D</td><td>director, 10 percent owner, officer: Executive Chairman</td><td>2025-10-27</td><td>$25.96</td>
+<tr><td><b>COGT</b></td><td>Fairmount Funds Management LLC</td><td>director</td><td>2025-07-10</td><td>$9.00</td>
+<tr><td><b>HYMC</b></td><td>Sprott Eric</td><td>10 percent owner</td><td>2025-12-03</td><td>$10.30</td>
+<tr><td><b>ET</b></td><td>WARREN KELCY L</td><td>director</td><td>2025-08-20</td><td>$17.36</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-01-27</td><td>$67.40</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-02-19</td><td>$70.53</td>
+<tr><td><b>FIG</b></td><td>Reed Andrew Phillips</td><td>director</td><td>2026-02-23</td><td>$24.32</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-02-17</td><td>$71.19</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-01-28</td><td>$67.58</td>
+<tr><td><b>CHY</b></td><td>MetLife Investment Management, LLC</td><td>director: </td><td>2022-05-24</td><td>$25.00</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-01-29</td><td>$68.08</td>
+<tr><td><b>ET</b></td><td>WARREN KELCY L</td><td>director</td><td>2025-11-19</td><td>$16.95</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-02-18</td><td>$70.58</td>
+<tr><td><b>ET</b></td><td>WARREN KELCY L</td><td>director</td><td>2025-11-20</td><td>$16.81</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-02-02</td><td>$67.71</td>
+<tr><td><b>NDAQ</b></td><td>INVESTOR AB</td><td>10 percent owner</td><td>2026-02-13</td><td>$79.18</td>
+<tr><td><b>CHY</b></td><td>MetLife Investment Management, LLC</td><td>10 percent owner</td><td>2024-09-09</td><td>$25.00</td>
+<tr><td><b>WRB</b></td><td>MITSUI SUMITOMO INSURANCE CO LTD</td><td>10 percent owner</td><td>2026-02-23</td><td>$71.09</td>
+<tr><td><b>FIG</b></td><td>Reed Andrew Phillips</td><td>director</td><td>2026-02-20</td><td>$25.90</td>
+<tr><td><b>RYAN</b></td><td>RYAN PATRICK G</td><td>director, 10 percent owner, officer: Executive Chairman</td><td>2025-09-12</td><td>$51.84</td>
+<tr><td><b>HYMC</b></td><td>Sprott Eric</td><td>10 percent owner</td><td>2025-12-03</td><td>$10.68</td>
+<tr><td><b>DSGN</b></td><td>William Arsani</td><td>director</td><td>2021-03-30</td><td>$20.00</td></tbody></table></div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-23 1:14 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
 
 /* --- Shared ownership state (localStorage, cross-dashboard) --- */
