@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-03-23T13:06:07.094048",
+  "generated_at": "2026-03-23T14:09:02.903054",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.0921916981412245,
+  "norm_drift": 2.0914967586825086,
   "top_regime": "taper_vol",
-  "top_sim": 13.7,
+  "top_sim": 13.6,
   "regime_similarity": [
     {
       "name": "taper_vol",
       "desc": "Taper tantrum / China / oil crash",
-      "sim": 13.7
+      "sim": 13.6
     },
     {
       "name": "tariff_shock",
       "desc": "Liberation Day / stagflation fears",
-      "sim": 11.6
+      "sim": 11.7
     },
     {
       "name": "covid",
@@ -28,7 +28,7 @@
     {
       "name": "gfc",
       "desc": "Credit crisis / deleveraging",
-      "sim": -3.7
+      "sim": -3.8
     }
   ]
 }
