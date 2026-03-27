@@ -82,6 +82,12 @@ BACKENDS = [
         'slow': False,
         'required': True,
     },
+    {
+        'script': 'similar_days_long_v1_0.py',
+        'name': 'Similar Days (Long)',
+        'slow': True,
+        'required': False,
+    },
     # Historical Mirror: DISABLED 2026-03-10 -- OOM crash on droplet
     # {
     #     'script': 'mirror_backend.py',

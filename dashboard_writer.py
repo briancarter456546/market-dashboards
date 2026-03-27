@@ -748,6 +748,12 @@ DASHBOARD_DESCRIPTIONS = {
         "historical days by correlation, with before/after analysis for sectors, "
         "indexes, style factors, and risk regimes."
     ),
+    "similar-days-long": (
+        "Long-horizon variant of the similar days analyzer. Shows forward returns "
+        "at 5d, 10d, and 21d for 25Y cross-asset matches plus a dedicated SPY-only "
+        "section going back ~33 years to 1993. Includes macro event tagging and "
+        "Perplexity deep research narratives for bear/correction identification."
+    ),
     "historical-mirror": (
         "Compares today's market fingerprint (momentum + spread state) against "
         "every historical bi-weekly period over 25 years. Produces a similarity "
@@ -1179,6 +1185,16 @@ DASHBOARD_REGISTRY = [
                        "across 25Y / 5Y / 1Y windows.",
         "icon":        "🔍",
         "color":       "#0ea5e9",
+        "tag":         "Pattern",
+    },
+    {
+        "slug":        "similar-days-long",
+        "title":       "Similar Days (Long)",
+        "description": "Long-horizon similar days: 5d / 10d / 21d forward returns across 25Y "
+                       "cross-asset matches + SPY deep history (~33Y). Bear/correction pattern "
+                       "identification with Perplexity deep research narratives.",
+        "icon":        "🔭",
+        "color":       "#0369a1",
         "tag":         "Pattern",
     },
     # historical-mirror: DISABLED 2026-03-10 -- OOM crash on droplet, moved to UNDER_REPAIR

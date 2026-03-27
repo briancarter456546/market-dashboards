@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Similar Days (Long) - 2026-03-27</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a2e;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* --- Top stat bar (dark anchor) --- */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    background: #1e1e2e;
+    border-bottom: 3px solid #2d2d4a;
+}
+
+.stat-bar .stat {
+    padding: 20px 26px;
+    border-right: 1px solid #2d2d4a;
+}
+.stat-bar .stat:last-child { border-right: none; }
+
+.stat .stat-label {
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #8888aa;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+}
+
+.stat .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.1em;
+    font-weight: 600;
+    color: #f0f0f0;
+    line-height: 1.1;
+}
+
+.stat .stat-value.pos     { color: #22c55e; }
+.stat .stat-value.neg     { color: #ef4444; }
+.stat .stat-value.warn    { color: #f59e0b; }
+.stat .stat-value.neutral { color: #f0f0f0; }
+
+/* --- Page header --- */
+.page-header {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.page-header .meta {
+    font-size: 0.88em;
+    color: #888;
+}
+
+.page-header .meta a { color: #4f46e5; text-decoration: none; }
+
+/* --- Nav bar --- */
+.page-nav {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 0 30px;
+    display: flex;
+}
+
+.page-nav a {
+    display: inline-block;
+    padding: 13px 20px;
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+.page-nav a:hover  { color: #1a1a2e; }
+.page-nav a.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+/* --- Content area --- */
+.content { padding: 26px 30px; }
+
+/* --- Regime banner --- */
+.regime-banner {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-left: 6px solid #22c55e;
+    border-radius: 8px;
+    padding: 18px 26px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.regime-label {
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.regime-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    color: #888;
+    border-left: 1px solid #e2e4e8;
+    padding-left: 28px;
+    line-height: 1.8;
+}
+
+/* --- Stat/force cards --- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    padding: 18px 22px;
+    border-top: 5px solid #ccc;
+}
+
+.card .label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.9em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.card .sub {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #888;
+}
+
+/* --- Table section wrapper --- */
+.table-section {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.table-section-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid #e2e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.table-section-header h2 {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* --- Tables --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95em;
+}
+
+thead th {
+    background: #f8f9fb;
+    color: #555;
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e2e4e8;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+thead th:hover { background: #f0f2f5; color: #1a1a2e; }
+thead th.sorted-asc  { color: #16a34a; }
+thead th.sorted-desc { color: #dc2626; }
+
+tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbfd; }
+
+/* Numbers and tickers use mono font */
+.num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92em;
+}
+
+.ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #1a1a2e;
+}
+
+/* Color classes */
+.pos   { color: #16a34a; font-weight: 600; }
+.neg   { color: #dc2626; font-weight: 600; }
+.warn  { color: #d97706; font-weight: 600; }
+.muted { color: #aaa; }
+.accent { color: #4f46e5; }
+
+/* Score badges - pill shaped */
+.badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-align: center;
+    min-width: 52px;
+}
+
+.badge-2  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-1  { background: #f0fdf4; color: #16a34a; border: 1px solid #d1fae5; }
+.badge-n1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge-n2 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+/* Qualifier pills */
+.qualifier {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.q-confirmed { background: #dcfce7; color: #15803d; }
+.q-fading    { background: #fff7ed; color: #c2410c; }
+.q-diverging { background: #eff6ff; color: #1d4ed8; }
+.q-holding   { background: #f1f5f9; color: #64748b; }
+
+/* Trend pills */
+.trend-above {
+    background: #dcfce7; color: #15803d;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+.trend-below {
+    background: #fee2e2; color: #b91c1c;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+
+/* --- Playbook text blocks --- */
+.pb-header {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e4e8;
+}
+.pb-header:first-child { margin-top: 0; }
+
+.pb-body {
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.7;
+    margin: 4px 0;
+}
+
+.pb-item {
+    font-size: 0.9em;
+    color: #4f46e5;
+    margin: 5px 0 5px 16px;
+    border-left: 3px solid #c7d2fe;
+    padding-left: 12px;
+    line-height: 1.65;
+}
+
+/* --- Footer --- */
+.dash-footer {
+    padding: 22px 30px;
+    font-size: 0.82em;
+    color: #aaa;
+    border-top: 1px solid #e2e4e8;
+    text-align: center;
+    background: #fff;
+    margin-top: 8px;
+}
+.dash-footer-links {
+    margin-top: 8px;
+}
+.dash-footer-links a {
+    color: #6b7280;
+    text-decoration: none;
+}
+.dash-footer-links a:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    body { font-size: 15px; }
+    .stat-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-bar .stat { padding: 14px 16px; }
+    .stat .stat-value { font-size: 1.5em; }
+    .stat .stat-label { font-size: 0.72em; }
+    .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 6px; }
+    .page-header h1 { font-size: 1.2em; }
+    .page-nav { padding: 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .page-nav a { padding: 10px 14px; font-size: 0.82em; white-space: nowrap; }
+    .content { padding: 16px 12px; }
+    .regime-banner { flex-direction: column; padding: 14px 16px; gap: 12px; }
+    .regime-label { font-size: 1.2em; }
+    .regime-score { border-left: none; padding-left: 0; border-top: 1px solid #e2e4e8; padding-top: 10px; }
+    .cards { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 14px 16px; }
+    .card .value { font-size: 1.5em; }
+    .table-section { border-radius: 0; margin-left: -12px; margin-right: -12px; }
+    .table-section-header { padding: 12px 16px; }
+    table { font-size: 0.85em; }
+    thead th { padding: 8px 10px; font-size: 0.75em; }
+    tbody td { padding: 8px 10px; }
+    .badge { padding: 3px 10px; font-size: 0.82em; min-width: 44px; }
+    .qualifier { padding: 3px 9px; font-size: 0.75em; }
+    .pb-item { margin-left: 8px; padding-left: 10px; }
+    .dash-footer { padding: 16px 12px; font-size: 0.78em; }
+}
+
+/* --- LLM description block (collapsible, matches table-section) --- */
+.llm-block {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    margin-bottom: 22px;
+    overflow: hidden;
+}
+.llm-block summary {
+    padding: 16px 22px;
+    background: #fafafa;
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+}
+.llm-block summary::-webkit-details-marker { display: none; }
+.llm-block summary::after {
+    content: '\25B8';
+    font-size: 0.8em;
+    color: #888;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.llm-block[open] summary::after {
+    transform: rotate(90deg);
+}
+.llm-block[open] summary {
+    border-bottom: 1px solid #e2e4e8;
+}
+.llm-block summary:hover {
+    background: #f0f2f5;
+}
+.llm-block-body {
+    padding: 18px 22px 16px;
+}
+.llm-section-label {
+    font-size: 0.82em;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+}
+.llm-static {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+.llm-dynamic {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 14px 18px;
+    background: #f8f9fb;
+    border-left: 4px solid #4f46e5;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 18px;
+}
+.llm-dynamic .llm-section-label {
+    color: #4f46e5;
+}
+.llm-disclaimer {
+    font-size: 0.78em;
+    color: #999;
+    font-style: italic;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 10px;
+}
+
+
+/* --- Shared ownership checkbox (all dashboards) --- */
+.own-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #f59e0b; }
+.row-owned { background: #fff7ed !important; }
+.row-owned:hover { background: #ffedd5 !important; }
+th.own-th { width: 30px; text-align: center; cursor: default; }
+/* --- Shared watchlist checkbox (all dashboards) --- */
+.watch-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #3b82f6; }
+.row-watched:not(.row-owned) { background: #eff6ff !important; }
+.row-watched:not(.row-owned):hover { background: #dbeafe !important; }
+th.watch-th { width: 30px; text-align: center; cursor: default; }
+
+
+/* Similar days long -- multi-period tables */
+.sim-long-table table {
+    border-collapse: collapse; width: 100%; font-size: 0.8em; table-layout: fixed;
+}
+.sim-long-table thead th {
+    padding: 7px 6px; font-size: 0.72em; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    cursor: pointer; user-select: none;
+    border-bottom: 2px solid #e2e4e8; white-space: nowrap; text-align: center;
+}
+.sim-long-table thead th.col-name { text-align: left; }
+.sim-long-table tbody td {
+    padding: 6px 6px; border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle; text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+}
+.sim-long-table tbody td.col-name {
+    text-align: left; font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.9em; color: #333; white-space: nowrap;
+}
+.sim-long-table tbody tr:hover { outline: 2px solid #4f46e5; }
+
+/* Group header row */
+.grp-row th { padding: 5px 4px; font-size: 0.78em; font-weight: 700; letter-spacing: 0.05em; }
+.grp-blank  { background: #f8f9fb; color: transparent; border-bottom: 1px solid #e2e4e8; }
+.grp-ctx    { background: #1e293b; color: #94a3b8; }
+.grp-5d     { background: #14532d; color: #86efac; }
+.grp-10d    { background: #1e3a5f; color: #93c5fd; }
+.grp-21d    { background: #7c2d12; color: #fed7aa; }
+
+/* Sort arrows */
+th.sort-asc::after  { content: ' +'; font-size: 0.7em; }
+th.sort-desc::after { content: ' -'; font-size: 0.7em; }
+
+.pred-pct { display: block; font-size: 0.78em; color: #333; opacity: 0.75; }
+.cell-miss { color: #ccc !important; background: #fafafa !important; }
+
+/* SPY deep table */
+.spy-deep-table table { border-collapse: collapse; width: 100%; font-size: 0.82em; }
+.spy-deep-table thead th {
+    padding: 7px 8px; font-size: 0.75em; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    border-bottom: 2px solid #e2e4e8; text-align: center;
+    cursor: pointer; user-select: none;
+}
+.spy-deep-table tbody td {
+    padding: 5px 8px; border-bottom: 1px solid #f0f0f0;
+    text-align: center; font-family: 'IBM Plex Mono', monospace;
+}
+.spy-deep-table tbody tr:hover { outline: 2px solid #4f46e5; }
+.event-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 0.78em; font-weight: 600; background: #fef3c7; color: #92400e;
+    white-space: nowrap;
+}
+
+/* Dates panel (single panel for 25Y) */
+.dates-panel-long {
+    background: #fff; border: 1px solid #e2e4e8; border-radius: 8px;
+    border-top: 4px solid #14532d; margin-bottom: 18px; max-width: 600px;
+}
+.dates-panel-long .header {
+    padding: 10px 14px; background: #14532d; color: #86efac;
+    font-size: 0.82em; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; display: flex; justify-content: space-between;
+}
+.dates-panel-long .body {
+    padding: 10px 14px; max-height: 280px; overflow-y: auto;
+}
+.date-row {
+    display: flex; justify-content: space-between;
+    font-size: 0.82em; padding: 4px 0; border-bottom: 1px solid #f5f5f5;
+    font-family: 'IBM Plex Mono', monospace;
+}
+.date-row:last-child { border-bottom: none; }
+.date-corr { color: #888; }
+
+/* Mobile */
+@media (max-width: 768px) {
+    .sim-long-table { overflow-x: auto; }
+    .sim-long-table table { font-size: 0.72em; }
+    .spy-deep-table { overflow-x: auto; }
+    .spy-deep-table table { font-size: 0.72em; }
+}
+
+</style>
+</head><body>
+<div class="stat-bar"><div class="stat"><div class="stat-label">Target Date</div><div class="stat-value neutral">2026-03-27</div></div><div class="stat"><div class="stat-label">25Y Matches</div><div class="stat-value neutral">100</div></div><div class="stat"><div class="stat-label">SPY Matches</div><div class="stat-value neutral">100</div></div><div class="stat"><div class="stat-label">SPY History</div><div class="stat-value neutral">33Y</div></div></div>
+<div class="page-header">
+  <h1>Similar Days (Long)</h1>
+  <div class="meta">
+    Long-horizon similar days: 5d / 10d / 21d forward analysis. Bear market and correction pattern identification. &nbsp;|&nbsp;
+    Data as of 2026-03-27 16:03 ET &nbsp;|&nbsp;
+    <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
+  </div>
+</div>
+<div class="page-nav">
+  <a href="#spreads" class="active">Dashboard</a>
+  <a href="archive/dashboard_20260327.html">Archive: 2026-03-27</a>
+  <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
+</div>
+<div class="content">
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">Long-horizon variant of the similar days analyzer. Shows forward returns at 5d, 10d, and 21d for 25Y cross-asset matches plus a dedicated SPY-only section going back ~33 years to 1993. Includes macro event tagging and Perplexity deep research narratives for bear/correction identification.</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
+<div class="dates-panel-long"><div class="header"><span>25Y Similar Days</span><span>100</span></div><div class="body"><div class="date-row"><span>2026-03-26</span><span class="date-corr">0.908</span></div><div class="date-row"><span>2026-03-25</span><span class="date-corr">0.893</span></div><div class="date-row"><span>2026-03-24</span><span class="date-corr">0.807</span></div><div class="date-row"><span>2026-03-23</span><span class="date-corr">0.795</span></div><div class="date-row"><span>2026-03-20</span><span class="date-corr">0.780</span></div><div class="date-row"><span>2026-03-19</span><span class="date-corr">0.731</span></div><div class="date-row"><span>2026-03-18</span><span class="date-corr">0.701</span></div><div class="date-row"><span>2022-05-13</span><span class="date-corr">0.687</span></div><div class="date-row"><span>2022-05-16</span><span class="date-corr">0.686</span></div><div class="date-row"><span>2026-03-13</span><span class="date-corr">0.680</span></div><div class="date-row"><span>2022-05-19</span><span class="date-corr">0.668</span></div><div class="date-row"><span>2026-03-17</span><span class="date-corr">0.662</span></div><div class="date-row"><span>2010-02-11</span><span class="date-corr">0.658</span></div><div class="date-row"><span>2022-05-06</span><span class="date-corr">0.657</span></div><div class="date-row"><span>2010-02-16</span><span class="date-corr">0.648</span></div><div class="date-row"><span>2021-10-05</span><span class="date-corr">0.646</span></div><div class="date-row"><span>2010-02-18</span><span class="date-corr">0.644</span></div><div class="date-row"><span>2022-05-09</span><span class="date-corr">0.642</span></div><div class="date-row"><span>2005-04-05</span><span class="date-corr">0.642</span></div><div class="date-row"><span>2010-05-28</span><span class="date-corr">0.640</span></div><div class="date-row"><span>2023-10-13</span><span class="date-corr">0.639</span></div><div class="date-row"><span>2025-01-10</span><span class="date-corr">0.639</span></div><div class="date-row"><span>2021-10-06</span><span class="date-corr">0.638</span></div><div class="date-row"><span>2010-02-12</span><span class="date-corr">0.636</span></div><div class="date-row"><span>2022-05-12</span><span class="date-corr">0.630</span></div><div class="date-row"><span>2010-06-01</span><span class="date-corr">0.629</span></div><div class="date-row"><span>2022-05-02</span><span class="date-corr">0.628</span></div><div class="date-row"><span>2025-01-02</span><span class="date-corr">0.628</span></div><div class="date-row"><span>2025-01-13</span><span class="date-corr">0.626</span></div><div class="date-row"><span>2010-06-02</span><span class="date-corr">0.625</span></div><div class="date-row"><span>2022-05-05</span><span class="date-corr">0.625</span></div><div class="date-row"><span>2004-05-17</span><span class="date-corr">0.625</span></div><div class="date-row"><span>2026-03-12</span><span class="date-corr">0.625</span></div><div class="date-row"><span>2010-02-17</span><span class="date-corr">0.622</span></div><div class="date-row"><span>2022-04-29</span><span class="date-corr">0.622</span></div><div class="date-row"><span>2004-05-06</span><span class="date-corr">0.622</span></div><div class="date-row"><span>2026-03-16</span><span class="date-corr">0.621</span></div><div class="date-row"><span>2022-05-18</span><span class="date-corr">0.619</span></div><div class="date-row"><span>2022-05-17</span><span class="date-corr">0.618</span></div><div class="date-row"><span>2022-05-03</span><span class="date-corr">0.616</span></div><div class="date-row"><span>2023-10-12</span><span class="date-corr">0.616</span></div><div class="date-row"><span>2024-12-31</span><span class="date-corr">0.612</span></div><div class="date-row"><span>2013-06-28</span><span class="date-corr">0.611</span></div><div class="date-row"><span>2023-10-10</span><span class="date-corr">0.611</span></div><div class="date-row"><span>2025-01-08</span><span class="date-corr">0.610</span></div><div class="date-row"><span>2016-01-25</span><span class="date-corr">0.605</span></div><div class="date-row"><span>2004-05-05</span><span class="date-corr">0.603</span></div><div class="date-row"><span>2016-01-27</span><span class="date-corr">0.603</span></div><div class="date-row"><span>2021-10-08</span><span class="date-corr">0.602</span></div><div class="date-row"><span>2025-01-07</span><span class="date-corr">0.602</span></div><div class="date-row"><span>2022-05-20</span><span class="date-corr">0.600</span></div><div class="date-row"><span>2021-10-01</span><span class="date-corr">0.599</span></div><div class="date-row"><span>2004-05-21</span><span class="date-corr">0.598</span></div><div class="date-row"><span>2004-05-18</span><span class="date-corr">0.598</span></div><div class="date-row"><span>2021-10-12</span><span class="date-corr">0.593</span></div><div class="date-row"><span>2021-12-06</span><span class="date-corr">0.592</span></div><div class="date-row"><span>2010-06-11</span><span class="date-corr">0.592</span></div><div class="date-row"><span>2023-10-11</span><span class="date-corr">0.591</span></div><div class="date-row"><span>2021-10-07</span><span class="date-corr">0.590</span></div><div class="date-row"><span>2008-10-22</span><span class="date-corr">0.588</span></div><div class="date-row"><span>2002-09-30</span><span class="date-corr">0.588</span></div><div class="date-row"><span>2008-07-07</span><span class="date-corr">0.585</span></div><div class="date-row"><span>2005-04-01</span><span class="date-corr">0.585</span></div><div class="date-row"><span>2020-03-25</span><span class="date-corr">0.584</span></div><div class="date-row"><span>2016-01-26</span><span class="date-corr">0.584</span></div><div class="date-row"><span>2016-01-28</span><span class="date-corr">0.583</span></div><div class="date-row"><span>2020-03-27</span><span class="date-corr">0.583</span></div><div class="date-row"><span>2004-05-14</span><span class="date-corr">0.581</span></div><div class="date-row"><span>2008-10-13</span><span class="date-corr">0.581</span></div><div class="date-row"><span>2013-06-27</span><span class="date-corr">0.580</span></div><div class="date-row"><span>2008-10-30</span><span class="date-corr">0.579</span></div><div class="date-row"><span>2008-10-20</span><span class="date-corr">0.578</span></div><div class="date-row"><span>2008-06-30</span><span class="date-corr">0.578</span></div><div class="date-row"><span>2002-10-01</span><span class="date-corr">0.576</span></div><div class="date-row"><span>2002-10-07</span><span class="date-corr">0.576</span></div><div class="date-row"><span>2005-04-04</span><span class="date-corr">0.575</span></div><div class="date-row"><span>2006-05-30</span><span class="date-corr">0.574</span></div><div class="date-row"><span>2020-03-23</span><span class="date-corr">0.574</span></div><div class="date-row"><span>2025-01-14</span><span class="date-corr">0.573</span></div><div class="date-row"><span>2007-03-14</span><span class="date-corr">0.573</span></div><div class="date-row"><span>2016-01-22</span><span class="date-corr">0.573</span></div><div class="date-row"><span>2021-12-09</span><span class="date-corr">0.573</span></div><div class="date-row"><span>2008-07-03</span><span class="date-corr">0.572</span></div><div class="date-row"><span>2020-03-24</span><span class="date-corr">0.571</span></div><div class="date-row"><span>2021-09-28</span><span class="date-corr">0.571</span></div><div class="date-row"><span>2015-09-02</span><span class="date-corr">0.571</span></div><div class="date-row"><span>2004-05-07</span><span class="date-corr">0.571</span></div><div class="date-row"><span>2002-10-10</span><span class="date-corr">0.570</span></div><div class="date-row"><span>2002-09-26</span><span class="date-corr">0.570</span></div><div class="date-row"><span>2010-05-27</span><span class="date-corr">0.570</span></div><div class="date-row"><span>2004-05-20</span><span class="date-corr">0.569</span></div><div class="date-row"><span>2011-11-29</span><span class="date-corr">0.568</span></div><div class="date-row"><span>2020-03-19</span><span class="date-corr">0.568</span></div><div class="date-row"><span>2023-08-22</span><span class="date-corr">0.567</span></div><div class="date-row"><span>2018-10-19</span><span class="date-corr">0.567</span></div><div class="date-row"><span>2005-03-31</span><span class="date-corr">0.566</span></div><div class="date-row"><span>2004-03-31</span><span class="date-corr">0.566</span></div><div class="date-row"><span>2007-03-15</span><span class="date-corr">0.565</span></div><div class="date-row"><span>2023-08-28</span><span class="date-corr">0.565</span></div><div class="date-row"><span>2010-06-03</span><span class="date-corr">0.565</span></div></div></div>
+<h2 style="margin:28px 0 12px;font-size:1.15em;color:#1e293b;border-bottom:2px solid #e2e4e8;padding-bottom:8px;">Section 1: 25Y Cross-Asset Analysis (5d / 10d / 21d)</h2>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>Risk Regime</h2><span style="font-size:0.85em;color:#888;">Before 5d = context leading into match | Fwd = forward returns | Click to sort</span></div><div class="sim-long-table" style="overflow-x:auto;padding:0;"><div id="tbl-risk"></div></div></div>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>Major Indexes</h2><span style="font-size:0.85em;color:#888;">Before 5d = context leading into match | Fwd = forward returns | Click to sort</span></div><div class="sim-long-table" style="overflow-x:auto;padding:0;"><div id="tbl-indexes"></div></div></div>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>Market Cap</h2><span style="font-size:0.85em;color:#888;">Before 5d = context leading into match | Fwd = forward returns | Click to sort</span></div><div class="sim-long-table" style="overflow-x:auto;padding:0;"><div id="tbl-market-cap"></div></div></div>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>Sectors</h2><span style="font-size:0.85em;color:#888;">Before 5d = context leading into match | Fwd = forward returns | Click to sort</span></div><div class="sim-long-table" style="overflow-x:auto;padding:0;"><div id="tbl-sectors"></div></div></div>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>Style Factors</h2><span style="font-size:0.85em;color:#888;">Before 5d = context leading into match | Fwd = forward returns | Click to sort</span></div><div class="sim-long-table" style="overflow-x:auto;padding:0;"><div id="tbl-styles"></div></div></div>
+<h2 style="margin:28px 0 12px;font-size:1.15em;color:#1e293b;border-bottom:2px solid #e2e4e8;padding-bottom:8px;">Section 2: SPY Deep History (~33Y, back to 1993)</h2>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>SPY-Only Pattern Matches</h2><span style="font-size:0.85em;color:#888;">Momentum-based matching on SPY alone. Event tags show known macro episodes. Click to sort.</span></div><div class="spy-deep-table" style="overflow-x:auto;padding:0;"><div id="tbl-spy-deep"></div></div></div>
+<div class="table-section" style="margin-bottom:22px;"><div class="table-section-header"><h2>Deep Research Prompt</h2><span style="font-size:0.85em;color:#888;">Auto-sent to Perplexity deep research for narrative analysis</span></div><div style="padding:16px;"><button onclick="navigator.clipboard.writeText(document.getElementById('llm-prompt-text').innerText)" style="margin-bottom:12px;padding:6px 16px;background:#4f46e5;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.85em;">Copy Prompt</button><pre id="llm-prompt-text" style="background:#f8f9fb;border:1px solid #e2e4e8;border-radius:6px;padding:14px;font-size:0.78em;font-family:'IBM Plex Mono',monospace;white-space:pre-wrap;overflow-x:auto;max-height:400px;overflow-y:auto;">You are a financial market historian specializing in bear markets, corrections, and recessions.
+
+I am running a quantitative pattern-matching system that identifies historical market days
+with similar momentum profiles to today (March 2026). Below are the top similar days from
+two analyses:
+
+SECTION 1: 25Y cross-asset pattern matching (momentum z-scores across 40+ ETFs)
+SECTION 2: SPY-only deep history matching (back to 1993, ~33 years)
+
+For EACH matched date, analyze:
+1. MACRO REGIME -- expansion/contraction, Fed stance, GDP trajectory
+2. WHAT PRECEDED IT -- what happened in the 1-3 months before this date
+3. WHAT FOLLOWED -- 5d, 10d, 21d, and 63d (3-month) forward returns for SPY
+4. WAS THIS A BEAR/CORRECTION ENTRY POINT? -- did a >10% drawdown follow within 3 months?
+5. RECOVERY TIMELINE -- if a drawdown occurred, how long to recover?
+
+After analyzing individual dates, synthesize:
+- What percentage of these similar days preceded significant drawdowns (>10%)?
+- What is the base rate for the market making new highs vs entering correction?
+- What macro conditions from these historical matches are most similar to NOW (March 2026)?
+- Your probabilistic assessment: what do these patterns suggest about the next 1-3 months?
+
+============================================================
+
+--- 25Y CROSS-ASSET MATCHES (top 25) ---
+  2026-03-26  (correlation: 0.908)
+  2026-03-25  (correlation: 0.893)
+  2026-03-24  (correlation: 0.807)
+  2026-03-23  (correlation: 0.795)
+  2026-03-20  (correlation: 0.780)
+  2026-03-19  (correlation: 0.731)
+  2026-03-18  (correlation: 0.701)
+  2022-05-13  (correlation: 0.687)
+  2022-05-16  (correlation: 0.686)
+  2026-03-13  (correlation: 0.680)
+  2022-05-19  (correlation: 0.668)
+  2026-03-17  (correlation: 0.662)
+  2010-02-11  (correlation: 0.658)
+  2022-05-06  (correlation: 0.657)
+  2010-02-16  (correlation: 0.648)
+  2021-10-05  (correlation: 0.646)
+  2010-02-18  (correlation: 0.644)
+  2022-05-09  (correlation: 0.642)
+  2005-04-05  (correlation: 0.642)
+  2010-05-28  (correlation: 0.640)
+  2023-10-13  (correlation: 0.639)
+  2025-01-10  (correlation: 0.639)
+  2021-10-06  (correlation: 0.638)
+  2010-02-12  (correlation: 0.636)
+  2022-05-12  (correlation: 0.630)
+
+--- SPY DEEP HISTORY MATCHES (top 50, ~33Y history) ---
+  2025-01-13  (sim: 0.722)  fwd5d: 3.7%  fwd21d: 3.8%
+  1998-08-07  (sim: 0.701)  fwd5d: -2.8%  fwd21d: -5.6% [Asian Crisis / LTCM]
+  2014-02-06  (sim: 0.670)  fwd5d: 3.1%  fwd21d: 6.0%
+  2015-08-27  (sim: 0.670)  fwd5d: -1.9%  fwd21d: -5.7% [China Deval / Oil Crash]
+  1996-07-12  (sim: 0.662)  fwd5d: -0.9%  fwd21d: 3.3%
+  2015-09-03  (sim: 0.658)  fwd5d: 0.6%  fwd21d: 1.5% [China Deval / Oil Crash]
+  2008-10-13  (sim: 0.654)  fwd5d: -2.5%  fwd21d: -11.4% [GFC]
+  2000-02-18  (sim: 0.649)  fwd5d: 0.6%  fwd21d: 10.3%
+  2018-10-30  (sim: 0.647)  fwd5d: 2.7%  fwd21d: 2.3% [Fed Tightening Selloff]
+  1998-08-10  (sim: 0.639)  fwd5d: -0.1%  fwd21d: -7.4% [Asian Crisis / LTCM]
+  2004-07-26  (sim: 0.635)  fwd5d: 2.1%  fwd21d: 1.5%
+  2021-12-06  (sim: 0.615)  fwd5d: 1.7%  fwd21d: 2.1%
+  1998-08-14  (sim: 0.615)  fwd5d: 2.3%  fwd21d: -1.9% [Asian Crisis / LTCM]
+  2016-01-15  (sim: 0.614)  fwd5d: -0.1%  fwd21d: 2.7% [China Deval / Oil Crash]
+  2004-03-23  (sim: 0.610)  fwd5d: 3.2%  fwd21d: 4.4%
+  1996-07-24  (sim: 0.604)  fwd5d: 2.0%  fwd21d: 7.0%
+  2016-01-19  (sim: 0.603)  fwd5d: 1.1%  fwd21d: 2.1% [China Deval / Oil Crash]
+  2018-10-23  (sim: 0.600)  fwd5d: -2.1%  fwd21d: -3.1% [Fed Tightening Selloff]
+  2012-11-14  (sim: 0.599)  fwd5d: 2.6%  fwd21d: 4.5%
+  2025-03-14  (sim: 0.595)  fwd5d: 0.2%  fwd21d: -4.2%
+  2024-12-31  (sim: 0.592)  fwd5d: 0.6%  fwd21d: 2.0%
+  2008-01-16  (sim: 0.592)  fwd5d: -1.4%  fwd21d: -1.3% [GFC]
+  2008-01-10  (sim: 0.590)  fwd5d: -5.6%  fwd21d: -5.3% [GFC]
+  2025-03-06  (sim: 0.589)  fwd5d: -3.7%  fwd21d: -11.8%
+  2004-08-12  (sim: 0.588)  fwd5d: 2.5%  fwd21d: 6.0%
+  2002-07-25  (sim: 0.583)  fwd5d: 5.7%  fwd21d: 12.6% [Dot-com Crash]
+  2000-02-22  (sim: 0.580)  fwd5d: 1.8%  fwd21d: 11.2%
+  2005-10-12  (sim: 0.579)  fwd5d: 1.9%  fwd21d: 5.0%
+  1998-08-13  (sim: 0.576)  fwd5d: 1.9%  fwd21d: -3.7% [Asian Crisis / LTCM]
+  1999-09-28  (sim: 0.572)  fwd5d: 1.8%  fwd21d: 1.4%
+  2005-10-13  (sim: 0.568)  fwd5d: 0.2%  fwd21d: 5.4%
+  1996-07-19  (sim: 0.567)  fwd5d: -0.4%  fwd21d: 4.5%
+  1994-11-29  (sim: 0.565)  fwd5d: -0.0%  fwd21d: 1.0% [Bond Massacre / Tequila]
+  2001-09-24  (sim: 0.565)  fwd5d: 3.5%  fwd21d: 8.2% [Dot-com Crash]
+  2001-03-21  (sim: 0.560)  fwd5d: 2.5%  fwd21d: 10.9% [Dot-com Crash]
+  2006-05-19  (sim: 0.556)  fwd5d: 1.0%  fwd21d: -2.4%
+  2022-05-20  (sim: 0.554)  fwd5d: 6.6%  fwd21d: -3.9% [Inflation / Rate Hike Bear]
+  2012-11-16  (sim: 0.551)  fwd5d: 3.4%  fwd21d: 6.6%
+  2014-10-09  (sim: 0.544)  fwd5d: -3.4%  fwd21d: 5.5%
+  2008-01-24  (sim: 0.544)  fwd5d: 1.8%  fwd21d: 1.7% [GFC]
+  2004-07-19  (sim: 0.541)  fwd5d: -1.4%  fwd21d: -1.2%
+  1996-04-08  (sim: 0.541)  fwd5d: -0.2%  fwd21d: -0.6%
+  2001-03-20  (sim: 0.540)  fwd5d: 3.6%  fwd21d: 10.0% [Dot-com Crash]
+  2011-08-18  (sim: 0.536)  fwd5d: 1.6%  fwd21d: 5.1% [US Downgrade / Euro Crisis]
+  2004-07-23  (sim: 0.535)  fwd5d: 1.7%  fwd21d: 1.1%
+  2014-10-02  (sim: 0.535)  fwd5d: -0.8%  fwd21d: 3.8%
+  2006-06-14  (sim: 0.535)  fwd5d: 1.2%  fwd21d: 0.0%
+  2025-01-10  (sim: 0.532)  fwd5d: 2.9%  fwd21d: 4.3%
+  2004-03-22  (sim: 0.531)  fwd5d: 2.7%  fwd21d: 2.8%
+  1999-08-10  (sim: 0.528)  fwd5d: 4.6%  fwd21d: 4.7%
+
+============================================================
+Please structure your response with:
+1. Analysis of clustered date groups (group dates by macro episode)
+2. Bear/correction probability assessment
+3. Most relevant historical analog for current conditions
+4. Actionable synthesis for a portfolio manager</pre></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-03-27 4:07 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+<script>
+
+/* --- Shared ownership state (localStorage, cross-dashboard) --- */
+/* Defensive JSON parse: never lose data on corruption */
+function _safeLoadArray(key) {
+    try {
+        var raw = localStorage.getItem(key);
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+        return [];
+    } catch(e) {
+        console.warn('[ownership] Corrupt localStorage key: ' + key, e);
+        return [];
+    }
+}
+function _safeSaveArray(key, setObj) {
+    try {
+        localStorage.setItem(key, JSON.stringify(Array.from(setObj)));
+    } catch(e) {
+        console.error('[ownership] Failed to save ' + key, e);
+    }
+}
+
+window._owned = (function() {
+    var KEY = 'dashboard_owned_tickers';
+    var _set = new Set(_safeLoadArray(KEY));
+
+    /* Migration: copy old momentum-ranker-only key if it exists */
+    try {
+        var OLD_KEY = 'mr_owned_tickers_v1';
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+            var oldArr = JSON.parse(old);
+            if (Array.isArray(oldArr) && oldArr.length) {
+                oldArr.forEach(function(t) { _set.add(t); });
+                _safeSaveArray(KEY, _set);
+            }
+            localStorage.removeItem(OLD_KEY);
+        }
+    } catch(e) {}
+
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            _safeSaveArray(KEY, _set);
+            return _set.has(t);
+        },
+        all: function() { return Array.from(_set); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.own-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._owned.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-owned');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared toggle helper for Python-rendered tables */
+window._ownToggle = function(ticker, cb) {
+    window._owned.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-owned');
+    /* Update td data-val so column sorting works (1=owned, 0=not) */
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+/* --- Shared watchlist state (localStorage, cross-dashboard) --- */
+window._watched = (function() {
+    var KEY = 'dashboard_watched_tickers';
+    var _set = new Set(_safeLoadArray(KEY));
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            _safeSaveArray(KEY, _set);
+            return _set.has(t);
+        },
+        all: function() { return Array.from(_set); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init watch checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.watch-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._watched.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-watched');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared watch toggle helper for Python-rendered tables */
+window._watchToggle = function(ticker, cb) {
+    window._watched.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-watched');
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+
+function getGradientColor(score) {
+    var clamped = Math.max(0, Math.min(1, score));
+    var r, g, b;
+    if (clamped < 0.25) {
+        var t = clamped * 4;
+        r = Math.round(211 + (255 - 211) * t);
+        g = Math.round(47 + (152 - 47) * t);
+        b = Math.round(47 + (0 - 47) * t);
+    } else if (clamped < 0.5) {
+        var t = (clamped - 0.25) * 4;
+        r = 255;
+        g = Math.round(152 + (235 - 152) * t);
+        b = Math.round(0 + (59 - 0) * t);
+    } else if (clamped < 0.75) {
+        var t = (clamped - 0.5) * 4;
+        r = Math.round(255 + (139 - 255) * t);
+        g = Math.round(235 + (195 - 235) * t);
+        b = Math.round(59 + (74 - 59) * t);
+    } else {
+        var t = (clamped - 0.75) * 4;
+        r = Math.round(139 + (0 - 139) * t);
+        g = Math.round(195 + (200 - 195) * t);
+        b = Math.round(74 + (83 - 74) * t);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+
+(function() {
+    const DATA = {"generated_at": "2026-03-27T16:07:06.161243", "target_date": "2026-03-27", "broad_25y": {"similar_days_count": 100, "similar_days": [{"date": "2026-03-26", "correlation": 0.9076}, {"date": "2026-03-25", "correlation": 0.8927}, {"date": "2026-03-24", "correlation": 0.8073}, {"date": "2026-03-23", "correlation": 0.795}, {"date": "2026-03-20", "correlation": 0.78}, {"date": "2026-03-19", "correlation": 0.7314}, {"date": "2026-03-18", "correlation": 0.7013}, {"date": "2022-05-13", "correlation": 0.6874}, {"date": "2022-05-16", "correlation": 0.6857}, {"date": "2026-03-13", "correlation": 0.6802}, {"date": "2022-05-19", "correlation": 0.6679}, {"date": "2026-03-17", "correlation": 0.6619}, {"date": "2010-02-11", "correlation": 0.6576}, {"date": "2022-05-06", "correlation": 0.6567}, {"date": "2010-02-16", "correlation": 0.6482}, {"date": "2021-10-05", "correlation": 0.6458}, {"date": "2010-02-18", "correlation": 0.6436}, {"date": "2022-05-09", "correlation": 0.6424}, {"date": "2005-04-05", "correlation": 0.6423}, {"date": "2010-05-28", "correlation": 0.6401}, {"date": "2023-10-13", "correlation": 0.6395}, {"date": "2025-01-10", "correlation": 0.6386}, {"date": "2021-10-06", "correlation": 0.6379}, {"date": "2010-02-12", "correlation": 0.6359}, {"date": "2022-05-12", "correlation": 0.6299}, {"date": "2010-06-01", "correlation": 0.6291}, {"date": "2022-05-02", "correlation": 0.6281}, {"date": "2025-01-02", "correlation": 0.6277}, {"date": "2025-01-13", "correlation": 0.6262}, {"date": "2010-06-02", "correlation": 0.6253}, {"date": "2022-05-05", "correlation": 0.625}, {"date": "2004-05-17", "correlation": 0.6247}, {"date": "2026-03-12", "correlation": 0.6246}, {"date": "2010-02-17", "correlation": 0.6224}, {"date": "2022-04-29", "correlation": 0.6218}, {"date": "2004-05-06", "correlation": 0.6216}, {"date": "2026-03-16", "correlation": 0.6211}, {"date": "2022-05-18", "correlation": 0.6187}, {"date": "2022-05-17", "correlation": 0.6178}, {"date": "2022-05-03", "correlation": 0.6156}, {"date": "2023-10-12", "correlation": 0.6155}, {"date": "2024-12-31", "correlation": 0.6119}, {"date": "2013-06-28", "correlation": 0.6112}, {"date": "2023-10-10", "correlation": 0.6112}, {"date": "2025-01-08", "correlation": 0.61}, {"date": "2016-01-25", "correlation": 0.6046}, {"date": "2004-05-05", "correlation": 0.6027}, {"date": "2016-01-27", "correlation": 0.6027}, {"date": "2021-10-08", "correlation": 0.6021}, {"date": "2025-01-07", "correlation": 0.6018}, {"date": "2022-05-20", "correlation": 0.6002}, {"date": "2021-10-01", "correlation": 0.5988}, {"date": "2004-05-21", "correlation": 0.5983}, {"date": "2004-05-18", "correlation": 0.5979}, {"date": "2021-10-12", "correlation": 0.5931}, {"date": "2021-12-06", "correlation": 0.592}, {"date": "2010-06-11", "correlation": 0.5919}, {"date": "2023-10-11", "correlation": 0.5909}, {"date": "2021-10-07", "correlation": 0.5901}, {"date": "2008-10-22", "correlation": 0.588}, {"date": "2002-09-30", "correlation": 0.5879}, {"date": "2008-07-07", "correlation": 0.5854}, {"date": "2005-04-01", "correlation": 0.5846}, {"date": "2020-03-25", "correlation": 0.5842}, {"date": "2016-01-26", "correlation": 0.5839}, {"date": "2016-01-28", "correlation": 0.5826}, {"date": "2020-03-27", "correlation": 0.5826}, {"date": "2004-05-14", "correlation": 0.5813}, {"date": "2008-10-13", "correlation": 0.5808}, {"date": "2013-06-27", "correlation": 0.5795}, {"date": "2008-10-30", "correlation": 0.5788}, {"date": "2008-10-20", "correlation": 0.5782}, {"date": "2008-06-30", "correlation": 0.5782}, {"date": "2002-10-01", "correlation": 0.5764}, {"date": "2002-10-07", "correlation": 0.5759}, {"date": "2005-04-04", "correlation": 0.5749}, {"date": "2006-05-30", "correlation": 0.5739}, {"date": "2020-03-23", "correlation": 0.5739}, {"date": "2025-01-14", "correlation": 0.5731}, {"date": "2007-03-14", "correlation": 0.5731}, {"date": "2016-01-22", "correlation": 0.5731}, {"date": "2021-12-09", "correlation": 0.5726}, {"date": "2008-07-03", "correlation": 0.5724}, {"date": "2020-03-24", "correlation": 0.5714}, {"date": "2021-09-28", "correlation": 0.5709}, {"date": "2015-09-02", "correlation": 0.5709}, {"date": "2004-05-07", "correlation": 0.5706}, {"date": "2002-10-10", "correlation": 0.5698}, {"date": "2002-09-26", "correlation": 0.5697}, {"date": "2010-05-27", "correlation": 0.5697}, {"date": "2004-05-20", "correlation": 0.5688}, {"date": "2011-11-29", "correlation": 0.5684}, {"date": "2020-03-19", "correlation": 0.5681}, {"date": "2023-08-22", "correlation": 0.5669}, {"date": "2018-10-19", "correlation": 0.5665}, {"date": "2005-03-31", "correlation": 0.5662}, {"date": "2004-03-31", "correlation": 0.5659}, {"date": "2007-03-15", "correlation": 0.5654}, {"date": "2023-08-28", "correlation": 0.5645}, {"date": "2010-06-03", "correlation": 0.5645}], "sectors": {"XLF": {"name": "Financials", "backward_5d": {"avg_return": -0.35, "pct_positive": 47.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.44, "pct_positive": 60.4, "sample_count": 96}, "fwd_10d": {"avg_return": 1.48, "pct_positive": 62.6, "sample_count": 91}, "fwd_21d": {"avg_return": 1.96, "pct_positive": 73.0, "sample_count": 89}}, "XLV": {"name": "Healthcare", "backward_5d": {"avg_return": -0.16, "pct_positive": 50.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.54, "pct_positive": 50.0, "sample_count": 96}, "fwd_10d": {"avg_return": 1.68, "pct_positive": 69.2, "sample_count": 91}, "fwd_21d": {"avg_return": 2.43, "pct_positive": 66.3, "sample_count": 89}}, "XLE": {"name": "Energy", "backward_5d": {"avg_return": 2.2, "pct_positive": 75.0, "sample_count": 100}, "fwd_5d": {"avg_return": 1.79, "pct_positive": 67.7, "sample_count": 96}, "fwd_10d": {"avg_return": 2.86, "pct_positive": 65.9, "sample_count": 91}, "fwd_21d": {"avg_return": 2.57, "pct_positive": 60.7, "sample_count": 89}}, "XLI": {"name": "Industrials", "backward_5d": {"avg_return": -0.21, "pct_positive": 49.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.34, "pct_positive": 54.2, "sample_count": 96}, "fwd_10d": {"avg_return": 1.33, "pct_positive": 62.6, "sample_count": 91}, "fwd_21d": {"avg_return": 1.99, "pct_positive": 60.7, "sample_count": 89}}, "XLY": {"name": "Consumer Disc", "backward_5d": {"avg_return": -0.62, "pct_positive": 42.0, "sample_count": 100}, "fwd_5d": {"avg_return": -0.29, "pct_positive": 49.0, "sample_count": 96}, "fwd_10d": {"avg_return": 0.65, "pct_positive": 60.4, "sample_count": 91}, "fwd_21d": {"avg_return": 1.8, "pct_positive": 61.8, "sample_count": 89}}, "XLB": {"name": "Materials", "backward_5d": {"avg_return": 0.03, "pct_positive": 48.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.52, "pct_positive": 60.4, "sample_count": 96}, "fwd_10d": {"avg_return": 1.75, "pct_positive": 70.3, "sample_count": 91}, "fwd_21d": {"avg_return": 1.93, "pct_positive": 62.9, "sample_count": 89}}, "XLU": {"name": "Utilities", "backward_5d": {"avg_return": 0.02, "pct_positive": 57.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.82, "pct_positive": 61.5, "sample_count": 96}, "fwd_10d": {"avg_return": 1.87, "pct_positive": 71.4, "sample_count": 91}, "fwd_21d": {"avg_return": 2.25, "pct_positive": 75.3, "sample_count": 89}}, "XLK": {"name": "Technology", "backward_5d": {"avg_return": -0.11, "pct_positive": 48.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.38, "pct_positive": 52.1, "sample_count": 96}, "fwd_10d": {"avg_return": 1.21, "pct_positive": 58.2, "sample_count": 91}, "fwd_21d": {"avg_return": 2.42, "pct_positive": 60.7, "sample_count": 89}}, "XLP": {"name": "Consumer Staples", "backward_5d": {"avg_return": -0.59, "pct_positive": 42.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.33, "pct_positive": 59.4, "sample_count": 96}, "fwd_10d": {"avg_return": 1.03, "pct_positive": 67.0, "sample_count": 91}, "fwd_21d": {"avg_return": 1.61, "pct_positive": 70.8, "sample_count": 89}}, "XLRE": {"name": "Real Estate", "backward_5d": {"avg_return": -1.52, "pct_positive": 31.6, "sample_count": 57}, "fwd_5d": {"avg_return": 0.34, "pct_positive": 47.2, "sample_count": 53}, "fwd_10d": {"avg_return": 1.26, "pct_positive": 64.6, "sample_count": 48}, "fwd_21d": {"avg_return": 2.04, "pct_positive": 56.5, "sample_count": 46}}}, "indexes": {"spy": {"name": "S&P 500 (SPY)", "backward_5d": {"avg_return": -0.15, "pct_positive": 47.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.27, "pct_positive": 55.2, "sample_count": 96}, "fwd_10d": {"avg_return": 1.15, "pct_positive": 59.3, "sample_count": 91}, "fwd_21d": {"avg_return": 1.88, "pct_positive": 64.0, "sample_count": 89}}, "dia": {"name": "Dow Jones (DIA)", "backward_5d": {"avg_return": -0.15, "pct_positive": 43.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.44, "pct_positive": 54.2, "sample_count": 96}, "fwd_10d": {"avg_return": 1.42, "pct_positive": 65.9, "sample_count": 91}, "fwd_21d": {"avg_return": 2.24, "pct_positive": 67.4, "sample_count": 89}}, "ndx": {"name": "Nasdaq-100 (^NDX)", "backward_5d": {"avg_return": null, "pct_positive": null, "sample_count": 0}, "fwd_5d": {"avg_return": null, "pct_positive": null, "sample_count": 0}, "fwd_10d": {"avg_return": null, "pct_positive": null, "sample_count": 0}, "fwd_21d": {"avg_return": null, "pct_positive": null, "sample_count": 0}}, "iau": {"name": "Gold (IAU)", "backward_5d": {"avg_return": -0.29, "pct_positive": 54.7, "sample_count": 86}, "fwd_5d": {"avg_return": 0.18, "pct_positive": 69.5, "sample_count": 82}, "fwd_10d": {"avg_return": 1.35, "pct_positive": 77.9, "sample_count": 77}, "fwd_21d": {"avg_return": 2.44, "pct_positive": 70.7, "sample_count": 75}}, "vgk": {"name": "Europe (VGK)", "backward_5d": {"avg_return": 0.21, "pct_positive": 44.2, "sample_count": 86}, "fwd_5d": {"avg_return": 0.3, "pct_positive": 51.2, "sample_count": 82}, "fwd_10d": {"avg_return": 1.33, "pct_positive": 59.7, "sample_count": 77}, "fwd_21d": {"avg_return": 1.5, "pct_positive": 56.0, "sample_count": 75}}, "mchi": {"name": "China (MCHI)", "backward_5d": {"avg_return": 0.3, "pct_positive": 55.7, "sample_count": 61}, "fwd_5d": {"avg_return": 0.1, "pct_positive": 52.6, "sample_count": 57}, "fwd_10d": {"avg_return": 2.08, "pct_positive": 63.5, "sample_count": 52}, "fwd_21d": {"avg_return": 5.09, "pct_positive": 74.0, "sample_count": 50}}, "tlt": {"name": "20Y Treasury (TLT)", "backward_5d": {"avg_return": -0.41, "pct_positive": 36.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.15, "pct_positive": 55.2, "sample_count": 96}, "fwd_10d": {"avg_return": 0.26, "pct_positive": 50.5, "sample_count": 91}, "fwd_21d": {"avg_return": 0.8, "pct_positive": 62.9, "sample_count": 89}}}, "styles": {"growth": {"name": "Growth (QQQ)", "backward_5d": {"avg_return": -0.09, "pct_positive": 49.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.14, "pct_positive": 51.0, "sample_count": 96}, "fwd_10d": {"avg_return": 1.06, "pct_positive": 58.2, "sample_count": 91}, "fwd_21d": {"avg_return": 2.31, "pct_positive": 60.7, "sample_count": 89}}, "value": {"name": "Value (VTV)", "backward_5d": {"avg_return": -0.0, "pct_positive": 54.7, "sample_count": 95}, "fwd_5d": {"avg_return": 0.61, "pct_positive": 57.1, "sample_count": 91}, "fwd_10d": {"avg_return": 1.34, "pct_positive": 66.3, "sample_count": 86}, "fwd_21d": {"avg_return": 1.61, "pct_positive": 64.3, "sample_count": 84}}, "quality": {"name": "Quality (QUAL)", "backward_5d": {"avg_return": -0.71, "pct_positive": 34.5, "sample_count": 58}, "fwd_5d": {"avg_return": 0.58, "pct_positive": 53.7, "sample_count": 54}, "fwd_10d": {"avg_return": 1.67, "pct_positive": 57.1, "sample_count": 49}, "fwd_21d": {"avg_return": 2.69, "pct_positive": 66.0, "sample_count": 47}}, "momentum": {"name": "Momentum (MTUM)", "backward_5d": {"avg_return": -0.55, "pct_positive": 48.3, "sample_count": 60}, "fwd_5d": {"avg_return": 0.82, "pct_positive": 58.9, "sample_count": 56}, "fwd_10d": {"avg_return": 1.61, "pct_positive": 62.7, "sample_count": 51}, "fwd_21d": {"avg_return": 3.74, "pct_positive": 65.3, "sample_count": 49}}, "size": {"name": "Size (IJR)", "backward_5d": {"avg_return": 0.07, "pct_positive": 49.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.19, "pct_positive": 54.2, "sample_count": 96}, "fwd_10d": {"avg_return": 0.91, "pct_positive": 59.3, "sample_count": 91}, "fwd_21d": {"avg_return": 1.51, "pct_positive": 65.2, "sample_count": 89}}, "min_vol": {"name": "Min Vol (USMV)", "backward_5d": {"avg_return": -0.7, "pct_positive": 36.1, "sample_count": 61}, "fwd_5d": {"avg_return": 0.83, "pct_positive": 56.1, "sample_count": 57}, "fwd_10d": {"avg_return": 1.97, "pct_positive": 71.2, "sample_count": 52}, "fwd_21d": {"avg_return": 3.17, "pct_positive": 80.0, "sample_count": 50}}, "dividend": {"name": "Dividend (VIG)", "backward_5d": {"avg_return": -0.24, "pct_positive": 40.2, "sample_count": 82}, "fwd_5d": {"avg_return": 0.52, "pct_positive": 53.8, "sample_count": 78}, "fwd_10d": {"avg_return": 1.51, "pct_positive": 69.9, "sample_count": 73}, "fwd_21d": {"avg_return": 2.02, "pct_positive": 67.6, "sample_count": 71}}}, "market_cap": {"large": {"name": "Large (SPY)", "backward_5d": {"avg_return": -0.15, "pct_positive": 47.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.27, "pct_positive": 55.2, "sample_count": 96}, "fwd_10d": {"avg_return": 1.15, "pct_positive": 59.3, "sample_count": 91}, "fwd_21d": {"avg_return": 1.88, "pct_positive": 64.0, "sample_count": 89}}, "mid": {"name": "Mid (MDY)", "backward_5d": {"avg_return": 0.14, "pct_positive": 51.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.28, "pct_positive": 54.2, "sample_count": 96}, "fwd_10d": {"avg_return": 1.24, "pct_positive": 61.5, "sample_count": 91}, "fwd_21d": {"avg_return": 1.53, "pct_positive": 59.6, "sample_count": 89}}, "small": {"name": "Small (IWM)", "backward_5d": {"avg_return": -0.01, "pct_positive": 47.0, "sample_count": 100}, "fwd_5d": {"avg_return": 0.05, "pct_positive": 55.2, "sample_count": 96}, "fwd_10d": {"avg_return": 0.72, "pct_positive": 59.3, "sample_count": 91}, "fwd_21d": {"avg_return": 1.44, "pct_positive": 59.6, "sample_count": 89}}}, "risk_regime": {"backward_5d": {"regime": "MIXED", "avg_risk_score": 0.11, "equities_avg": -0.17, "bonds_avg": -0.41}, "fwd_5d": {"regime": "MIXED", "avg_risk_score": -0.17, "equities_avg": 0.2, "bonds_avg": 0.3}, "fwd_10d": {"regime": "RISK-OFF", "avg_risk_score": -0.56, "equities_avg": 0.9, "bonds_avg": 0.6}, "fwd_21d": {"regime": "RISK-OFF", "avg_risk_score": -2.13, "equities_avg": 1.3, "bonds_avg": 1.24}}}, "spy_deep": {"history_years": 33.2, "match_count": 100, "rows": [{"date": "2025-01-13", "similarity": 0.7223, "event": "", "fwd_5d": 3.73, "fwd_10d": 3.98, "fwd_21d": 3.78}, {"date": "1998-08-07", "similarity": 0.7009, "event": "Asian Crisis / LTCM", "fwd_5d": -2.75, "fwd_10d": -0.52, "fwd_21d": -5.62}, {"date": "2014-02-06", "similarity": 0.6703, "event": "", "fwd_5d": 3.12, "fwd_10d": 3.61, "fwd_21d": 6.02}, {"date": "2015-08-27", "similarity": 0.6698, "event": "China Deval / Oil Crash", "fwd_5d": -1.87, "fwd_10d": -1.27, "fwd_21d": -5.65}, {"date": "1996-07-12", "similarity": 0.6623, "event": "", "fwd_5d": -0.91, "fwd_10d": -1.3, "fwd_21d": 3.31}, {"date": "2015-09-03", "similarity": 0.6576, "event": "China Deval / Oil Crash", "fwd_5d": 0.61, "fwd_10d": -0.05, "fwd_21d": 1.49}, {"date": "2008-10-13", "similarity": 0.6543, "event": "GFC", "fwd_5d": -2.51, "fwd_10d": -17.17, "fwd_21d": -11.43}, {"date": "2000-02-18", "similarity": 0.6495, "event": "", "fwd_5d": 0.61, "fwd_10d": 3.28, "fwd_21d": 10.26}, {"date": "2018-10-30", "similarity": 0.6468, "event": "Fed Tightening Selloff", "fwd_5d": 2.74, "fwd_10d": 1.6, "fwd_21d": 2.32}, {"date": "1998-08-10", "similarity": 0.6387, "event": "Asian Crisis / LTCM", "fwd_5d": -0.11, "fwd_10d": 0.69, "fwd_21d": -7.37}, {"date": "2004-07-26", "similarity": 0.6347, "event": "", "fwd_5d": 2.13, "fwd_10d": -1.61, "fwd_21d": 1.47}, {"date": "2021-12-06", "similarity": 0.6151, "event": "", "fwd_5d": 1.7, "fwd_10d": -0.83, "fwd_21d": 2.09}, {"date": "1998-08-14", "similarity": 0.6147, "event": "Asian Crisis / LTCM", "fwd_5d": 2.29, "fwd_10d": -2.59, "fwd_21d": -1.95}, {"date": "2016-01-15", "similarity": 0.6138, "event": "China Deval / Oil Crash", "fwd_5d": -0.09, "fwd_10d": 3.11, "fwd_21d": 2.7}, {"date": "2004-03-23", "similarity": 0.6101, "event": "", "fwd_5d": 3.21, "fwd_10d": 4.97, "fwd_21d": 4.38}, {"date": "1996-07-24", "similarity": 0.6035, "event": "", "fwd_5d": 2.04, "fwd_10d": 5.95, "fwd_21d": 7.02}, {"date": "2016-01-19", "similarity": 0.6032, "event": "China Deval / Oil Crash", "fwd_5d": 1.14, "fwd_10d": 1.12, "fwd_21d": 2.14}, {"date": "2018-10-23", "similarity": 0.6004, "event": "Fed Tightening Selloff", "fwd_5d": -2.13, "fwd_10d": 0.55, "fwd_21d": -3.14}, {"date": "2012-11-14", "similarity": 0.5991, "event": "", "fwd_5d": 2.59, "fwd_10d": 4.55, "fwd_21d": 4.54}, {"date": "2025-03-14", "similarity": 0.5945, "event": "", "fwd_5d": 0.21, "fwd_10d": -1.27, "fwd_21d": -4.21}, {"date": "2024-12-31", "similarity": 0.5919, "event": "", "fwd_5d": 0.58, "fwd_10d": 0.95, "fwd_21d": 1.99}, {"date": "2008-01-16", "similarity": 0.5915, "event": "GFC", "fwd_5d": -1.45, "fwd_10d": 0.28, "fwd_21d": -1.34}, {"date": "2008-01-10", "similarity": 0.5898, "event": "GFC", "fwd_5d": -5.56, "fwd_10d": -5.84, "fwd_21d": -5.34}, {"date": "2025-03-06", "similarity": 0.5891, "event": "", "fwd_5d": -3.72, "fwd_10d": -1.26, "fwd_21d": -11.77}, {"date": "2004-08-12", "similarity": 0.5878, "event": "", "fwd_5d": 2.55, "fwd_10d": 3.85, "fwd_21d": 6.03}, {"date": "2002-07-25", "similarity": 0.5826, "event": "Dot-com Crash", "fwd_5d": 5.69, "fwd_10d": 8.27, "fwd_21d": 12.62}, {"date": "2000-02-22", "similarity": 0.5795, "event": "", "fwd_5d": 1.83, "fwd_10d": 1.54, "fwd_21d": 11.2}, {"date": "2005-10-12", "similarity": 0.5794, "event": "", "fwd_5d": 1.94, "fwd_10d": 1.59, "fwd_21d": 4.97}, {"date": "1998-08-13", "similarity": 0.5759, "event": "Asian Crisis / LTCM", "fwd_5d": 1.92, "fwd_10d": -3.38, "fwd_21d": -3.67}, {"date": "1999-09-28", "similarity": 0.5722, "event": "", "fwd_5d": 1.78, "fwd_10d": 2.53, "fwd_21d": 1.39}, {"date": "2005-10-13", "similarity": 0.5675, "event": "", "fwd_5d": 0.2, "fwd_10d": 0.57, "fwd_21d": 5.39}, {"date": "1996-07-19", "similarity": 0.5666, "event": "", "fwd_5d": -0.39, "fwd_10d": 4.05, "fwd_21d": 4.55}, {"date": "1994-11-29", "similarity": 0.565, "event": "Bond Massacre / Tequila", "fwd_5d": -0.04, "fwd_10d": -0.31, "fwd_21d": 0.99}, {"date": "2001-09-24", "similarity": 0.565, "event": "Dot-com Crash", "fwd_5d": 3.55, "fwd_10d": 5.79, "fwd_21d": 8.15}, {"date": "2001-03-21", "similarity": 0.5599, "event": "Dot-com Crash", "fwd_5d": 2.48, "fwd_10d": -1.26, "fwd_21d": 10.9}, {"date": "2006-05-19", "similarity": 0.5565, "event": "", "fwd_5d": 1.01, "fwd_10d": 0.02, "fwd_21d": -2.37}, {"date": "2022-05-20", "similarity": 0.5542, "event": "Inflation / Rate Hike Bear", "fwd_5d": 6.58, "fwd_10d": 5.69, "fwd_21d": -3.91}, {"date": "2012-11-16", "similarity": 0.5515, "event": "", "fwd_5d": 3.43, "fwd_10d": 3.73, "fwd_21d": 6.6}, {"date": "2014-10-09", "similarity": 0.5444, "event": "", "fwd_5d": -3.36, "fwd_10d": 1.14, "fwd_21d": 5.5}, {"date": "2008-01-24", "similarity": 0.544, "event": "GFC", "fwd_5d": 1.76, "fwd_10d": -0.79, "fwd_21d": 1.73}, {"date": "2004-07-19", "similarity": 0.5407, "event": "", "fwd_5d": -1.35, "fwd_10d": 0.75, "fwd_21d": -1.21}, {"date": "1996-04-08", "similarity": 0.5406, "event": "", "fwd_5d": -0.22, "fwd_10d": 0.99, "fwd_21d": -0.64}, {"date": "2001-03-20", "similarity": 0.5399, "event": "Dot-com Crash", "fwd_5d": 3.6, "fwd_10d": -3.34, "fwd_21d": 10.03}, {"date": "2011-08-18", "similarity": 0.5363, "event": "US Downgrade / Euro Crisis", "fwd_5d": 1.55, "fwd_10d": 5.62, "fwd_21d": 5.07}, {"date": "2004-07-23", "similarity": 0.5355, "event": "", "fwd_5d": 1.73, "fwd_10d": -1.94, "fwd_21d": 1.14}, {"date": "2014-10-02", "similarity": 0.5348, "event": "", "fwd_5d": -0.84, "fwd_10d": -4.17, "fwd_21d": 3.75}, {"date": "2006-06-14", "similarity": 0.5348, "event": "", "fwd_5d": 1.22, "fwd_10d": 1.01, "fwd_21d": 0.02}, {"date": "2025-01-10", "similarity": 0.5321, "event": "", "fwd_5d": 2.94, "fwd_10d": 3.25, "fwd_21d": 4.28}, {"date": "2004-03-22", "similarity": 0.5308, "event": "", "fwd_5d": 2.68, "fwd_10d": 5.13, "fwd_21d": 2.75}, {"date": "1999-08-10", "similarity": 0.5279, "event": "", "fwd_5d": 4.64, "fwd_10d": 6.46, "fwd_21d": 4.73}, {"date": "2018-03-26", "similarity": 0.5265, "event": "Volmageddon", "fwd_5d": -1.64, "fwd_10d": 0.02, "fwd_21d": -0.56}, {"date": "2026-03-20", "similarity": 0.5254, "event": "", "fwd_5d": -2.19, "fwd_10d": null, "fwd_21d": null}, {"date": "2010-05-25", "similarity": 0.5237, "event": "Flash Crash / Euro Debt", "fwd_5d": 2.33, "fwd_10d": -1.64, "fwd_21d": -0.37}, {"date": "2002-07-01", "similarity": 0.5232, "event": "Dot-com Crash", "fwd_5d": -1.47, "fwd_10d": -6.67, "fwd_21d": -6.05}, {"date": "2026-03-26", "similarity": 0.5225, "event": "", "fwd_5d": null, "fwd_10d": null, "fwd_21d": null}, {"date": "2022-05-02", "similarity": 0.5205, "event": "Inflation / Rate Hike Bear", "fwd_5d": -3.94, "fwd_10d": -3.47, "fwd_21d": -1.18}, {"date": "2004-07-09", "similarity": 0.5197, "event": "", "fwd_5d": -0.91, "fwd_10d": -2.48, "fwd_21d": -4.23}, {"date": "2025-03-03", "similarity": 0.519, "event": "", "fwd_5d": -3.97, "fwd_10d": -2.85, "fwd_21d": -3.91}, {"date": "2011-08-11", "similarity": 0.5187, "event": "US Downgrade / Euro Crisis", "fwd_5d": -2.4, "fwd_10d": -0.89, "fwd_21d": -0.56}, {"date": "2021-09-22", "similarity": 0.5179, "event": "", "fwd_5d": -0.78, "fwd_10d": -0.68, "fwd_21d": 3.59}, {"date": "2010-05-26", "similarity": 0.5164, "event": "Flash Crash / Euro Debt", "fwd_5d": 3.3, "fwd_10d": 1.85, "fwd_21d": 0.65}, {"date": "2012-11-15", "similarity": 0.5163, "event": "", "fwd_5d": 4.16, "fwd_10d": 4.75, "fwd_21d": 5.95}, {"date": "2014-02-05", "similarity": 0.5162, "event": "", "fwd_5d": 3.94, "fwd_10d": 5.1, "fwd_21d": 7.47}, {"date": "2004-07-16", "similarity": 0.5149, "event": "", "fwd_5d": -1.58, "fwd_10d": 0.12, "fwd_21d": -2.18}, {"date": "2022-05-05", "similarity": 0.5143, "event": "Inflation / Rate Hike Bear", "fwd_5d": -5.19, "fwd_10d": -5.88, "fwd_21d": -0.49}, {"date": "2014-01-30", "similarity": 0.513, "event": "", "fwd_5d": -0.98, "fwd_10d": 2.11, "fwd_21d": 3.21}, {"date": "2014-09-30", "similarity": 0.5089, "event": "", "fwd_5d": -1.91, "fwd_10d": -4.73, "fwd_21d": 0.55}, {"date": "2022-03-11", "similarity": 0.5086, "event": "Inflation / Rate Hike Bear", "fwd_5d": 5.82, "fwd_10d": 7.77, "fwd_21d": 4.73}, {"date": "2014-10-06", "similarity": 0.5082, "event": "", "fwd_5d": -4.52, "fwd_10d": -3.05, "fwd_21d": 2.44}, {"date": "2026-03-23", "similarity": 0.5074, "event": "", "fwd_5d": null, "fwd_10d": null, "fwd_21d": null}, {"date": "2004-05-11", "similarity": 0.5074, "event": "", "fwd_5d": -0.09, "fwd_10d": 1.91, "fwd_21d": 4.19}, {"date": "2022-04-29", "similarity": 0.5065, "event": "Inflation / Rate Hike Bear", "fwd_5d": -0.16, "fwd_10d": -2.5, "fwd_21d": 0.23}, {"date": "2008-01-09", "similarity": 0.5051, "event": "GFC", "fwd_5d": -2.42, "fwd_10d": -3.83, "fwd_21d": -5.2}, {"date": "2014-10-17", "similarity": 0.5038, "event": "", "fwd_5d": 4.22, "fwd_10d": 7.0, "fwd_21d": 8.44}, {"date": "1998-06-03", "similarity": 0.5032, "event": "Asian Crisis / LTCM", "fwd_5d": 3.36, "fwd_10d": 3.33, "fwd_21d": 6.45}, {"date": "2000-10-17", "similarity": 0.5029, "event": "Dot-com Crash", "fwd_5d": 3.59, "fwd_10d": 6.09, "fwd_21d": 3.57}, {"date": "2000-02-17", "similarity": 0.5015, "event": "", "fwd_5d": -3.58, "fwd_10d": 2.06, "fwd_21d": 5.72}, {"date": "2018-12-18", "similarity": 0.4996, "event": "Fed Tightening Selloff", "fwd_5d": -3.49, "fwd_10d": -4.26, "fwd_21d": 4.46}, {"date": "2013-08-27", "similarity": 0.4987, "event": "", "fwd_5d": 1.48, "fwd_10d": 3.72, "fwd_21d": 3.89}, {"date": "2025-04-10", "similarity": 0.4986, "event": "", "fwd_5d": 0.35, "fwd_10d": 4.97, "fwd_21d": 11.13}, {"date": "2000-10-13", "similarity": 0.4978, "event": "Dot-com Crash", "fwd_5d": 1.71, "fwd_10d": 1.25, "fwd_21d": -1.45}, {"date": "2000-10-18", "similarity": 0.4974, "event": "Dot-com Crash", "fwd_5d": 1.53, "fwd_10d": 6.12, "fwd_21d": 2.33}, {"date": "1997-04-04", "similarity": 0.497, "event": "", "fwd_5d": -3.24, "fwd_10d": 0.95, "fwd_21d": 9.94}, {"date": "2014-02-04", "similarity": 0.4956, "event": "", "fwd_5d": 3.76, "fwd_10d": 4.35, "fwd_21d": 7.29}, {"date": "2004-07-21", "similarity": 0.4955, "event": "", "fwd_5d": 0.47, "fwd_10d": 0.57, "fwd_21d": 0.12}, {"date": "1996-06-19", "similarity": 0.4949, "event": "", "fwd_5d": -0.35, "fwd_10d": 0.99, "fwd_21d": -4.01}, {"date": "2007-08-03", "similarity": 0.4928, "event": "", "fwd_5d": 0.63, "fwd_10d": 0.63, "fwd_21d": 3.67}, {"date": "2005-03-29", "similarity": 0.4926, "event": "", "fwd_5d": 1.42, "fwd_10d": 1.86, "fwd_21d": -0.76}, {"date": "2024-12-30", "similarity": 0.4899, "event": "", "fwd_5d": 0.07, "fwd_10d": 0.78, "fwd_21d": 2.31}, {"date": "1998-08-05", "similarity": 0.4897, "event": "Asian Crisis / LTCM", "fwd_5d": 0.2, "fwd_10d": 1.49, "fwd_21d": -9.14}, {"date": "2008-07-07", "similarity": 0.4872, "event": "GFC", "fwd_5d": -1.84, "fwd_10d": 0.82, "fwd_21d": 2.67}, {"date": "2011-06-10", "similarity": 0.4847, "event": "", "fwd_5d": -0.43, "fwd_10d": -0.62, "fwd_21d": 2.98}, {"date": "2014-10-03", "similarity": 0.4843, "event": "", "fwd_5d": -3.04, "fwd_10d": -4.1, "fwd_21d": 2.67}, {"date": "2019-01-03", "similarity": 0.482, "event": "", "fwd_5d": 6.01, "fwd_10d": 7.68, "fwd_21d": 11.36}, {"date": "1999-09-29", "similarity": 0.4805, "event": "", "fwd_5d": 4.59, "fwd_10d": 1.09, "fwd_21d": 6.11}, {"date": "1999-09-23", "similarity": 0.4804, "event": "", "fwd_5d": 0.68, "fwd_10d": 3.13, "fwd_21d": 1.73}, {"date": "2002-09-25", "similarity": 0.4782, "event": "Dot-com Crash", "fwd_5d": -1.42, "fwd_10d": -7.41, "fwd_21d": 4.75}, {"date": "2018-12-26", "similarity": 0.4778, "event": "Fed Tightening Selloff", "fwd_5d": -0.8, "fwd_10d": 5.16, "fwd_21d": 7.14}, {"date": "2014-02-03", "similarity": 0.4771, "event": "", "fwd_5d": 3.35, "fwd_10d": 5.78, "fwd_21d": 7.8}, {"date": "2002-07-10", "similarity": 0.4764, "event": "Dot-com Crash", "fwd_5d": -1.5, "fwd_10d": -8.03, "fwd_21d": -1.27}]}};
+    const PERIODS = [5, 10, 21];
+    const P_LABELS = {5: '5d', 10: '10d', 21: '21d'};
+    const GRP_CLS = {5: 'grp-5d', 10: 'grp-10d', 21: 'grp-21d'};
+
+    function getGradientColor(norm01) {
+        const c = Math.max(0, Math.min(1, norm01));
+        let r, g, b;
+        if (c < 0.25) {
+            const t = c * 4;
+            r = Math.round(211+(255-211)*t); g = Math.round(47+(152-47)*t); b = Math.round(47*(1-t));
+        } else if (c < 0.5) {
+            const t = (c-0.25)*4;
+            r = 255; g = Math.round(152+(235-152)*t); b = Math.round(59*t);
+        } else if (c < 0.75) {
+            const t = (c-0.5)*4;
+            r = Math.round(255+(139-255)*t); g = Math.round(235+(195-235)*t); b = Math.round(59+(74-59)*t);
+        } else {
+            const t = (c-0.75)*4;
+            r = Math.round(139*(1-t)); g = Math.round(195+(200-195)*t); b = Math.round(74+(83-74)*t);
+        }
+        return `rgb(${r},${g},${b})`;
+    }
+
+    function textColor(bgRgb) {
+        const m = bgRgb.match(/rgb[(]([0-9]+),([0-9]+),([0-9]+)[)]/);
+        if (!m) return '#000';
+        return (0.299*m[1] + 0.587*m[2] + 0.114*m[3]) > 140 ? '#000' : '#fff';
+    }
+
+    // Collect all numeric values for gradient normalization
+    function calcRanges(tableKey) {
+        const ranges = {};
+        const broad = DATA.broad_25y;
+        if (!broad) return ranges;
+        const tbl = broad[tableKey];
+        if (!tbl) return ranges;
+
+        // backward_5d
+        const backVals = [];
+        Object.values(tbl).forEach(item => {
+            const v = item?.backward_5d?.avg_return;
+            if (v != null && !isNaN(v)) backVals.push(v);
+        });
+        if (backVals.length) {
+            const s = [...backVals].sort((a,b)=>a-b);
+            ranges['backward_5d'] = { min: s[Math.floor(s.length*0.05)], max: s[Math.floor(s.length*0.95)] };
+        }
+
+        PERIODS.forEach(p => {
+            const key = 'fwd_' + p + 'd';
+            const vals = [];
+            Object.values(tbl).forEach(item => {
+                const v = item?.[key]?.avg_return;
+                if (v != null && !isNaN(v)) vals.push(v);
+            });
+            if (vals.length) {
+                const s = [...vals].sort((a,b)=>a-b);
+                ranges[key] = { min: s[Math.floor(s.length*0.05)], max: s[Math.floor(s.length*0.95)] };
+            }
+        });
+
+        return ranges;
+    }
+
+    function bgCell(val, ranges, key) {
+        if (val == null || isNaN(val)) return null;
+        const r = ranges[key];
+        if (!r || r.max === r.min) return getGradientColor(0.5);
+        const n = Math.max(0, Math.min(1, (val - r.min) / (r.max - r.min)));
+        return getGradientColor(n);
+    }
+
+    const sortState = {};
+
+    function buildTable(containerId, tableKey) {
+        const broad = DATA.broad_25y;
+        if (!broad || !broad[tableKey]) {
+            document.getElementById(containerId).innerHTML = '<p style="color:#aaa;">No data</p>';
+            return;
+        }
+        const tbl = broad[tableKey];
+        const ss = sortState[containerId] || { col: 'fwd_5d', dir: 'desc' };
+        sortState[containerId] = ss;
+        const ranges = calcRanges(tableKey);
+
+        let rows = Object.entries(tbl).map(([key, item]) => ({ key, name: item.name || key, item }));
+
+        rows.sort((a, b) => {
+            if (ss.col === 'name') return ss.dir === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+            const va = a.item?.[ss.col]?.avg_return ?? -999;
+            const vb = b.item?.[ss.col]?.avg_return ?? -999;
+            return ss.dir === 'asc' ? va - vb : vb - va;
+        });
+
+        const arrow = col => ss.col === col ? (ss.dir === 'asc' ? ' +' : ' -') : '';
+        const thSort = (col, label) =>
+            `<th style="cursor:pointer;" onclick="window._simLongSort('${containerId}','${tableKey}','${col}')">${label}${arrow(col)}</th>`;
+
+        let html = '<table><thead>';
+        // Group header
+        html += '<tr class="grp-row">';
+        html += '<th class="grp-blank col-name"></th>';
+        html += '<th class="grp-ctx">Context</th>';
+        PERIODS.forEach(p => html += `<th colspan="2" class="${GRP_CLS[p]}">${P_LABELS[p]} Forward</th>`);
+        html += '</tr>';
+        // Column header
+        html += '<tr>';
+        html += thSort('name', 'Name');
+        html += thSort('backward_5d', 'Before 5d');
+        PERIODS.forEach(p => {
+            const key = 'fwd_' + p + 'd';
+            html += thSort(key, 'Fwd ' + P_LABELS[p]);
+            html += '<th style="cursor:default;">Win%/n</th>';
+        });
+        html += '</tr></thead><tbody>';
+
+        rows.forEach(row => {
+            const item = row.item;
+            html += '<tr>';
+            html += `<td class="col-name">${row.name}</td>`;
+
+            // Backward 5d
+            const backAvg = item?.backward_5d?.avg_return;
+            const backPct = item?.backward_5d?.pct_positive;
+            if (backAvg != null) {
+                const bg = bgCell(backAvg, ranges, 'backward_5d');
+                const fg = textColor(bg);
+                const sign = backAvg >= 0 ? '+' : '';
+                html += `<td style="background:${bg};color:${fg};">${sign}${backAvg.toFixed(1)}%`;
+                if (backPct != null) html += `<span class="pred-pct">${backPct.toFixed(0)}%</span>`;
+                html += '</td>';
+            } else html += '<td class="cell-miss">--</td>';
+
+            // Forward periods
+            PERIODS.forEach(p => {
+                const key = 'fwd_' + p + 'd';
+                const fwdAvg = item?.[key]?.avg_return;
+                const fwdPct = item?.[key]?.pct_positive;
+                const fwdN = item?.[key]?.sample_count;
+
+                if (fwdAvg != null) {
+                    const bg = bgCell(fwdAvg, ranges, key);
+                    const fg = textColor(bg);
+                    const sign = fwdAvg >= 0 ? '+' : '';
+                    html += `<td style="background:${bg};color:${fg};">${sign}${fwdAvg.toFixed(1)}%`;
+                    if (fwdPct != null) html += `<span class="pred-pct">${fwdPct.toFixed(0)}%</span>`;
+                    html += '</td>';
+                } else html += '<td class="cell-miss">--</td>';
+
+                if (fwdPct != null) {
+                    html += `<td style="color:#555;font-size:0.85em;">${fwdPct.toFixed(0)}%`;
+                    if (fwdN != null) html += ` <span style="color:#aaa;">n=${fwdN}</span>`;
+                    html += '</td>';
+                } else html += '<td class="cell-miss">--</td>';
+            });
+
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        document.getElementById(containerId).innerHTML = html;
+    }
+
+    window._simLongSort = function(containerId, tableKey, col) {
+        const ss = sortState[containerId] || { col: 'fwd_5d', dir: 'desc' };
+        sortState[containerId] = {
+            col, dir: (ss.col === col && ss.dir === 'desc') ? 'asc' : 'desc'
+        };
+        buildTable(containerId, tableKey);
+    };
+
+    // SPY deep table
+    function buildSpyDeepTable() {
+        const spy = DATA.spy_deep;
+        if (!spy || !spy.rows || !spy.rows.length) {
+            document.getElementById('tbl-spy-deep').innerHTML = '<p style="color:#aaa;">No SPY deep data</p>';
+            return;
+        }
+
+        const ss = sortState['spy-deep'] || { col: 'similarity', dir: 'desc' };
+        sortState['spy-deep'] = ss;
+
+        let rows = [...spy.rows];
+
+        rows.sort((a, b) => {
+            if (ss.col === 'date') return ss.dir === 'asc' ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date);
+            if (ss.col === 'event') return ss.dir === 'asc' ? (a.event||'').localeCompare(b.event||'') : (b.event||'').localeCompare(a.event||'');
+            const va = a[ss.col] ?? -999;
+            const vb = b[ss.col] ?? -999;
+            return ss.dir === 'asc' ? va - vb : vb - va;
+        });
+
+        // Collect fwd return ranges for gradient
+        const fwdRanges = {};
+        PERIODS.forEach(p => {
+            const key = 'fwd_' + p + 'd';
+            const vals = spy.rows.map(r => r[key]).filter(v => v != null);
+            if (vals.length) {
+                const s = [...vals].sort((a,b)=>a-b);
+                fwdRanges[key] = { min: s[Math.floor(s.length*0.05)], max: s[Math.floor(s.length*0.95)] };
+            }
+        });
+
+        const arrow = col => ss.col === col ? (ss.dir === 'asc' ? ' +' : ' -') : '';
+        const thSort = col => `onclick="window._spyDeepSort('${col}')" style="cursor:pointer;"`;
+
+        let html = '<table><thead><tr>';
+        html += `<th ${thSort('date')}>Date${arrow('date')}</th>`;
+        html += `<th ${thSort('similarity')}>Similarity${arrow('similarity')}</th>`;
+        html += `<th ${thSort('event')}>Event${arrow('event')}</th>`;
+        PERIODS.forEach(p => {
+            const key = 'fwd_' + p + 'd';
+            html += `<th ${thSort(key)} class="${GRP_CLS[p]}" style="cursor:pointer;color:#fff;">Fwd ${P_LABELS[p]}${arrow(key)}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+
+        rows.forEach(row => {
+            html += '<tr>';
+            html += `<td style="text-align:left;font-family:'IBM Plex Mono',monospace;">${row.date}</td>`;
+            html += `<td>${row.similarity.toFixed(3)}</td>`;
+            html += row.event ? `<td><span class="event-tag">${row.event}</span></td>` : '<td></td>';
+
+            PERIODS.forEach(p => {
+                const key = 'fwd_' + p + 'd';
+                const val = row[key];
+                if (val != null) {
+                    const bg = bgCell(val, fwdRanges, key);
+                    const fg = bg ? textColor(bg) : '#000';
+                    const sign = val >= 0 ? '+' : '';
+                    html += `<td style="background:${bg||''};color:${fg};">${sign}${val.toFixed(1)}%</td>`;
+                } else html += '<td class="cell-miss">--</td>';
+            });
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        document.getElementById('tbl-spy-deep').innerHTML = html;
+    }
+
+    window._spyDeepSort = function(col) {
+        const ss = sortState['spy-deep'] || { col: 'similarity', dir: 'desc' };
+        sortState['spy-deep'] = {
+            col, dir: (ss.col === col && ss.dir === 'desc') ? 'asc' : 'desc'
+        };
+        buildSpyDeepTable();
+    };
+
+    // Risk regime table
+    function buildRiskTable() {
+        const rr = DATA.broad_25y?.risk_regime;
+        if (!rr) {
+            document.getElementById('tbl-risk').innerHTML = '<p style="color:#aaa;">No risk data</p>';
+            return;
+        }
+
+        function regimeTd(regime) {
+            if (!regime) return '<td class="cell-miss">--</td>';
+            const colors = { 'RISK-ON':'#16a34a', 'RISK-OFF':'#dc2626', 'MIXED':'#d97706' };
+            return `<td style="background:${colors[regime]||'#888'};color:#fff;font-weight:700;">${regime}</td>`;
+        }
+        function numTd(val, fmt) {
+            if (val == null) return '<td class="cell-miss">--</td>';
+            return `<td>${fmt(val)}</td>`;
+        }
+
+        let html = '<table><thead><tr class="grp-row">';
+        html += '<th class="grp-blank">Metric</th>';
+        html += '<th class="grp-ctx">Context</th>';
+        PERIODS.forEach(p => html += `<th class="${GRP_CLS[p]}">${P_LABELS[p]} Forward</th>`);
+        html += '</tr></thead><tbody>';
+
+        // Regime row
+        html += '<tr><td class="col-name" style="text-align:left;">Regime</td>';
+        html += regimeTd(rr.backward_5d?.regime);
+        PERIODS.forEach(p => html += regimeTd(rr['fwd_' + p + 'd']?.regime));
+        html += '</tr>';
+
+        // Risk Score
+        const fmtScore = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+        html += '<tr><td class="col-name" style="text-align:left;">Risk Score</td>';
+        html += numTd(rr.backward_5d?.avg_risk_score, fmtScore);
+        PERIODS.forEach(p => html += numTd(rr['fwd_' + p + 'd']?.avg_risk_score, fmtScore));
+        html += '</tr>';
+
+        // Equities
+        const fmtPct = v => (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+        html += '<tr><td class="col-name" style="text-align:left;">Equities Avg</td>';
+        html += numTd(rr.backward_5d?.equities_avg, fmtPct);
+        PERIODS.forEach(p => html += numTd(rr['fwd_' + p + 'd']?.equities_avg, fmtPct));
+        html += '</tr>';
+
+        // Bonds
+        html += '<tr><td class="col-name" style="text-align:left;">Bonds Avg</td>';
+        html += numTd(rr.backward_5d?.bonds_avg, fmtPct);
+        PERIODS.forEach(p => html += numTd(rr['fwd_' + p + 'd']?.bonds_avg, fmtPct));
+        html += '</tr>';
+
+        html += '</tbody></table>';
+        document.getElementById('tbl-risk').innerHTML = html;
+    }
+
+    // Render all
+    buildRiskTable();
+    buildTable('tbl-indexes',    'indexes');
+    buildTable('tbl-market-cap', 'market_cap');
+    buildTable('tbl-sectors',    'sectors');
+    buildTable('tbl-styles',     'styles');
+    buildSpyDeepTable();
+})();
+
+</script>
+</body></html>

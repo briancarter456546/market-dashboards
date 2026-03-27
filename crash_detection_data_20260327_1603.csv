@@ -1,0 +1,2 @@
+date,lambda_max,lambda_plus,rmt_ratio,n_significant,n_assets,rmt_risk,magnetization,avg_correlation,ising_risk,composite_score,composite_status,score_rmt,score_ising,score_breadth,score_vix,score_credit
+2026-03-27,492.80796763945784,2.0344008234112,242.23740079555103,114,1381,CRITICAL,0.5443460200317944,0.5268978039044697,NORMAL,71.95037866807976,WARNING,100.0,32.07689334039876,100.0,69.16666666666667,3.2000000000000917

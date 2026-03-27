@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-03-27T15:06:28.506200",
+  "generated_at": "2026-03-27T16:10:04.432073",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.0666744106288455,
+  "norm_drift": 2.0675617238172626,
   "top_regime": "taper_vol",
-  "top_sim": 26.4,
+  "top_sim": 26.5,
   "regime_similarity": [
     {
       "name": "taper_vol",
       "desc": "Taper tantrum / China / oil crash",
-      "sim": 26.4
+      "sim": 26.5
     },
     {
       "name": "gfc",
       "desc": "Credit crisis / deleveraging",
-      "sim": 12.6
+      "sim": 12.7
     },
     {
       "name": "rate_hike",
