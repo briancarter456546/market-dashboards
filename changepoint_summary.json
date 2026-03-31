@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-31T11:07:32.828800",
+  "generated_at": "2026-03-31T12:11:05.009575",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.0071590644048602,
+  "norm_drift": 2.007748247643804,
   "top_regime": "taper_vol",
   "top_sim": 30.1,
   "regime_similarity": [
@@ -18,12 +18,12 @@
     {
       "name": "rate_hike",
       "desc": "Inflation / Fed hiking / bear",
-      "sim": 15.8
+      "sim": 15.9
     },
     {
       "name": "ai_bull",
       "desc": "AI-led growth / rate cut cycle",
-      "sim": 8.6
+      "sim": 8.7
     },
     {
       "name": "covid",
