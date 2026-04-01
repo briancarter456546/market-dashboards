@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-01T13:05:32.680656",
+  "generated_at": "2026-04-01T14:07:43.367541",
   "drift_tier": "NORMAL",
-  "norm_drift": 1.9924746795769186,
+  "norm_drift": 1.9923121162474808,
   "top_regime": "taper_vol",
   "top_sim": 31.3,
   "regime_similarity": [
