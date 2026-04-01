@@ -24,7 +24,7 @@ lives in perplexity-user-data/ (location='root').
 import subprocess
 import sys
 import os
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import time
 
 # ==============================================================================
@@ -81,12 +81,14 @@ BACKENDS = [
         'name': 'Similar Days Analysis',
         'slow': False,
         'required': True,
+        'run_once_at_et': 11,
     },
     {
         'script': 'similar_days_long_v1_0.py',
         'name': 'Similar Days (Long)',
         'slow': True,
         'required': False,
+        'run_once_at_et': 11,
     },
     # Historical Mirror: DISABLED 2026-03-10 -- OOM crash on droplet
     # {
@@ -411,9 +413,28 @@ def main():
     results = []
     total_time = 0
 
+    # Current hour in US Eastern Time (handles EDT/EST automatically)
+    _et_offset = timezone(timedelta(hours=-5))  # EST baseline
+    _now_utc = datetime.now(timezone.utc)
+    # EDT check: second Sunday in March to first Sunday in November
+    _year = _now_utc.year
+    _mar_second_sun = 8 + (6 - datetime(_year, 3, 8).weekday()) % 7
+    _nov_first_sun = 1 + (6 - datetime(_year, 11, 1).weekday()) % 7
+    _edt_start = datetime(_year, 3, _mar_second_sun, 7, tzinfo=timezone.utc)
+    _edt_end = datetime(_year, 11, _nov_first_sun, 6, tzinfo=timezone.utc)
+    if _edt_start <= _now_utc < _edt_end:
+        _et_offset = timezone(timedelta(hours=-4))  # EDT
+    _current_hour_et = _now_utc.astimezone(_et_offset).hour
+
     for backend in BACKENDS:
         if quick_mode and backend.get('slow', False):
             log("{}: Skipped (quick mode)".format(backend['name']), 'INFO')
+            continue
+
+        gate_hour = backend.get('run_once_at_et')
+        if gate_hour is not None and _current_hour_et != gate_hour:
+            log("{}: Skipped (runs once at {}:00 ET, current {}:00 ET)".format(
+                backend['name'], gate_hour, _current_hour_et), 'INFO')
             continue
 
         success, elapsed = run_backend(backend, dry_run, verbose)
