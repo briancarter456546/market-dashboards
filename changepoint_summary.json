@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-04-02T13:05:00.568918",
+  "generated_at": "2026-04-02T14:08:04.373659",
   "drift_tier": "NORMAL",
-  "norm_drift": 1.97360894448879,
+  "norm_drift": 1.973529763948633,
   "top_regime": "taper_vol",
-  "top_sim": 32.9,
+  "top_sim": 32.8,
   "regime_similarity": [
     {
       "name": "taper_vol",
       "desc": "Taper tantrum / China / oil crash",
-      "sim": 32.9
+      "sim": 32.8
     },
     {
       "name": "gfc",
@@ -23,7 +23,7 @@
     {
       "name": "ai_bull",
       "desc": "AI-led growth / rate cut cycle",
-      "sim": 8.4
+      "sim": 8.5
     },
     {
       "name": "covid",
