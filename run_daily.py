@@ -242,6 +242,20 @@ BACKENDS = [
         'required': False,
     },
     {
+        'script': 'system_auditor_v1_0.py',
+        'name': 'Code Auditor (Fan-Out Consistency)',
+        'location': 'root',
+        'slow': True,
+        'required': False,
+    },
+    {
+        'script': 'system_auditor_dashboard_v1_0.py',
+        'name': 'Code Auditor Dashboard (Private)',
+        'location': 'root',
+        'slow': False,
+        'required': False,
+    },
+    {
         'script': 'private_dashboard_landing_v1_0.py',
         'name': 'Private Dashboard Landing Page',
         'location': 'root',
