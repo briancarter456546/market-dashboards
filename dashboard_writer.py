@@ -1150,7 +1150,18 @@ class DashboardWriter(object):
 # Registry of all live dashboards.
 # Add a new entry here whenever a new dashboard is converted and confirmed working.
 # Keys: slug (URL path), title, description, icon (emoji), color (accent hex), status
+# ── ACTIVE: Interesting but not tradable ──
 DASHBOARD_REGISTRY = [
+    {
+        "slug":        "daily-alpha",
+        "title":       "Daily Alpha Intelligence Brief",
+        "description": "20-item research brief via Perplexity Deep Research. "
+                       "10 reported news + 10 unreported/understated trends with "
+                       "severity, opportunity, and timeframe scoring. Rotating category focus.",
+        "icon":        "DA",
+        "color":       "#6366f1",
+        "tag":         "Research",
+    },
     {
         "slug":        "spread-monitor",
         "title":       "Intermarket Spread Monitor",
@@ -1159,34 +1170,6 @@ DASHBOARD_REGISTRY = [
         "icon":        "📡",
         "color":       "#4a9eff",
         "tag":         "Macro",
-    },
-    {
-        "slug":        "sector-rotation",
-        "title":       "Sector Rotation Deep Dive",
-        "description": "Momentum z-scores + forward predictions for 500+ ETFs across 25Y / 5Y / 1Y "
-                       "windows. Historical agreement scores and pattern-matched outcomes.",
-        "icon":        "🔄",
-        "color":       "#8b5cf6",
-        "tag":         "Sectors",
-    },
-    {
-        "slug":        "momentum-ranker",
-        "title":       "Momentum Ranker",
-        "description": "700+ tickers ranked by composite momentum score. "
-                       "Returns across 6 periods, SMA gate, ratio consistency, "
-                       "and bad-SPY-day resilience. Live filter and sort.",
-        "icon":        "📈",
-        "color":       "#10b981",
-        "tag":         "Momentum",
-    },
-    {
-        "slug":        "momentum-ranker-long",
-        "title":       "Momentum Ranker (Long)",
-        "description": "Long timeframe momentum ranker. Returns: 1m, 3m, 6m, 1y, 5y, 10y. "
-                       "vs SPY: 1y, 5y, 10y. Same scoring engine, longer horizon.",
-        "icon":        "📈",
-        "color":       "#059669",
-        "tag":         "Momentum",
     },
     {
         "slug":        "similar-days",
@@ -1208,7 +1191,6 @@ DASHBOARD_REGISTRY = [
         "color":       "#0369a1",
         "tag":         "Pattern",
     },
-    # historical-mirror: DISABLED 2026-03-10 -- OOM crash on droplet, moved to UNDER_REPAIR
     {
         "slug":        "stock-secrot",
         "title":       "Stock Sector Rotation",
@@ -1217,34 +1199,6 @@ DASHBOARD_REGISTRY = [
         "icon":        "🏭",
         "color":       "#f59e0b",
         "tag":         "Stocks",
-    },
-    {
-        "slug":        "hyglqd-credit",
-        "title":       "HYG/LQD Credit Spread",
-        "description": "Credit spread regime via HYG/LQD ratio. Historical percentile, "
-                       "expected SPY forward returns at current spread level, and win rates.",
-        "icon":        "💳",
-        "color":       "#ec4899",
-        "tag":         "Credit",
-    },
-    {
-        "slug":        "crash-detection",
-        "title":       "Crash Detection (RMT + Ising)",
-        "description": "Random Matrix Theory eigenvalue analysis and Ising magnetization. "
-                       "Composite crash probability score with component breakdown.",
-        "icon":        "💥",
-        "color":       "#ef4444",
-        "tag":         "Risk",
-    },
-    # advanced-momentum: DISABLED 2026-03-10 -- 10min timeout on droplet, moved to UNDER_REPAIR
-    {
-        "slug":        "conservative-momentum",
-        "title":       "Conservative Momentum Qualifier",
-        "description": "Pattern-based momentum qualification: trend persistence, dip structure, "
-                       "sustainability scoring. Safe plays filtered for 40-300% 12M returns.",
-        "icon":        "🛡️",
-        "color":       "#0d9488",
-        "tag":         "Momentum",
     },
     {
         "slug":        "macro",
@@ -1265,54 +1219,6 @@ DASHBOARD_REGISTRY = [
         "tag":         "Regime",
     },
     {
-        "slug":        "smart-scanner",
-        "title":       "Smart Scanner",
-        "description": "Regime-aware method selection across ETF momentum, pole rotation, and stock screening. "
-                       "Auto-picks Method A/B/C based on drift tier with top picks and conviction scores.",
-        "icon":        "🎯",
-        "color":       "#059669",
-        "tag":         "Scanner",
-    },
-    {
-        "slug":        "slope-stage",
-        "title":       "Slope Stage Scanner",
-        "description": "90-day trendline stages for 1,300+ assets. Entry signals on Stage 1->2 "
-                       "transitions, exit watch for Stage 3 parabolic. Crash risk, R-squared, "
-                       "and distance from trendline.",
-        "icon":        "📐",
-        "color":       "#f97316",
-        "tag":         "Scanner",
-    },
-    {
-        "slug":        "meta-dashboard",
-        "title":       "Meta Dashboard",
-        "description": "Cross-dashboard agreement matrix, regime-gated routing, intermarket force analysis, "
-                       "and risk flags. Combines 11 validated backends into a single decision-support view.",
-        "icon":        "🧭",
-        "color":       "#1e40af",
-        "tag":         "Meta",
-    },
-    # rsi2-backtest REMOVED 2026-03-10: keeping rsi2-scanner instead
-    {
-        "slug":        "pullback-health",
-        "title":       "Pullback Health Monitor",
-        "description": "6-metric pullback classifier: NATR drawdown, SMA structure, slope stage, "
-                       "vol expansion, beta-adjusted residual DD, historical recovery. "
-                       "Filter to owned stocks for portfolio health monitoring.",
-        "icon":        "🩺",
-        "color":       "#0891b2",
-        "tag":         "Risk",
-    },
-    {
-        "slug":        "rsi2-scanner",
-        "title":       "RSI(2) Mean-Reversion Scanner",
-        "description": "Live RSI(2) pullback signals, open positions, and trade history for the "
-                       "mean-reversion strategy. Watchlist starts narrow and expands with confidence.",
-        "icon":        "🎯",
-        "color":       "#7c3aed",
-        "tag":         "Scanner",
-    },
-    {
         "slug":        "market-reality",
         "title":       "Market Reality Check",
         "description": "Scans commentary for anthropomorphic language and cross-references with "
@@ -1322,7 +1228,6 @@ DASHBOARD_REGISTRY = [
         "color":       "#dc2626",
         "tag":         "Sentiment",
     },
-    # smart-money tile REMOVED 2026-03-09: failed validation
     {
         "slug":        "institutional-flows",
         "title":       "Institutional Flows",
@@ -1343,26 +1248,6 @@ DASHBOARD_REGISTRY = [
         "tag":         "Taxonomy",
     },
     {
-        "slug":        "sma29-entry",
-        "title":       "Enter & Exit Quality",
-        "description": "Combo score: momentum quality + pullback health + SMA29 extension positioning. "
-                       "SMA29 entry buckets from scimode OOS test (154K obs). SMA10 exit alerts from "
-                       "dual-window analysis (1.2M obs) -- 25%+ above SMA10 = median -3.16% forward.",
-        "icon":        "🎯",
-        "color":       "#2563eb",
-        "tag":         "Scanner",
-    },
-    {
-        "slug":        "gld-slv-signal",
-        "title":       "Gold/Silver Ratio Signal",
-        "description": "Scimode-validated mean-reversion signal. When GLD/SLV hits P90 (~88:1), "
-                       "silver 60d forward returns average +13.6% (79% win rate, 14 trades). "
-                       "Tracks ratio, threshold proximity, and target prices.",
-        "icon":        "Au",
-        "color":       "#d97706",
-        "tag":         "Signal",
-    },
-    {
         "slug":        "ticker-compare",
         "title":       "Ticker Compare",
         "description": "Interactive multi-ticker comparison. Input any tickers, view normalized "
@@ -1381,25 +1266,15 @@ DASHBOARD_REGISTRY = [
         "color":       "#b91c1c",
         "tag":         "Scanner",
     },
-    {
-        "slug":        "daily-alpha",
-        "title":       "Daily Alpha Intelligence Brief",
-        "description": "20-item research brief via Perplexity Deep Research. "
-                       "10 reported news + 10 unreported/understated trends with "
-                       "severity, opportunity, and timeframe scoring. Rotating category focus.",
-        "icon":        "DA",
-        "color":       "#6366f1",
-        "tag":         "Research",
-    },
 ]
 
-
+# ── QUARANTINED: invalidated or broken, not shown as live ──
 UNDER_REPAIR = [
     {
         "slug":        "advanced-momentum",
         "title":       "Advanced Momentum Analyzer",
         "description": "OBV divergence, Sortino ratios, slope acceleration, and trajectory detection "
-                       "for 700+ assets. Under repair -- timing out on pipeline runs.",
+                       "for 700+ assets. Broken -- timing out on pipeline runs.",
         "icon":        "🚀",
         "tag":         "Momentum",
     },
@@ -1407,9 +1282,101 @@ UNDER_REPAIR = [
         "slug":        "historical-mirror",
         "title":       "Historical Mirror",
         "description": "25-year x 25-period similarity heatmap comparing today's market fingerprint "
-                       "against every historical bi-weekly period. Under repair -- exceeding memory on droplet.",
+                       "against every historical bi-weekly period. Broken -- exceeding memory on droplet.",
         "icon":        "🪞",
         "tag":         "Pattern",
+    },
+    {
+        "slug":        "sector-rotation",
+        "title":       "Sector Rotation Deep Dive",
+        "description": "Momentum z-scores + forward predictions for 500+ ETFs across 25Y / 5Y / 1Y "
+                       "windows. Invalidated.",
+        "icon":        "🔄",
+        "tag":         "Sectors",
+    },
+    {
+        "slug":        "momentum-ranker",
+        "title":       "Momentum Ranker",
+        "description": "700+ tickers ranked by composite momentum score. Invalidated.",
+        "icon":        "📈",
+        "tag":         "Momentum",
+    },
+    {
+        "slug":        "momentum-ranker-long",
+        "title":       "Momentum Ranker (Long)",
+        "description": "Long timeframe momentum ranker. Invalidated.",
+        "icon":        "📈",
+        "tag":         "Momentum",
+    },
+    {
+        "slug":        "hyglqd-credit",
+        "title":       "HYG/LQD Credit Spread",
+        "description": "Credit spread regime via HYG/LQD ratio. Invalidated.",
+        "icon":        "💳",
+        "tag":         "Credit",
+    },
+    {
+        "slug":        "crash-detection",
+        "title":       "Crash Detection (RMT + Ising)",
+        "description": "Random Matrix Theory eigenvalue analysis and Ising magnetization. Invalidated.",
+        "icon":        "💥",
+        "tag":         "Risk",
+    },
+    {
+        "slug":        "conservative-momentum",
+        "title":       "Conservative Momentum Qualifier",
+        "description": "Pattern-based momentum qualification. Invalidated.",
+        "icon":        "🛡️",
+        "tag":         "Momentum",
+    },
+    {
+        "slug":        "smart-scanner",
+        "title":       "Smart Scanner",
+        "description": "Regime-aware method selection across ETF momentum, pole rotation, and stock screening. Invalidated.",
+        "icon":        "🎯",
+        "tag":         "Scanner",
+    },
+    {
+        "slug":        "slope-stage",
+        "title":       "Slope Stage Scanner",
+        "description": "90-day trendline stages for 1,300+ assets. Invalidated.",
+        "icon":        "📐",
+        "tag":         "Scanner",
+    },
+    {
+        "slug":        "meta-dashboard",
+        "title":       "Meta Dashboard",
+        "description": "Cross-dashboard agreement matrix and regime-gated routing. Invalidated.",
+        "icon":        "🧭",
+        "tag":         "Meta",
+    },
+    {
+        "slug":        "pullback-health",
+        "title":       "Pullback Health Monitor",
+        "description": "6-metric pullback classifier. Invalidated.",
+        "icon":        "🩺",
+        "tag":         "Risk",
+    },
+    {
+        "slug":        "rsi2-scanner",
+        "title":       "RSI(2) Mean-Reversion Scanner",
+        "description": "Live RSI(2) pullback signals and trade history. Invalidated.",
+        "icon":        "🎯",
+        "tag":         "Scanner",
+    },
+    {
+        "slug":        "sma29-entry",
+        "title":       "Enter & Exit Quality",
+        "description": "Combo score: momentum quality + pullback health + SMA29 extension. Invalidated.",
+        "icon":        "🎯",
+        "tag":         "Scanner",
+    },
+    {
+        "slug":        "gld-slv-signal",
+        "title":       "Gold/Silver Ratio Signal",
+        "description": "Scimode-validated mean-reversion signal on GLD/SLV ratio. Invalidated.",
+        "icon":        "Au",
+        "tag":         "Signal",
     },
 ]
 
@@ -1454,7 +1421,7 @@ def write_landing_page():
             '</div>'
             '<div class="dash-card-title">{title}</div>'
             '<div class="dash-card-desc">{description}</div>'
-            '<div class="dash-card-cta repair-badge">Under repair</div>'
+            '<div class="dash-card-cta repair-badge">Quarantined</div>'
             '</div>'
         ).format(
             icon=d["icon"], tag_html=tag_html,
@@ -1714,7 +1681,7 @@ body {{
         n=n,
         cards="\n    ".join(cards_html),
         repair_section=(
-            '<div class="section-label" style="margin-top:12px;">Under Repair</div>\n'
+            '<div class="section-label" style="margin-top:12px;">Quarantined (invalidated)</div>\n'
             '  <div class="grid">\n    '
             + "\n    ".join(repair_html)
             + "\n  </div>"
