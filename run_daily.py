@@ -214,6 +214,13 @@ BACKENDS = [
         'required': False,
     },
     {
+        'script': 'daily_alpha_backend_v1_0.py',
+        'name': 'Daily Alpha Intelligence Brief',
+        'location': 'root',
+        'slow': True,
+        'required': False,
+    },
+    {
         'script': 'validated_signal_generator_v1_0.py',
         'name': 'Validated System Signal Generator',
         'location': 'root',

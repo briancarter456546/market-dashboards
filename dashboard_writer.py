@@ -886,6 +886,17 @@ DASHBOARD_DESCRIPTIONS = {
         "counter-trend entry or re-entry point. Market breadth distribution shows "
         "what percentage of the universe is in pain vs trend-intact."
     ),
+    "daily-alpha": (
+        "AI-synthesized daily intelligence brief powered by Perplexity Deep Research "
+        "(150-200 sources). Section 1: 10 reported financial news items with historical "
+        "context, market reaction, systemic implications, and tradable alpha (long-only "
+        "stocks/ETFs including inverse). Section 2: 10 unreported/understated trends "
+        "rotating daily (Mon=Plumbing, Tue=Fixed Income, Wed=Earnings Quality, "
+        "Thu=Microstructure, Fri=Macro/Geo, Sat=Derivatives, Sun=Alt Data). "
+        "Each item scored on Severity (1-10), Opportunity (1-10), and Timeframe. "
+        "Durable structural knowledge auto-extracted to KB. High-priority items "
+        "wired to task_db for portfolio action."
+    ),
 }
 
 _LLM_DISCLAIMER = (
@@ -1369,6 +1380,16 @@ DASHBOARD_REGISTRY = [
         "icon":        "CP",
         "color":       "#b91c1c",
         "tag":         "Scanner",
+    },
+    {
+        "slug":        "daily-alpha",
+        "title":       "Daily Alpha Intelligence Brief",
+        "description": "20-item research brief via Perplexity Deep Research. "
+                       "10 reported news + 10 unreported/understated trends with "
+                       "severity, opportunity, and timeframe scoring. Rotating category focus.",
+        "icon":        "DA",
+        "color":       "#6366f1",
+        "tag":         "Research",
     },
 ]
 
