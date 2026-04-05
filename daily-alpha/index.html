@@ -355,7 +355,7 @@ tbody tr:hover { background: #fafbfd; }
     .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 6px; }
     .page-header h1 { font-size: 1.2em; }
     .page-nav { padding: 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .page-nav a { padding: 10px 14px; font-size: 0.82em; white-space: nowrap; }
+    .page-nav a { padding: 12px 14px; font-size: 0.82em; white-space: nowrap; min-height: 44px; }
     .content { padding: 16px 12px; }
     .regime-banner { flex-direction: column; padding: 14px 16px; gap: 12px; }
     .regime-label { font-size: 1.2em; }
@@ -366,12 +366,36 @@ tbody tr:hover { background: #fafbfd; }
     .table-section { border-radius: 0; margin-left: -12px; margin-right: -12px; }
     .table-section-header { padding: 12px 16px; }
     table { font-size: 0.85em; }
-    thead th { padding: 8px 10px; font-size: 0.75em; }
-    tbody td { padding: 8px 10px; }
-    .badge { padding: 3px 10px; font-size: 0.82em; min-width: 44px; }
-    .qualifier { padding: 3px 9px; font-size: 0.75em; }
+    thead th { padding: 10px 10px; font-size: 0.75em; }
+    tbody td { padding: 10px 10px; }
+    .badge { padding: 6px 12px; font-size: 0.82em; min-width: 44px; min-height: 32px; }
+    .qualifier { padding: 6px 12px; font-size: 0.75em; min-height: 32px; }
+    .trend-above, .trend-below { padding: 6px 12px; }
     .pb-item { margin-left: 8px; padding-left: 10px; }
     .dash-footer { padding: 16px 12px; font-size: 0.78em; }
+}
+
+/* ── Small phone ── */
+@media (max-width: 480px) {
+    body { font-size: 14px; }
+    .stat-bar { grid-template-columns: 1fr 1fr; }
+    .stat-bar .stat { padding: 10px 12px; }
+    .stat .stat-value { font-size: 1.3em; }
+    .page-header { padding: 12px; }
+    .page-header h1 { font-size: 1.1em; }
+    .page-header .meta { font-size: 0.78em; }
+    .page-nav a { padding: 10px 10px; font-size: 0.78em; }
+    .content { padding: 12px 8px; }
+    .cards { gap: 8px; }
+    .card { padding: 12px; }
+    .card .value { font-size: 1.3em; }
+    .table-section { margin-left: -8px; margin-right: -8px; }
+    table { font-size: 0.8em; }
+    thead th { padding: 8px 6px; font-size: 0.7em; }
+    tbody td { padding: 8px 6px; }
+    .regime-banner { padding: 12px; }
+    .regime-label { font-size: 1.05em; }
+    .dash-footer { padding: 12px 8px; font-size: 0.75em; }
 }
 
 /* --- LLM description block (collapsible, matches table-section) --- */
@@ -483,6 +507,7 @@ th.watch-th { width: 30px; text-align: center; cursor: default; }
   <h1>Daily Alpha Intelligence Brief</h1>
   <div class="meta">
     Alt Data & Sentiment | Sunday | Perplexity Deep Research &nbsp;|&nbsp;
+    Data as of 2026-04-05 17:59 ET &nbsp;|&nbsp;
     <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
   </div>
 </div>
@@ -1245,7 +1270,20 @@ th.watch-th { width: 30px; text-align: center; cursor: default; }
 <h2 style="margin:16px 0 10px;font-size:1em;"></h2>
 </div></details>
 </div></div></div>
-<div class="table-section"><div class="table-section-header"><h2>Knowledge Base Extractions</h2><span style="font-size:0.85em;color:#888;">Durable structural facts seeded to KB</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><p style="color:#888;font-style:italic;">No durable structural knowledge extracted today.</p></div></div>
+<div class="table-section"><div class="table-section-header"><h2>Knowledge Base Extractions</h2><span style="font-size:0.85em;color:#888;">Durable structural facts seeded to KB</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div style="margin-bottom:12px;font-size:0.9em;color:#666;">
+Extracted 11 structural facts, seeded 11 to KB.
+</div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:8px;"><div style="font-weight:700;font-size:0.92em;color:#166534;">Reverse Repo Mechanics: Two-Leg Settlement Structure</div><div style="font-size:0.88em;color:#333;margin-top:4px;">A reverse repo consists of two legs: the near leg (immediate purchase of securities by cash lender from cash borrower) and the far leg (resale at pre-agreed price on future date). This structure functions as a collateralized loan where the cash lender holds securities as collateral while the cash borrower receives liquidity.</div><div style="font-size:0.78em;color:#888;margin-top:6px;">Confidence: 95% | Tags: settlement, clearing, repo-mechanics, collateral</div></div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:8px;"><div style="font-weight:700;font-size:0.92em;color:#166534;">Fed ON RRP Impact on Bank Reserves: Mechanical Drainage</div><div style="font-size:0.88em;color:#333;margin-top:4px;">When the Federal Reserve conducts an Overnight Reverse Repo (ON RRP) operation, it sells securities from its SOMA portfolio to eligible counterparties. The cash that counterparties place in the ON RRP is removed from circulation for the duration of the trade, mechanically reducing reserve balances in the banking system.</div><div style="font-size:0.78em;color:#888;margin-top:6px;">Confidence: 95% | Tags: monetary-policy, bank-reserves, Fed-operations, liquidity-management</div></div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:8px;"><div style="font-weight:700;font-size:0.92em;color:#166534;">Repo vs. Reverse Repo: Opposite Effects on Money Supply</div><div style="font-size:0.88em;color:#333;margin-top:4px;">Repo transactions increase reserve balances in the banking system (cash injection), while reverse repo transactions decrease reserve balances (cash drainage). The Fed uses repos to expand money supply and reverse repos to contract it, making them mechanical opposites in their transmission to bank reserves.</div><div style="font-size:0.78em;color:#888;margin-top:6px;">Confidence: 95% | Tags: monetary-policy, transmission-mechanism, money-supply, Fed-operations</div></div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:8px;"><div style="font-weight:700;font-size:0.92em;color:#166534;">ON RRP Rate Floor Mechanism: Interest Rate Transmission</div><div style="font-size:0.88em;color:#333;margin-top:4px;">The ON RRP facility provides a floor under overnight interest rates by offering money market participants (primary dealers, banks, money market funds, GSEs) a guaranteed return at the Fed's announced ON RRP rate. When money market rates fall below this floor, participants redirect funds to the ON RRP, preventing rates from falling further.</div><div style="font-size:0.78em;color:#888;margin-top:6px;">Confidence: 93% | Tags: interest-rates, policy-transmission, market-microstructure, Fed-operations</div></div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:8px;"><div style="font-weight:700;font-size:0.92em;color:#166534;">Repo Rate Determination: Price Differential as Implicit Interest</div><div style="font-size:0.88em;color:#333;margin-top:4px;">In both repo and reverse repo transactions, the difference between the initial transaction price and the final settlement price represents the implicit interest rate of the transaction, expressed as an annual percentage and called the repo rate. This pricing mechanism directly reflects the cost of short-term secured borrowing.</div><div style="font-size:0.78em;color:#888;margin-top:6px;">Confidence: 95% | Tags: repo-mechanics, pricing, interest-rates</div></div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:8px;"><div style="font-weight:700;font-size:0.92em;color:#166534;">Collateral Risk Mitigation in Repo: Asset Re-use and Ownership Transfer</div><div style="font-size:0.88em;color:#333;margin-top:4px;">When a buyer purchases securities in a repo transaction, ownership transfers to the buyer. If the seller defaults, the buyer (now the legal owner) can immediately sell the asset to a third party to offset losses. This structure plus the buyer's right to re-use the collateral mitigates both credit risk and liquidity risk.</div><div style="font-size:0.78em;color:#888;margin-top:6px;">Confidence: 94% | Tags: collateral, settlement, credit-risk, repo-mechanics</div></div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:8px;"><div style="font-weight:700;font-size:0.92em;color:#166534;">Fed Counterparties in ON RRP: Eligible Participant Classes</div><div style="font-size:0.88em;color:#333;margin-top:4px;">The Fed conducts ON RRP operations with four categories of eligible counterparties: primary dealers, commercial banks, money market mutual funds, and government-sponsored enterprises. This counterparty structure determines which institutions can access the Fed's reverse repo facility and influence the distribution of liquidity.</div><div style="font-size:0.78em;color:#888;margin-top:6px;">Confidence: 94% | Tags: market-structure, Fed-operations, participants, liquidity-distribution</div></div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:8px;"><div style="font-weight:700;font-size:0.92em;color:#166534;">Standing Repo Facility (SRP): Rate Ceiling Mechanism</div><div style="font-size:0.88em;color:#333;margin-top:4px;">The Standing Repo Facility provides a ceiling on money market rates by allowing eligible institutions to obtain overnight loans against collateral at a pre-set rate. When short-term rates rise above the SRP rate, institutions can borrow at the SRP rate, preventing rates from rising further.</div><div style="font-size:0.78em;color:#888;margin-top:6px;">Confidence: 92% | Tags: interest-rates, policy-transmission, Fed-operations, market-microstructure</div></div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:8px;"><div style="font-weight:700;font-size:0.92em;color:#166534;">FOMC Target Range Implementation: Floor-Ceiling Framework</div><div style="font-size:0.88em;color:#333;margin-top:4px;">The FOMC implements its federal funds rate target range using ON RRP (floor) and SRP (ceiling) operations. The ON RRP rate sets a minimum rate that money market participants will accept, while the SRP rate sets a maximum rate banks will pay, creating a band within which the federal funds rate trades.</div><div style="font-size:0.78em;color:#888;margin-top:6px;">Confidence: 93% | Tags: monetary-policy, interest-rates, policy-transmission, Fed-operations</div></div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:8px;"><div style="font-weight:700;font-size:0.92em;color:#166534;">Repo Market Function in Financial System Plumbing</div><div style="font-size:0.88em;color:#333;margin-top:4px;">The repurchase agreement (repo) market operates as a vast network of short-term borrowing and lending that facilitates the daily flow of trillions of dollars between banks, money market funds, and central banks. This market infrastructure enables institutions to manage short-term liquidity and collateral needs continuously.</div><div style="font-size:0.78em;color:#888;margin-top:6px;">Confidence: 95% | Tags: market-structure, financial-infrastructure, liquidity-management</div></div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:8px;"><div style="font-weight:700;font-size:0.92em;color:#166534;">Repo Rates vs. Unsecured Money Market Rates: Risk Premium Relationship</div><div style="font-size:0.88em;color:#333;margin-top:4px;">Because repo lending exposes the lender to lower credit and liquidity risks than unsecured lending, repo rates are structurally lower than unsecured money market rates. This risk-based pricing differential is a durable feature of money market microstructure.</div><div style="font-size:0.78em;color:#888;margin-top:6px;">Confidence: 93% | Tags: pricing, credit-risk, market-microstructure</div></div></div></div>
 <div class="table-section"><div class="table-section-header"><h2>Research Quality Monitor</h2><span style="font-size:0.85em;color:#888;">API quality vs web benchmark</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px;">
 <div style="background:#fff;border:1px solid #e2e4e8;border-radius:8px;padding:14px 18px;"><div style="font-size:0.78em;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Citations</div><div style="font-family:IBM Plex Mono,monospace;font-size:1.3em;font-weight:600;color:#22c55e;">107</div>
 <div style="font-size:0.8em;color:#888;margin-top:2px;">Excellent</div>
@@ -1309,7 +1347,7 @@ th.watch-th { width: 30px; text-align: center; cursor: default; }
 <li style="margin-bottom:4px;word-break:break-all;"><a href="https://example.com/source49" target="_blank" rel="noopener" style="color:#4f46e5;font-size:0.85em;">https://example.com/source49</a></li>
 <li style="margin-bottom:4px;word-break:break-all;"><a href="https://example.com/source50" target="_blank" rel="noopener" style="color:#4f46e5;font-size:0.85em;">https://example.com/source50</a></li></ol><p style="color:#888;font-size:0.85em;">...and 57 more sources</p></div></div>
 <div style="background:#fafafa;border:1px solid #e2e4e8;border-radius:8px;padding:16px 20px;margin-top:16px;font-size:0.82em;color:#666;line-height:1.6;"><strong>AI-Synthesized Financial Content Warning:</strong> This brief is generated by AI synthesis of web sources and public data. Confidence tiers and severity/opportunity scores reflect the AI's assessment. Never trade on AI output alone. Cross-check all sources, verify data independently, and validate scoring against your own risk tolerance before risking capital. All trade ideas are speculative and long-only (stocks/ETFs including inverse ETFs).</div>
-</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-04-05 10:54 AM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-04-05 6:08 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
 <script>
 
 /* --- Shared ownership state (localStorage, cross-dashboard) --- */
