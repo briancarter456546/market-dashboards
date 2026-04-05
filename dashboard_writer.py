@@ -448,7 +448,7 @@ tbody tr:hover { background: #fafbfd; }
     .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 6px; }
     .page-header h1 { font-size: 1.2em; }
     .page-nav { padding: 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .page-nav a { padding: 10px 14px; font-size: 0.82em; white-space: nowrap; }
+    .page-nav a { padding: 12px 14px; font-size: 0.82em; white-space: nowrap; min-height: 44px; }
     .content { padding: 16px 12px; }
     .regime-banner { flex-direction: column; padding: 14px 16px; gap: 12px; }
     .regime-label { font-size: 1.2em; }
@@ -459,12 +459,36 @@ tbody tr:hover { background: #fafbfd; }
     .table-section { border-radius: 0; margin-left: -12px; margin-right: -12px; }
     .table-section-header { padding: 12px 16px; }
     table { font-size: 0.85em; }
-    thead th { padding: 8px 10px; font-size: 0.75em; }
-    tbody td { padding: 8px 10px; }
-    .badge { padding: 3px 10px; font-size: 0.82em; min-width: 44px; }
-    .qualifier { padding: 3px 9px; font-size: 0.75em; }
+    thead th { padding: 10px 10px; font-size: 0.75em; }
+    tbody td { padding: 10px 10px; }
+    .badge { padding: 6px 12px; font-size: 0.82em; min-width: 44px; min-height: 32px; }
+    .qualifier { padding: 6px 12px; font-size: 0.75em; min-height: 32px; }
+    .trend-above, .trend-below { padding: 6px 12px; }
     .pb-item { margin-left: 8px; padding-left: 10px; }
     .dash-footer { padding: 16px 12px; font-size: 0.78em; }
+}
+
+/* ── Small phone ── */
+@media (max-width: 480px) {
+    body { font-size: 14px; }
+    .stat-bar { grid-template-columns: 1fr 1fr; }
+    .stat-bar .stat { padding: 10px 12px; }
+    .stat .stat-value { font-size: 1.3em; }
+    .page-header { padding: 12px; }
+    .page-header h1 { font-size: 1.1em; }
+    .page-header .meta { font-size: 0.78em; }
+    .page-nav a { padding: 10px 10px; font-size: 0.78em; }
+    .content { padding: 12px 8px; }
+    .cards { gap: 8px; }
+    .card { padding: 12px; }
+    .card .value { font-size: 1.3em; }
+    .table-section { margin-left: -8px; margin-right: -8px; }
+    table { font-size: 0.8em; }
+    thead th { padding: 8px 6px; font-size: 0.7em; }
+    tbody td { padding: 8px 6px; }
+    .regime-banner { padding: 12px; }
+    .regime-label { font-size: 1.05em; }
+    .dash-footer { padding: 12px 8px; font-size: 0.75em; }
 }
 
 /* --- LLM description block (collapsible, matches table-section) --- */
@@ -1639,9 +1663,22 @@ body {{
     .header-meta .gh-link {{ display: none; }}
     .content {{ padding: 20px 12px 40px; }}
     .grid {{ grid-template-columns: 1fr; gap: 12px; }}
-    .dash-card {{ padding: 16px 16px 14px; }}
+    .dash-card {{ padding: 16px 16px 14px; min-height: 44px; }}
     .dash-card-title {{ font-size: 0.95em; }}
     .dash-card-desc {{ font-size: 0.8em; }}
+    .dash-tag {{ padding: 5px 10px; }}
+}}
+
+/* ── Small phone ── */
+@media (max-width: 480px) {{
+    .header {{ padding: 16px 12px 14px; }}
+    .header h1 {{ font-size: 1.15em; }}
+    .content {{ padding: 14px 8px 30px; }}
+    .grid {{ gap: 10px; }}
+    .dash-card {{ padding: 14px 12px 12px; gap: 8px; }}
+    .dash-card-title {{ font-size: 0.9em; }}
+    .dash-card-desc {{ font-size: 0.78em; }}
+    .footer {{ font-size: 0.75em; }}
 }}
 </style>
 </head><body>
