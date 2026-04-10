@@ -235,7 +235,7 @@ BACKENDS = [
         'required': False,
     },
     {
-        'script': 'portfolio_allocator_dashboard_v1_0.py',
+        'script': 'portfolio_allocator_dashboard_v2_1.py',
         'name': 'Portfolio Allocator Dashboard (Private)',
         'location': 'root',
         'slow': False,
