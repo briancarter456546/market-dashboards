@@ -256,7 +256,7 @@ BACKENDS = [
         'required': False,
     },
     {
-        'script': 'system_auditor_dashboard_v1_0.py',
+        'script': 'system_auditor_dashboard_v1_1.py',
         'name': 'Code Auditor Dashboard (Private)',
         'location': 'root',
         'slow': False,
