@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validated Pole Rotation - 2026-04-09</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a2e;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* --- Top stat bar (dark anchor) --- */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    background: #1e1e2e;
+    border-bottom: 3px solid #2d2d4a;
+}
+
+.stat-bar .stat {
+    padding: 20px 26px;
+    border-right: 1px solid #2d2d4a;
+}
+.stat-bar .stat:last-child { border-right: none; }
+
+.stat .stat-label {
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #8888aa;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+}
+
+.stat .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.1em;
+    font-weight: 600;
+    color: #f0f0f0;
+    line-height: 1.1;
+}
+
+.stat .stat-value.pos     { color: #22c55e; }
+.stat .stat-value.neg     { color: #ef4444; }
+.stat .stat-value.warn    { color: #f59e0b; }
+.stat .stat-value.neutral { color: #f0f0f0; }
+
+/* --- Page header --- */
+.page-header {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.page-header .meta {
+    font-size: 0.88em;
+    color: #888;
+}
+
+.page-header .meta a { color: #4f46e5; text-decoration: none; }
+
+/* --- Nav bar --- */
+.page-nav {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 0 30px;
+    display: flex;
+}
+
+.page-nav a {
+    display: inline-block;
+    padding: 13px 20px;
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+.page-nav a:hover  { color: #1a1a2e; }
+.page-nav a.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+/* --- Content area --- */
+.content { padding: 26px 30px; }
+
+/* --- Regime banner --- */
+.regime-banner {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-left: 6px solid #22c55e;
+    border-radius: 8px;
+    padding: 18px 26px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.regime-label {
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.regime-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    color: #888;
+    border-left: 1px solid #e2e4e8;
+    padding-left: 28px;
+    line-height: 1.8;
+}
+
+/* --- Stat/force cards --- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    padding: 18px 22px;
+    border-top: 5px solid #ccc;
+}
+
+.card .label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.9em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.card .sub {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #888;
+}
+
+/* --- Table section wrapper --- */
+.table-section {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.table-section-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid #e2e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.table-section-header h2 {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* --- Tables --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95em;
+}
+
+thead th {
+    background: #f8f9fb;
+    color: #555;
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e2e4e8;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+thead th:hover { background: #f0f2f5; color: #1a1a2e; }
+thead th.sorted-asc  { color: #16a34a; }
+thead th.sorted-desc { color: #dc2626; }
+
+tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbfd; }
+
+/* Numbers and tickers use mono font */
+.num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92em;
+}
+
+.ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #1a1a2e;
+}
+
+/* Color classes */
+.pos   { color: #16a34a; font-weight: 600; }
+.neg   { color: #dc2626; font-weight: 600; }
+.warn  { color: #d97706; font-weight: 600; }
+.muted { color: #aaa; }
+.accent { color: #4f46e5; }
+
+/* Score badges - pill shaped */
+.badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-align: center;
+    min-width: 52px;
+}
+
+.badge-2  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-1  { background: #f0fdf4; color: #16a34a; border: 1px solid #d1fae5; }
+.badge-n1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge-n2 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+/* Qualifier pills */
+.qualifier {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.q-confirmed { background: #dcfce7; color: #15803d; }
+.q-fading    { background: #fff7ed; color: #c2410c; }
+.q-diverging { background: #eff6ff; color: #1d4ed8; }
+.q-holding   { background: #f1f5f9; color: #64748b; }
+
+/* Trend pills */
+.trend-above {
+    background: #dcfce7; color: #15803d;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+.trend-below {
+    background: #fee2e2; color: #b91c1c;
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 0.85em; font-weight: 700;
+    white-space: nowrap;
+}
+
+/* --- Playbook text blocks --- */
+.pb-header {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e4e8;
+}
+.pb-header:first-child { margin-top: 0; }
+
+.pb-body {
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.7;
+    margin: 4px 0;
+}
+
+.pb-item {
+    font-size: 0.9em;
+    color: #4f46e5;
+    margin: 5px 0 5px 16px;
+    border-left: 3px solid #c7d2fe;
+    padding-left: 12px;
+    line-height: 1.65;
+}
+
+/* --- Footer --- */
+.dash-footer {
+    padding: 22px 30px;
+    font-size: 0.82em;
+    color: #aaa;
+    border-top: 1px solid #e2e4e8;
+    text-align: center;
+    background: #fff;
+    margin-top: 8px;
+}
+.dash-footer-links {
+    margin-top: 8px;
+}
+.dash-footer-links a {
+    color: #6b7280;
+    text-decoration: none;
+}
+.dash-footer-links a:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    body { font-size: 15px; }
+    .stat-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-bar .stat { padding: 14px 16px; }
+    .stat .stat-value { font-size: 1.5em; }
+    .stat .stat-label { font-size: 0.72em; }
+    .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 6px; }
+    .page-header h1 { font-size: 1.2em; }
+    .page-nav { padding: 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .page-nav a { padding: 10px 14px; font-size: 0.82em; white-space: nowrap; }
+    .content { padding: 16px 12px; }
+    .regime-banner { flex-direction: column; padding: 14px 16px; gap: 12px; }
+    .regime-label { font-size: 1.2em; }
+    .regime-score { border-left: none; padding-left: 0; border-top: 1px solid #e2e4e8; padding-top: 10px; }
+    .cards { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 14px 16px; }
+    .card .value { font-size: 1.5em; }
+    .table-section { border-radius: 0; margin-left: -12px; margin-right: -12px; }
+    .table-section-header { padding: 12px 16px; }
+    table { font-size: 0.85em; }
+    thead th { padding: 8px 10px; font-size: 0.75em; }
+    tbody td { padding: 8px 10px; }
+    .badge { padding: 3px 10px; font-size: 0.82em; min-width: 44px; }
+    .qualifier { padding: 3px 9px; font-size: 0.75em; }
+    .pb-item { margin-left: 8px; padding-left: 10px; }
+    .dash-footer { padding: 16px 12px; font-size: 0.78em; }
+}
+
+/* --- LLM description block (collapsible, matches table-section) --- */
+.llm-block {
+    background: #fff;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    margin-bottom: 22px;
+    overflow: hidden;
+}
+.llm-block summary {
+    padding: 16px 22px;
+    background: #fafafa;
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+}
+.llm-block summary::-webkit-details-marker { display: none; }
+.llm-block summary::after {
+    content: '\25B8';
+    font-size: 0.8em;
+    color: #888;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.llm-block[open] summary::after {
+    transform: rotate(90deg);
+}
+.llm-block[open] summary {
+    border-bottom: 1px solid #e2e4e8;
+}
+.llm-block summary:hover {
+    background: #f0f2f5;
+}
+.llm-block-body {
+    padding: 18px 22px 16px;
+}
+.llm-section-label {
+    font-size: 0.82em;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+}
+.llm-static {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+.llm-dynamic {
+    font-size: 0.92em;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 14px 18px;
+    background: #f8f9fb;
+    border-left: 4px solid #4f46e5;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 18px;
+}
+.llm-dynamic .llm-section-label {
+    color: #4f46e5;
+}
+.llm-disclaimer {
+    font-size: 0.78em;
+    color: #999;
+    font-style: italic;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 10px;
+}
+
+
+/* --- Shared ownership checkbox (all dashboards) --- */
+.own-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #f59e0b; }
+.row-owned { background: #fff7ed !important; }
+.row-owned:hover { background: #ffedd5 !important; }
+th.own-th { width: 30px; text-align: center; cursor: default; }
+/* --- Shared watchlist checkbox (all dashboards) --- */
+.watch-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #3b82f6; }
+.row-watched:not(.row-owned) { background: #eff6ff !important; }
+.row-watched:not(.row-owned):hover { background: #dbeafe !important; }
+th.watch-th { width: 30px; text-align: center; cursor: default; }
+
+
+/* Classification badges */
+.cls-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.cls-VALIDATED { background: #dcfce7; color: #166534; }
+.cls-MARGINAL  { background: #fef9c3; color: #854d0e; }
+
+/* Extension zone badges */
+.ext-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* VIX favored highlight */
+.vix-favored {
+    background: linear-gradient(90deg, #fef3c720, transparent);
+}
+.vix-star {
+    color: #d97706;
+    font-size: 0.82em;
+}
+
+/* Compact table */
+#poleTable { font-size: 0.82em; }
+#poleTable th, #poleTable td { padding: 5px 8px; white-space: nowrap; }
+#poleTable th { cursor: pointer; border-bottom: 1px dashed #999; }
+
+/* Filter buttons */
+.filter-btn {
+    margin: 2px 4px;
+    padding: 4px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #f3f4f6;
+    font-size: 0.85em;
+}
+.filter-btn.active {
+    background: #1a1a2e;
+    color: #fff;
+    border-color: #1a1a2e;
+}
+
+</style>
+</head><body>
+<div class="page-header">
+  <h1>Validated Pole Rotation</h1>
+  <div class="meta">
+    Scimode-Validated | 25 Poles | VIX Regime Overlay &nbsp;|&nbsp;
+    Data as of 2026-04-09 21:33 ET &nbsp;|&nbsp;
+    <a href="https://briancarter456546.github.io/market-dashboards">market-dashboards</a>
+  </div>
+</div>
+<div class="page-nav">
+  <a href="#spreads" class="active">Dashboard</a>
+  <a href="archive/dashboard_20260409.html">Archive: 2026-04-09</a>
+  <a href="https://briancarter456546.github.io/market-dashboards">Home</a>
+</div>
+<div class="content">
+<details class="llm-block"><summary>About This Dashboard</summary><div class="llm-block-body"><div class="llm-section-label">What It Does</div><div class="llm-static">25 scimode-validated poles (14 VALIDATED + 11 MARGINAL) from taxonomy regression. Each pole is a Factor-Mimicking Portfolio (equal-weighted ETF basket). Shows lead ETF performance (1W/1M/3M/6M/YTD), SMA29 extension zone, coherence score, stock count, and SPY beta. VIX regime overlay highlights poles historically strongest in the current VIX band. Filtered by scimode_pole_validation (coherence, stability, predictive value).</div><div class="llm-disclaimer">For educational and informational purposes only. Not financial advice. Past performance does not guarantee future results.</div></div></details>
+<div class="stat-bar"><div class="stat"><div class="stat-label">Validated</div><div class="stat-value pos">14</div></div><div class="stat"><div class="stat-label">Marginal</div><div class="stat-value warn">11</div></div><div class="stat"><div class="stat-label">Hot (1M+)</div><div class="stat-value pos">14</div></div><div class="stat"><div class="stat-label">Cold (1M-)</div><div class="stat-value neutral">11</div></div><div class="stat"><div class="stat-label">Optimal Zone</div><div class="stat-value pos">19</div></div><div class="stat"><div class="stat-label">VIX Favored</div><div class="stat-value pos">4</div></div></div>
+<div class="regime-banner" style="border-left-color:#f59e0b;"><div class="regime-label" style="color:#f59e0b;">MIXED LEAN POSITIVE - 14/25 poles positive on 1M</div><div class="regime-score">25 scimode-validated poles | Lead ETF extension + VIX regime overlay</div></div>
+
+        <div style="background:linear-gradient(135deg, #64748b22, #64748b11);
+                    border-left:4px solid #64748b; padding:10px 16px; margin-bottom:14px;
+                    border-radius:4px; font-size:0.88em">
+            <span style="font-weight:700; color:#64748b">VIX 19.5 (NORMAL)</span>
+            &nbsp;|&nbsp; Best sectors: <b>Semis & Tech, Financials, Cybersecurity, Consumer Disc</b>
+            &nbsp;|&nbsp; <span style="color:#d97706">&#9733;</span> = VIX-favored pole
+            <span style="float:right;font-size:0.82em;color:#888">scimode_vix_sector_v1_0</span>
+        </div>
+<div class="table-section"><div class="table-section-header"><h2>Methodology</h2><span style="font-size:0.85em;color:#888;">scimode_pole_validation + scimode_vix_sector</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;">
+    <details style="margin-bottom:16px">
+    <summary style="cursor:pointer;font-weight:600;color:#4a5568">Methodology (scimode-validated)</summary>
+    <div style="padding:8px 12px;font-size:0.82em;color:#555;line-height:1.6">
+    <p><b>Pole Source:</b> 43 ETF poles from taxonomy_stock_regression (OLS on SPY residuals -> OLS on FMPs).
+    Each pole is an equal-weighted portfolio of 2-5 ETFs that define a market factor.</p>
+    <p><b>Validation:</b> scimode_pole_validation_v1_0.py tested each pole on 4 criteria:
+    coherence (63d pairwise correlation), stability (half-history comparison),
+    predictive value (do trending pole members outperform?), and redundancy check.
+    VALIDATED = passed 4/4, MARGINAL = 3/4, NOISE = 2 or fewer (excluded).</p>
+    <p><b>VIX Regime:</b> scimode_vix_sector_v1_0.py tested 21d forward returns by VIX band x pole.
+    Stars mark poles historically strongest in the current VIX regime.</p>
+    <p><b>Extension:</b> Lead ETF's (Close - SMA29) / SMA29. Same zones as Entry/Exit dashboard.
+    OPTIMAL = 0-10% above SMA29 (best forward PF).</p>
+    <p><b>Lead ETF:</b> Most liquid/common ETF in each pole's member basket.</p>
+    </div>
+    </details>
+    </div></div>
+<div style="margin-bottom:14px"><button class="filter-btn" onclick="filterClass('ALL')">ALL (25)</button><button class="filter-btn" onclick="filterClass('VALIDATED')">VALIDATED (14)</button><button class="filter-btn" onclick="filterClass('MARGINAL')">MARGINAL (11)</button><button class="filter-btn" onclick="filterClass('FAVORED')">VIX FAVORED (4)</button></div>
+<div class="table-section"><div class="table-section-header"><h2>Pole Performance</h2><span style="font-size:0.85em;color:#888;">Click headers to sort | Default: 1M descending</span></div><div style="padding:20px 24px; overflow-x:auto; -webkit-overflow-scrolling:touch;"><table id="poleTable" class="dash-table" data-sort-col="0" data-sort-dir="desc">
+    <thead><tr>
+        <th onclick="sortPoleTable(0,false)" title="Pole name from taxonomy regression">Pole</th>
+        <th onclick="sortPoleTable(1,false)" title="Lead ETF for this pole (most liquid member)">Lead ETF</th>
+        <th onclick="sortPoleTable(2,false)" title="Scimode validation: VALIDATED (4/4 tests) or MARGINAL (3/4)">Class</th>
+        <th onclick="sortPoleTable(3,true)" title="1-week return of pole portfolio (equal-weighted FMP)">1W</th>
+        <th onclick="sortPoleTable(4,true)" title="1-month return">1M</th>
+        <th onclick="sortPoleTable(5,true)" title="3-month return">3M</th>
+        <th onclick="sortPoleTable(6,true)" title="6-month return">6M</th>
+        <th onclick="sortPoleTable(7,true)" title="Year-to-date return">YTD</th>
+        <th onclick="sortPoleTable(8,true)" title="Lead ETF % above 29-day SMA. Shows how extended this sector is.">Ext %</th>
+        <th onclick="sortPoleTable(9,false)" title="SMA29 extension zone (OPTIMAL = 0-10% above SMA29)">Zone</th>
+        <th onclick="sortPoleTable(10,true)" title="Pairwise correlation coherence (how tightly members move together). Higher = more reliable pole.">Coher</th>
+        <th onclick="sortPoleTable(11,true)" title="Number of stocks assigned to this pole in the taxonomy">Stocks</th>
+        <th onclick="sortPoleTable(12,true)" title="Average SPY beta of pole ETF members">Beta</th>
+        <th title="All ETF members defining this pole">Members</th>
+    </tr></thead>
+    <tbody><tr class="vix-favored" data-cls="VALIDATED"><td class="tl"><b>Semiconductors & Tech Hardware</b> <span class="vix-star" title="VIX-favored in current regime">&#9733;</span></td><td class="tc" style="font-family:monospace;font-size:0.82em">SMH</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="9.737037722078078" style="color:#22c55e">+9.7%</td><td class="tr" data-val="9.874557258118944" style="color:#22c55e">+9.9%</td><td class="tr" data-val="13.796181235687598" style="color:#22c55e">+13.8%</td><td class="tr" data-val="30.738014632802766" style="color:#22c55e">+30.7%</td><td class="tr" data-val="22.38513975228569" style="color:#22c55e">+22.4%</td><td class="tr" data-val="9.17" style="color:#22c55e">+9.2%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.458">0.46</td><td class="tr" data-val="71">71</td><td class="tr" data-val="1.31">1.31</td><td class="tl" style="font-size:0.72em;color:#888">SOXX, SMH, PSI, FTXL, TDIV</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Energy & Oil</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">USO</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="-0.5516215709356898" style="color:#ef4444">-0.6%</td><td class="tr" data-val="9.193039168892735" style="color:#22c55e">+9.2%</td><td class="tr" data-val="48.05111081130773" style="color:#22c55e">+48.1%</td><td class="tr" data-val="45.77161952570699" style="color:#22c55e">+45.8%</td><td class="tr" data-val="48.01707527057122" style="color:#22c55e">+48.0%</td><td class="tr" data-val="10.42" style="color:#22c55e">+10.4%</td><td class="tc" data-val="GOOD"><span class="ext-badge" style="background:#e0f2fe;color:#075985">GOOD</span></td><td class="tr" data-val="0.402">0.40</td><td class="tr" data-val="40">40</td><td class="tr" data-val="0.49">0.49</td><td class="tl" style="font-size:0.72em;color:#888">USO, BNO, GSG, PDBC, DBC</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Latin America</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">EWZ</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="5.323566837404625" style="color:#22c55e">+5.3%</td><td class="tr" data-val="7.613110316507377" style="color:#22c55e">+7.6%</td><td class="tr" data-val="22.164935863083436" style="color:#22c55e">+22.2%</td><td class="tr" data-val="32.97985405406359" style="color:#22c55e">+33.0%</td><td class="tr" data-val="25.94655625973694" style="color:#22c55e">+25.9%</td><td class="tr" data-val="8.59" style="color:#22c55e">+8.6%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.574">0.57</td><td class="tr" data-val="15">15</td><td class="tr" data-val="1.11">1.11</td><td class="tl" style="font-size:0.72em;color:#888">EWZS, FLBR, EWZ, ILF</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Asia Ex-China</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">FLTW</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="7.804926329553785" style="color:#22c55e">+7.8%</td><td class="tr" data-val="6.142387203601718" style="color:#22c55e">+6.1%</td><td class="tr" data-val="17.900088191624253" style="color:#22c55e">+17.9%</td><td class="tr" data-val="40.779329814719766" style="color:#22c55e">+40.8%</td><td class="tr" data-val="25.438234330567845" style="color:#22c55e">+25.4%</td><td class="tr" data-val="6.01" style="color:#22c55e">+6.0%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.595">0.59</td><td class="tr" data-val="35">35</td><td class="tr" data-val="0.84">0.84</td><td class="tl" style="font-size:0.72em;color:#888">FLTW, FLKR, FRDM</td></tr>
+<tr class="vix-favored" data-cls="VALIDATED"><td class="tl"><b>Financials & Banking</b> <span class="vix-star" title="VIX-favored in current regime">&#9733;</span></td><td class="tc" style="font-family:monospace;font-size:0.82em">XLF</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="4.444622393915854" style="color:#22c55e">+4.4%</td><td class="tr" data-val="4.33584097673807" style="color:#22c55e">+4.3%</td><td class="tr" data-val="-4.895632922734816" style="color:#ef4444">-4.9%</td><td class="tr" data-val="-0.029078865593668013" style="color:#ef4444">-0.0%</td><td class="tr" data-val="-2.5608171745689745" style="color:#ef4444">-2.6%</td><td class="tr" data-val="3.33" style="color:#22c55e">+3.3%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.465">0.47</td><td class="tr" data-val="80">80</td><td class="tr" data-val="1.26">1.26</td><td class="tl" style="font-size:0.72em;color:#888">XLF, VFH, KBE, IAI</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Colombia / Value</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">GXG</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="2.822026035313563" style="color:#22c55e">+2.8%</td><td class="tr" data-val="4.270086604821399" style="color:#22c55e">+4.3%</td><td class="tr" data-val="6.6564477436375835" style="color:#22c55e">+6.7%</td><td class="tr" data-val="21.084707033456418" style="color:#22c55e">+21.1%</td><td class="tr" data-val="9.722381766769427" style="color:#22c55e">+9.7%</td><td class="tr" data-val="-999" style="color:#888">-</td><td class="tc" data-val="">-</td><td class="tr" data-val="0.253">0.25</td><td class="tr" data-val="10">10</td><td class="tr" data-val="0.89">0.89</td><td class="tl" style="font-size:0.72em;color:#888">COLO, PVAL</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Materials & Chemicals</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">XLB</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="2.7944259664410165" style="color:#22c55e">+2.8%</td><td class="tr" data-val="3.9545134903843593" style="color:#22c55e">+4.0%</td><td class="tr" data-val="11.789355930025703" style="color:#22c55e">+11.8%</td><td class="tr" data-val="18.753923086861278" style="color:#22c55e">+18.8%</td><td class="tr" data-val="15.999314207466764" style="color:#22c55e">+16.0%</td><td class="tr" data-val="3.67" style="color:#22c55e">+3.7%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.359">0.36</td><td class="tr" data-val="69">69</td><td class="tr" data-val="1.04">1.04</td><td class="tl" style="font-size:0.72em;color:#888">XLB, IYM, VAW</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>US Small & Mid Cap</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">IWM</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="4.158806635019197" style="color:#22c55e">+4.2%</td><td class="tr" data-val="3.562894974679498" style="color:#22c55e">+3.6%</td><td class="tr" data-val="3.6869682355364697" style="color:#22c55e">+3.7%</td><td class="tr" data-val="8.989253917938811" style="color:#22c55e">+9.0%</td><td class="tr" data-val="7.26381732630661" style="color:#22c55e">+7.3%</td><td class="tr" data-val="4.18" style="color:#22c55e">+4.2%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.395">0.39</td><td class="tr" data-val="33">33</td><td class="tr" data-val="1.07">1.07</td><td class="tl" style="font-size:0.72em;color:#888">IJR, MDY, IWM, IJH, VB</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Developed International Equity</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">VGK</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="3.755120272462853" style="color:#22c55e">+3.8%</td><td class="tr" data-val="3.0312455602081734" style="color:#22c55e">+3.0%</td><td class="tr" data-val="2.3831678256956534" style="color:#22c55e">+2.4%</td><td class="tr" data-val="9.268527387295089" style="color:#22c55e">+9.3%</td><td class="tr" data-val="4.18961568869185" style="color:#22c55e">+4.2%</td><td class="tr" data-val="4.1" style="color:#22c55e">+4.1%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.607">0.61</td><td class="tr" data-val="176">176</td><td class="tr" data-val="0.92">0.92</td><td class="tl" style="font-size:0.72em;color:#888">IEUR, IEV, GSEU, VGK, SPEU</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Japan</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">EWJ</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="1.7829793831520613" style="color:#22c55e">+1.8%</td><td class="tr" data-val="2.67779420317118" style="color:#22c55e">+2.7%</td><td class="tr" data-val="9.089345650468195" style="color:#22c55e">+9.1%</td><td class="tr" data-val="17.946059412990323" style="color:#22c55e">+17.9%</td><td class="tr" data-val="11.740154060455543" style="color:#22c55e">+11.7%</td><td class="tr" data-val="3.34" style="color:#22c55e">+3.3%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.504">0.50</td><td class="tr" data-val="24">24</td><td class="tr" data-val="0.71">0.71</td><td class="tl" style="font-size:0.72em;color:#888">EWJ, EWJV, DXJ</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Currency-Hedged Europe</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">HEZU</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="3.3377875278054026" style="color:#22c55e">+3.3%</td><td class="tr" data-val="2.199145068351549" style="color:#22c55e">+2.2%</td><td class="tr" data-val="1.3681717569958174" style="color:#22c55e">+1.4%</td><td class="tr" data-val="7.356077724534904" style="color:#22c55e">+7.4%</td><td class="tr" data-val="3.6133467384253493" style="color:#22c55e">+3.6%</td><td class="tr" data-val="3.92" style="color:#22c55e">+3.9%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.294">0.29</td><td class="tr" data-val="67">67</td><td class="tr" data-val="0.81">0.81</td><td class="tl" style="font-size:0.72em;color:#888">HEZU, ESGD, SPGM, KBA</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Crypto & Digital Assets</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">BITQ</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="10.821664948304011" style="color:#22c55e">+10.8%</td><td class="tr" data-val="1.767681093121376" style="color:#22c55e">+1.8%</td><td class="tr" data-val="-12.13511612291488" style="color:#ef4444">-12.1%</td><td class="tr" data-val="-33.75679057968783" style="color:#ef4444">-33.8%</td><td class="tr" data-val="-1.6239580615053484" style="color:#ef4444">-1.6%</td><td class="tr" data-val="4.35" style="color:#22c55e">+4.3%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.770">0.77</td><td class="tr" data-val="19">19</td><td class="tr" data-val="2.33">2.33</td><td class="tl" style="font-size:0.72em;color:#888">BITQ, DAPP, FDIG, STCE, BKCH</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Clean Energy & Solar</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">TAN</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="-0.3388013138179158" style="color:#ef4444">-0.3%</td><td class="tr" data-val="0.8970321349678123" style="color:#22c55e">+0.9%</td><td class="tr" data-val="9.096420904170488" style="color:#22c55e">+9.1%</td><td class="tr" data-val="18.99181915034447" style="color:#22c55e">+19.0%</td><td class="tr" data-val="12.421153632528647" style="color:#22c55e">+12.4%</td><td class="tr" data-val="-0.87" style="color:#ef4444">-0.9%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.417">0.42</td><td class="tr" data-val="13">13</td><td class="tr" data-val="1.31">1.31</td><td class="tl" style="font-size:0.72em;color:#888">TAN, ICLN</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>High Yield Credit</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">HYG</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="1.1493616212472135" style="color:#22c55e">+1.1%</td><td class="tr" data-val="0.8078822300059185" style="color:#22c55e">+0.8%</td><td class="tr" data-val="0.7131856525785185" style="color:#22c55e">+0.7%</td><td class="tr" data-val="2.391665183905789" style="color:#22c55e">+2.4%</td><td class="tr" data-val="1.0180214577950153" style="color:#22c55e">+1.0%</td><td class="tr" data-val="1.12" style="color:#22c55e">+1.1%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.189">0.19</td><td class="tr" data-val="32">32</td><td class="tr" data-val="0.37">0.37</td><td class="tl" style="font-size:0.72em;color:#888">JNK, HYG</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>REITs & Real Estate</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">VNQ</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="4.0903437785808405" style="color:#22c55e">+4.1%</td><td class="tr" data-val="-0.27124679300849497" style="color:#ef4444">-0.3%</td><td class="tr" data-val="6.829282268617853" style="color:#22c55e">+6.8%</td><td class="tr" data-val="6.278991772080755" style="color:#22c55e">+6.3%</td><td class="tr" data-val="6.78645604856456" style="color:#22c55e">+6.8%</td><td class="tr" data-val="2.01" style="color:#22c55e">+2.0%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.333">0.33</td><td class="tr" data-val="32">32</td><td class="tr" data-val="1.02">1.02</td><td class="tl" style="font-size:0.72em;color:#888">ICF, IYR, RWR, REZ, VNQ</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Core Bonds / Duration</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">AGG</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="0.3875510957250361" style="color:#22c55e">+0.4%</td><td class="tr" data-val="-0.4539614162891725" style="color:#ef4444">-0.5%</td><td class="tr" data-val="0.11043136574855339" style="color:#22c55e">+0.1%</td><td class="tr" data-val="1.1018419885903574" style="color:#22c55e">+1.1%</td><td class="tr" data-val="0.3725274676161128" style="color:#22c55e">+0.4%</td><td class="tr" data-val="0.18" style="color:#22c55e">+0.2%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.264">0.26</td><td class="tr" data-val="60">60</td><td class="tr" data-val="-0.05">-0.05</td><td class="tl" style="font-size:0.72em;color:#888">IEF, BND, VGIT, GOVT, AGG</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Copper & Industrial Metals</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">COPX</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="3.3056735713294705" style="color:#22c55e">+3.3%</td><td class="tr" data-val="-0.5749026631821419" style="color:#ef4444">-0.6%</td><td class="tr" data-val="4.657017909110084" style="color:#22c55e">+4.7%</td><td class="tr" data-val="24.955426189914974" style="color:#22c55e">+25.0%</td><td class="tr" data-val="9.164479328728504" style="color:#22c55e">+9.2%</td><td class="tr" data-val="3.41" style="color:#22c55e">+3.4%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.589">0.59</td><td class="tr" data-val="31">31</td><td class="tr" data-val="0.85">0.85</td><td class="tl" style="font-size:0.72em;color:#888">CPER, DBB, COPX, PICK</td></tr>
+<tr class="vix-favored" data-cls="MARGINAL"><td class="tl"><b>Consumer Discretionary</b> <span class="vix-star" title="VIX-favored in current regime">&#9733;</span></td><td class="tc" style="font-family:monospace;font-size:0.82em">XLY</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="2.9535141263485887" style="color:#22c55e">+3.0%</td><td class="tr" data-val="-0.7597948396613874" style="color:#ef4444">-0.8%</td><td class="tr" data-val="-6.578162176209634" style="color:#ef4444">-6.6%</td><td class="tr" data-val="-3.77025509792569" style="color:#ef4444">-3.8%</td><td class="tr" data-val="-5.184453996120897" style="color:#ef4444">-5.2%</td><td class="tr" data-val="1.31" style="color:#22c55e">+1.3%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.257">0.26</td><td class="tr" data-val="51">51</td><td class="tr" data-val="1.03">1.03</td><td class="tl" style="font-size:0.72em;color:#888">XLY, VCR</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Telecom & Communication Services</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">XLC</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="3.4910492132155024" style="color:#22c55e">+3.5%</td><td class="tr" data-val="-1.4582549235805708" style="color:#ef4444">-1.5%</td><td class="tr" data-val="-2.0685107600124764" style="color:#ef4444">-2.1%</td><td class="tr" data-val="1.0636505362668247" style="color:#22c55e">+1.1%</td><td class="tr" data-val="-2.2368537032307345" style="color:#ef4444">-2.2%</td><td class="tr" data-val="0.46" style="color:#22c55e">+0.5%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.229">0.23</td><td class="tr" data-val="27">27</td><td class="tr" data-val="0.93">0.93</td><td class="tl" style="font-size:0.72em;color:#888">VOX, FCOM, XLC, IXP</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>China / EM Asia</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">FXI</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="2.5474377232389767" style="color:#22c55e">+2.5%</td><td class="tr" data-val="-1.4694147345504338" style="color:#ef4444">-1.5%</td><td class="tr" data-val="-4.748114076135723" style="color:#ef4444">-4.7%</td><td class="tr" data-val="-6.511210360272013" style="color:#ef4444">-6.5%</td><td class="tr" data-val="-1.5199048533965143" style="color:#ef4444">-1.5%</td><td class="tr" data-val="0.88" style="color:#22c55e">+0.9%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.504">0.50</td><td class="tr" data-val="32">32</td><td class="tr" data-val="0.97">0.97</td><td class="tl" style="font-size:0.72em;color:#888">MCHI, GXC, FXI, FLCH, AAXJ</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Defensive / Low-Vol Equity</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">XLP</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="2.539966028423901" style="color:#22c55e">+2.5%</td><td class="tr" data-val="-1.5367612205876124" style="color:#ef4444">-1.5%</td><td class="tr" data-val="10.064377915308764" style="color:#22c55e">+10.1%</td><td class="tr" data-val="8.591005915758032" style="color:#22c55e">+8.6%</td><td class="tr" data-val="8.66404936835301" style="color:#22c55e">+8.7%</td><td class="tr" data-val="-0.09" style="color:#ef4444">-0.1%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.164">0.16</td><td class="tr" data-val="66">66</td><td class="tr" data-val="0.56">0.56</td><td class="tl" style="font-size:0.72em;color:#888">VDC, XLP</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Defense & Aerospace</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">ITA</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="3.480636223761513" style="color:#22c55e">+3.5%</td><td class="tr" data-val="-2.725145703950127" style="color:#ef4444">-2.7%</td><td class="tr" data-val="3.5429709823134647" style="color:#22c55e">+3.5%</td><td class="tr" data-val="9.747105712360128" style="color:#22c55e">+9.7%</td><td class="tr" data-val="10.540428148775426" style="color:#22c55e">+10.5%</td><td class="tr" data-val="0.46" style="color:#22c55e">+0.5%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.433">0.43</td><td class="tr" data-val="44">44</td><td class="tr" data-val="0.92">0.92</td><td class="tl" style="font-size:0.72em;color:#888">PPA, ITA, XAR, MISL</td></tr>
+<tr class="vix-favored" data-cls="MARGINAL"><td class="tl"><b>Cybersecurity & Cloud</b> <span class="vix-star" title="VIX-favored in current regime">&#9733;</span></td><td class="tc" style="font-family:monospace;font-size:0.82em">CIBR</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="-2.363496562002809" style="color:#ef4444">-2.4%</td><td class="tr" data-val="-4.256118474760006" style="color:#ef4444">-4.3%</td><td class="tr" data-val="-14.673018040012952" style="color:#ef4444">-14.7%</td><td class="tr" data-val="-17.488089234807667" style="color:#ef4444">-17.5%</td><td class="tr" data-val="-13.324888900103804" style="color:#ef4444">-13.3%</td><td class="tr" data-val="-1.69" style="color:#ef4444">-1.7%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.362">0.36</td><td class="tr" data-val="72">72</td><td class="tr" data-val="1.09">1.09</td><td class="tl" style="font-size:0.72em;color:#888">CIBR, HACK, CLOU, SKYY</td></tr>
+<tr class="" data-cls="MARGINAL"><td class="tl"><b>Uranium & Nuclear</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">URA</td><td class="tc"><span class="cls-badge cls-MARGINAL">MARGINAL</span></td><td class="tr" data-val="1.6881421137272756" style="color:#22c55e">+1.7%</td><td class="tr" data-val="-5.172474176455544" style="color:#ef4444">-5.2%</td><td class="tr" data-val="0.4771954874219331" style="color:#22c55e">+0.5%</td><td class="tr" data-val="3.7686346315297214" style="color:#22c55e">+3.8%</td><td class="tr" data-val="16.45479707705777" style="color:#22c55e">+16.5%</td><td class="tr" data-val="2.37" style="color:#22c55e">+2.4%</td><td class="tc" data-val="OPTIMAL"><span class="ext-badge" style="background:#dcfce7;color:#166534">OPTIMAL</span></td><td class="tr" data-val="0.843">0.84</td><td class="tr" data-val="10">10</td><td class="tr" data-val="1.12">1.12</td><td class="tl" style="font-size:0.72em;color:#888">URA, URNJ, URNM, NLR</td></tr>
+<tr class="" data-cls="VALIDATED"><td class="tl"><b>Gold & Precious Metals</b></td><td class="tc" style="font-family:monospace;font-size:0.82em">GLD</td><td class="tc"><span class="cls-badge cls-VALIDATED">VALIDATED</span></td><td class="tr" data-val="1.0504101192641224" style="color:#22c55e">+1.1%</td><td class="tr" data-val="-8.490374167816084" style="color:#ef4444">-8.5%</td><td class="tr" data-val="6.0178740243657325" style="color:#22c55e">+6.0%</td><td class="tr" data-val="26.265281864996858" style="color:#22c55e">+26.3%</td><td class="tr" data-val="10.976926150595068" style="color:#22c55e">+11.0%</td><td class="tr" data-val="-1.52" style="color:#ef4444">-1.5%</td><td class="tc" data-val="ZBELOW"><span class="ext-badge" style="background:#e5e7eb;color:#6b7280">BELOW SMA</span></td><td class="tr" data-val="0.722">0.72</td><td class="tr" data-val="74">74</td><td class="tr" data-val="0.27">0.27</td><td class="tl" style="font-size:0.72em;color:#888">CEF, SGOL, PHYS, SIL, RING</td></tr></tbody></table></div></div>
+</div><div class="dash-footer">https://briancarter456546.github.io/market-dashboards &mdash; Last updated 2026-04-09 9:46 PM ET &mdash; For personal research only.<div class="dash-footer-links"><a href="https://sortinoskitchen.substack.com/">Sortino's Kitchen</a> &middot; <a href="https://brianbcarter.substack.com/">Brian on Substack</a> &middot; <a href="https://keynotespeakerbrian.com/">Brian Carter Keynote Speaker</a></div></div>
+<script>
+
+/* --- Shared ownership state (localStorage, cross-dashboard) --- */
+/* Defensive JSON parse: never lose data on corruption */
+function _safeLoadArray(key) {
+    try {
+        var raw = localStorage.getItem(key);
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+        return [];
+    } catch(e) {
+        console.warn('[ownership] Corrupt localStorage key: ' + key, e);
+        return [];
+    }
+}
+function _safeSaveArray(key, setObj) {
+    try {
+        localStorage.setItem(key, JSON.stringify(Array.from(setObj)));
+    } catch(e) {
+        console.error('[ownership] Failed to save ' + key, e);
+    }
+}
+
+window._owned = (function() {
+    var KEY = 'dashboard_owned_tickers';
+    var _set = new Set(_safeLoadArray(KEY));
+
+    /* Migration: copy old momentum-ranker-only key if it exists */
+    try {
+        var OLD_KEY = 'mr_owned_tickers_v1';
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+            var oldArr = JSON.parse(old);
+            if (Array.isArray(oldArr) && oldArr.length) {
+                oldArr.forEach(function(t) { _set.add(t); });
+                _safeSaveArray(KEY, _set);
+            }
+            localStorage.removeItem(OLD_KEY);
+        }
+    } catch(e) {}
+
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            _safeSaveArray(KEY, _set);
+            return _set.has(t);
+        },
+        all: function() { return Array.from(_set); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.own-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._owned.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-owned');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared toggle helper for Python-rendered tables */
+window._ownToggle = function(ticker, cb) {
+    window._owned.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-owned');
+    /* Update td data-val so column sorting works (1=owned, 0=not) */
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+/* --- Shared watchlist state (localStorage, cross-dashboard) --- */
+window._watched = (function() {
+    var KEY = 'dashboard_watched_tickers';
+    var _set = new Set(_safeLoadArray(KEY));
+    return {
+        has: function(t) { return _set.has(t); },
+        toggle: function(t) {
+            if (_set.has(t)) { _set.delete(t); } else { _set.add(t); }
+            _safeSaveArray(KEY, _set);
+            return _set.has(t);
+        },
+        all: function() { return Array.from(_set); },
+        count: function() { return _set.size; }
+    };
+})();
+
+/* Auto-init watch checkboxes on Python-rendered tables */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.watch-cb').forEach(function(cb) {
+        var ticker = cb.getAttribute('data-ticker');
+        if (ticker && window._watched.has(ticker)) {
+            cb.checked = true;
+            var tr = cb.closest('tr');
+            if (tr) tr.classList.add('row-watched');
+            var td = cb.closest('td');
+            if (td) td.setAttribute('data-val', '1');
+        }
+    });
+});
+
+/* Shared watch toggle helper for Python-rendered tables */
+window._watchToggle = function(ticker, cb) {
+    window._watched.toggle(ticker);
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.toggle('row-watched');
+    var td = cb.closest('td');
+    if (td) td.setAttribute('data-val', cb.checked ? '1' : '0');
+};
+
+
+function getGradientColor(score) {
+    var clamped = Math.max(0, Math.min(1, score));
+    var r, g, b;
+    if (clamped < 0.25) {
+        var t = clamped * 4;
+        r = Math.round(211 + (255 - 211) * t);
+        g = Math.round(47 + (152 - 47) * t);
+        b = Math.round(47 + (0 - 47) * t);
+    } else if (clamped < 0.5) {
+        var t = (clamped - 0.25) * 4;
+        r = 255;
+        g = Math.round(152 + (235 - 152) * t);
+        b = Math.round(0 + (59 - 0) * t);
+    } else if (clamped < 0.75) {
+        var t = (clamped - 0.5) * 4;
+        r = Math.round(255 + (139 - 255) * t);
+        g = Math.round(235 + (195 - 235) * t);
+        b = Math.round(59 + (74 - 59) * t);
+    } else {
+        var t = (clamped - 0.75) * 4;
+        r = Math.round(139 + (0 - 139) * t);
+        g = Math.round(195 + (200 - 195) * t);
+        b = Math.round(74 + (83 - 74) * t);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+
+// Sort by column
+function sortPoleTable(colIdx, numeric) {
+    var table = document.getElementById('poleTable');
+    var tbody = table.tBodies[0];
+    var rows = Array.from(tbody.rows);
+    var asc = table.getAttribute('data-sort-col') == colIdx
+              && table.getAttribute('data-sort-dir') == 'asc';
+    var keyed = rows.map(function(r) {
+        var v = r.cells[colIdx].getAttribute('data-val');
+        if (v === null) v = r.cells[colIdx].textContent;
+        if (numeric) { var p = parseFloat(v); v = isNaN(p) ? -9999 : p; }
+        return {row: r, val: v};
+    });
+    keyed.sort(function(a, b) {
+        if (a.val < b.val) return asc ? 1 : -1;
+        if (a.val > b.val) return asc ? -1 : 1;
+        return 0;
+    });
+    table.setAttribute('data-sort-col', colIdx);
+    table.setAttribute('data-sort-dir', asc ? 'desc' : 'asc');
+    var frag = document.createDocumentFragment();
+    keyed.forEach(function(k) { frag.appendChild(k.row); });
+    tbody.appendChild(frag);
+}
+
+// Filter by classification
+function filterClass(cls) {
+    var btns = document.querySelectorAll('.filter-btn');
+    btns.forEach(function(b) { b.classList.remove('active'); });
+    if (cls !== 'ALL') {
+        event.target.classList.add('active');
+    }
+    var rows = document.getElementById('poleTable').tBodies[0].rows;
+    for (var i = 0; i < rows.length; i++) {
+        if (cls === 'ALL') {
+            rows[i].style.display = '';
+        } else if (cls === 'FAVORED') {
+            rows[i].style.display = rows[i].classList.contains('vix-favored') ? '' : 'none';
+        } else {
+            var rc = rows[i].getAttribute('data-cls') || '';
+            rows[i].style.display = (rc === cls) ? '' : 'none';
+        }
+    }
+}
+
+</script>
+</body></html>
