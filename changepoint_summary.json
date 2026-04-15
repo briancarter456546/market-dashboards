@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-14T17:36:20.568964",
+  "generated_at": "2026-04-14T21:38:20.553094",
   "drift_tier": "NORMAL",
-  "norm_drift": 1.6732077766818907,
+  "norm_drift": 1.672574211779525,
   "top_regime": "taper_vol",
   "top_sim": 40.2,
   "regime_similarity": [
@@ -28,7 +28,7 @@
     {
       "name": "ai_bull",
       "desc": "AI-led growth / rate cut cycle",
-      "sim": 1.6
+      "sim": 1.5
     }
   ]
 }
