@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ticker Compare v2 - Market Dashboards</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  background: #f4f5f7; color: #1a1a2e;
+  font-size: 17px; line-height: 1.55;
+}
+.page-header {
+  background: #1e1e2e; color: #e2e2e8; padding: 18px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.page-header h1 { font-size: 22px; font-weight: 700; color: #fff; }
+.page-header a { color: #94a3b8; text-decoration: none; font-size: 14px; }
+.page-header a:hover { color: #fff; }
+.content { max-width: 1400px; margin: 0 auto; padding: 20px 24px; }
+
+/* Controls */
+.controls {
+  background: #fff; border-radius: 10px; padding: 20px 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 16px;
+}
+.controls-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.ticker-input-wrap { position: relative; flex: 1; min-width: 200px; }
+#tickerInput {
+  font-family: 'IBM Plex Mono', monospace; font-size: 16px;
+  padding: 10px 14px; border: 2px solid #d1d5db; border-radius: 8px;
+  width: 100%; outline: none; text-transform: uppercase;
+}
+#tickerInput:focus { border-color: #4f46e5; }
+#tickerInput::placeholder { text-transform: none; color: #9ca3af; }
+.autocomplete-list {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+  background: #fff; border: 1px solid #d1d5db; border-radius: 0 0 8px 8px;
+  max-height: 200px; overflow-y: auto; display: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.autocomplete-list div {
+  padding: 8px 14px; cursor: pointer; font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+}
+.autocomplete-list div:hover, .autocomplete-list div.active { background: #eef2ff; }
+.btn-add {
+  background: #4f46e5; color: #fff; border: none; border-radius: 8px;
+  padding: 10px 20px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.btn-add:hover { background: #4338ca; }
+
+/* Ticker chips */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px; font-size: 14px;
+  font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #fff;
+}
+.chip .remove {
+  cursor: pointer; font-size: 16px; opacity: 0.7; margin-left: 2px;
+}
+.chip .remove:hover { opacity: 1; }
+
+/* Timeframe buttons */
+.tf-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
+.tf-btn {
+  padding: 7px 14px; border: 2px solid #d1d5db; border-radius: 8px;
+  background: #fff; font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace; color: #374151;
+}
+.tf-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+.tf-btn.active { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+
+/* Chart */
+.chart-wrap {
+  background: #fff; border-radius: 10px; padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 16px;
+  position: relative;
+}
+.chart-wrap canvas { width: 100% !important; }
+.chart-empty {
+  text-align: center; color: #9ca3af; padding: 80px 20px;
+  font-size: 18px;
+}
+
+/* Stats table */
+.stats-section {
+  background: #fff; border-radius: 10px; padding: 20px 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 16px;
+}
+.stats-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: #1e1e2e; }
+.stats-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.stats-table th {
+  text-align: left; padding: 8px 12px; border-bottom: 2px solid #e5e7eb;
+  font-weight: 600; color: #6b7280; font-size: 13px; text-transform: uppercase;
+}
+.stats-table td {
+  padding: 8px 12px; border-bottom: 1px solid #f3f4f6;
+  font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+}
+.stats-table tr:hover td { background: #f9fafb; }
+.pos { color: #059669; } .neg { color: #dc2626; }
+
+/* Normalize toggle */
+.norm-toggle { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.norm-toggle label { font-size: 14px; font-weight: 500; color: #374151; cursor: pointer; }
+.norm-toggle select {
+  padding: 6px 10px; border: 2px solid #d1d5db; border-radius: 6px;
+  font-size: 14px; font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* Preset buttons */
+.preset-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.preset-btn {
+  padding: 5px 12px; border: 1px solid #d1d5db; border-radius: 6px;
+  background: #f9fafb; font-size: 13px; cursor: pointer; color: #4b5563;
+}
+.preset-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+
+/* Saved combos */
+.saved-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+.saved-row .label { font-size: 13px; font-weight: 600; color: #6b7280; }
+.saved-btn {
+  padding: 5px 12px; border: 1px solid #0891b2; border-radius: 6px;
+  background: #ecfeff; font-size: 13px; cursor: pointer; color: #0e7490;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.saved-btn:hover { background: #cffafe; }
+.saved-btn .del { font-size: 14px; color: #94a3b8; cursor: pointer; margin-left: 2px; }
+.saved-btn .del:hover { color: #dc2626; }
+.save-current-btn {
+  padding: 5px 12px; border: 1px dashed #d1d5db; border-radius: 6px;
+  background: #fff; font-size: 13px; cursor: pointer; color: #9ca3af;
+}
+.save-current-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+
+/* Candidate impact deltas */
+.delta { font-size: 12px; font-weight: 500; margin-left: 4px; }
+.delta.better { color: #059669; }
+.delta.worse { color: #dc2626; }
+.delta.neutral { color: #9ca3af; }
+.candidate-row td { vertical-align: middle; }
+.candidate-add {
+  font-size: 12px; color: #4f46e5; cursor: pointer; text-decoration: underline;
+  margin-left: 6px;
+}
+.candidate-add:hover { color: #4338ca; }
+
+/* Underwater chart */
+.underwater-wrap {
+  background: #fff; border-radius: 10px; padding: 16px 20px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 16px;
+}
+.underwater-wrap h3 {
+  font-size: 14px; font-weight: 600; color: #6b7280;
+  margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.underwater-wrap canvas { width: 100% !important; }
+
+/* Correlation matrix */
+.corr-section {
+  background: #fff; border-radius: 10px; padding: 20px 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 16px;
+}
+.corr-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #1e1e2e; }
+.corr-hint { font-size: 12px; color: #6b7280; margin-bottom: 12px; }
+.corr-table { width: auto; border-collapse: collapse; font-size: 13px; font-family: 'IBM Plex Mono', monospace; }
+.corr-table th, .corr-table td {
+  padding: 7px 10px; text-align: center;
+  border: 1px solid #f1f5f9;
+}
+.corr-table th {
+  background: #f8fafc; color: #374151; font-weight: 600;
+  text-transform: none; font-size: 12px;
+}
+.corr-table th.row-label { text-align: left; font-weight: 600; }
+.corr-table td.diag { background: #f1f5f9; color: #94a3b8; }
+
+/* SPY benchmark row */
+.benchmark-row td { border-top: 2px solid #cbd5e1 !important; background: #f8fafc; }
+.benchmark-row td:first-child { color: #475569; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Ticker Compare <span style="font-size:13px;font-weight:500;color:#94a3b8;margin-left:8px;">v2 (preview)</span></h1>
+  <a href="../index.html">All Dashboards</a>
+</div>
+
+<div class="content">
+  <div class="controls">
+    <div class="controls-row">
+      <div class="ticker-input-wrap">
+        <input type="text" id="tickerInput" placeholder="Type ticker and press Enter (e.g. SPY)" autocomplete="off">
+        <div class="autocomplete-list" id="autocomplete"></div>
+      </div>
+      <button class="btn-add" onclick="addTickerFromInput()">Add</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="preset-row">
+      <button class="preset-btn" onclick="loadPreset(['SPY','QQQ','IWM','DIA'])">Indexes</button>
+      <button class="preset-btn" onclick="loadPreset(['XLK','XLF','XLE','XLV','XLI','XLP','XLY','XLU','XLRE','XLB','XLC'])">Sectors</button>
+      <button class="preset-btn" onclick="loadPreset(['SPY','TLT','GLD','UUP'])">Macro 4</button>
+      <button class="preset-btn" onclick="loadPreset(['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA'])">Mag 7</button>
+      <button class="preset-btn" onclick="loadPreset(['TQQQ','UPRO','SOXL','TNA'])">Leveraged Bull</button>
+      <button class="preset-btn" onclick="clearAll()">Clear All</button>
+    </div>
+    <div class="saved-row" id="savedRow">
+      <span class="label">Saved:</span>
+      <button class="save-current-btn" onclick="saveCurrentCombo()">+ Save current</button>
+    </div>
+    <div class="saved-row" style="margin-top:6px;">
+      <span class="label">Sync:</span>
+      <button class="save-current-btn" onclick="exportCombos()" title="Download all saved combos as JSON">Export combos</button>
+      <button class="save-current-btn" onclick="document.getElementById('importFile').click()" title="Load combos from a previously exported JSON file">Import combos</button>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none;" onchange="importCombosFromFile(event)">
+    </div>
+    <div class="tf-row" id="tfRow">
+      <button class="tf-btn" data-days="5">5D</button>
+      <button class="tf-btn" data-days="10">10D</button>
+      <button class="tf-btn active" data-days="21">21D</button>
+      <button class="tf-btn" data-days="63">63D</button>
+      <button class="tf-btn" data-days="126">126D</button>
+      <button class="tf-btn" data-days="252">1Y</button>
+      <button class="tf-btn" data-days="504">2Y</button>
+      <button class="tf-btn" data-days="756">3Y</button>
+      <button class="tf-btn" data-days="1260">5Y</button>
+      <button class="tf-btn" data-days="2520">10Y</button>
+      <button class="tf-btn" data-days="5040">20Y</button>
+    </div>
+    <div class="norm-toggle">
+      <label for="normMode">Display:</label>
+      <select id="normMode" onchange="redraw()">
+        <option value="cumret">Cumulative Return (%)</option>
+        <option value="indexed">Indexed to 100</option>
+        <option value="price">Raw Price</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-empty" id="chartEmpty">Add tickers above to see comparison chart</div>
+    <canvas id="mainChart" style="display:none;"></canvas>
+  </div>
+
+  <div class="underwater-wrap" id="underwaterWrap" style="display:none;">
+    <h3>Drawdown (underwater)</h3>
+    <div style="height: 180px; position: relative;">
+      <canvas id="underwaterChart"></canvas>
+    </div>
+  </div>
+
+  <div class="stats-section" id="statsSection" style="display:none;">
+    <h3>Period Statistics</h3>
+    <table class="stats-table">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Ann. Return</th>
+          <th>Volatility</th>
+          <th>Sortino</th>
+          <th>Calmar</th>
+          <th>Max Drawdown</th>
+          <th>DD Days</th>
+          <th>Best Day</th>
+          <th>Worst Day</th>
+          <th>Best Month</th>
+          <th>Worst Month</th>
+          <th>Days</th>
+        </tr>
+      </thead>
+      <tbody id="statsBody"></tbody>
+    </table>
+  </div>
+
+  <div class="corr-section" id="corrSection" style="display:none;">
+    <h3>Correlation Matrix (daily returns)</h3>
+    <p class="corr-hint">Pairwise Pearson correlation over the selected window. Lower = better diversification. Last column shows correlation to the equal-weight basket.</p>
+    <div id="corrTableWrap"></div>
+  </div>
+
+  <div class="stats-section" id="candidatesSection" style="display:none;">
+    <h3>Addition Candidates</h3>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:12px;">
+      Test how adding a ticker would change the EW portfolio without adding it to the chart.
+    </p>
+    <div class="controls-row" style="margin-bottom:14px;">
+      <div class="ticker-input-wrap">
+        <input type="text" id="candidateInput" placeholder="Type candidate ticker" autocomplete="off"
+               style="font-family:'IBM Plex Mono',monospace;font-size:15px;padding:8px 12px;border:2px solid #d1d5db;border-radius:8px;width:100%;outline:none;text-transform:uppercase;">
+        <div class="autocomplete-list" id="candidateAC"></div>
+      </div>
+      <button class="btn-add" onclick="addCandidateFromInput()" style="padding:8px 16px;font-size:14px;">Test</button>
+      <button class="preset-btn" onclick="clearCandidates()">Clear</button>
+    </div>
+    <div class="chips" id="candidateChips" style="margin-bottom:10px;"></div>
+    <table class="stats-table" id="candidateTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>If Added</th>
+          <th>Ann. Return</th>
+          <th>Volatility</th>
+          <th>Sortino</th>
+          <th>Calmar</th>
+          <th>Max Drawdown</th>
+          <th>DD Days</th>
+          <th>Best Day</th>
+          <th>Worst Day</th>
+          <th>Best Month</th>
+          <th>Worst Month</th>
+          <th>Days</th>
+        </tr>
+      </thead>
+      <tbody id="candidateBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// State
+// ============================================================
+const COLORS = [
+  '#4f46e5','#dc2626','#059669','#d97706','#7c3aed','#0ea5e9',
+  '#ec4899','#14b8a6','#f97316','#6366f1','#84cc16','#06b6d4',
+  '#e11d48','#8b5cf6','#10b981','#eab308'
+];
+const EW_COLOR = '#1e1e2e';
+let allTickers = [];
+let tickerData = {};   // ticker -> {dates:[], adjClose:[]}
+let activeTickers = []; // ordered list of active tickers
+let selectedDays = 21;
+let chart = null;
+let underwaterChart = null;
+
+// ============================================================
+// Init: load ticker manifest + SPY benchmark
+// ============================================================
+fetch('./tickers.json')
+  .then(r => r.json())
+  .then(list => { allTickers = list; })
+  .catch(() => { console.warn('No tickers.json found - autocomplete disabled'); });
+
+// SPY is always loaded for the benchmark row in the stats table.
+fetch('./data/SPY.json')
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(data => { tickerData['SPY'] = data; if (activeTickers.length) redraw(); })
+  .catch(() => { console.warn('SPY benchmark data not available'); });
+
+// ============================================================
+// Autocomplete
+// ============================================================
+const input = document.getElementById('tickerInput');
+const acList = document.getElementById('autocomplete');
+let acIndex = -1;
+
+input.addEventListener('input', function() {
+  const val = this.value.toUpperCase().trim();
+  acList.innerHTML = '';
+  acIndex = -1;
+  if (!val || val.length < 1) { acList.style.display = 'none'; return; }
+  const matches = allTickers.filter(t =>
+    t.startsWith(val) && !activeTickers.includes(t)
+  ).slice(0, 12);
+  if (!matches.length) { acList.style.display = 'none'; return; }
+  matches.forEach(t => {
+    const d = document.createElement('div');
+    d.textContent = t;
+    d.onclick = () => { addTicker(t); acList.style.display = 'none'; input.value = ''; };
+    acList.appendChild(d);
+  });
+  acList.style.display = 'block';
+});
+
+input.addEventListener('keydown', function(e) {
+  const items = acList.querySelectorAll('div');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    acIndex = Math.min(acIndex + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('active', i === acIndex));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    acIndex = Math.max(acIndex - 1, 0);
+    items.forEach((el, i) => el.classList.toggle('active', i === acIndex));
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (acIndex >= 0 && items[acIndex]) {
+      items[acIndex].click();
+    } else {
+      addTickerFromInput();
+    }
+  } else if (e.key === 'Escape') {
+    acList.style.display = 'none';
+  }
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.ticker-input-wrap')) acList.style.display = 'none';
+});
+
+function addTickerFromInput() {
+  const val = input.value.toUpperCase().trim();
+  if (val) addTicker(val);
+  input.value = '';
+  acList.style.display = 'none';
+}
+
+// ============================================================
+// Ticker management
+// ============================================================
+function addTicker(ticker) {
+  ticker = ticker.toUpperCase();
+  if (activeTickers.includes(ticker)) return;
+  if (tickerData[ticker]) {
+    activeTickers.push(ticker);
+    renderChips();
+    redraw();
+    return;
+  }
+  // Fetch data
+  fetch('./data/' + ticker + '.json')
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(data => {
+      tickerData[ticker] = data;
+      activeTickers.push(ticker);
+      renderChips();
+      redraw();
+    })
+    .catch(() => {
+      alert(ticker + ' not found. Run the backend to export it.');
+    });
+}
+
+function removeTicker(ticker) {
+  activeTickers = activeTickers.filter(t => t !== ticker);
+  renderChips();
+  redraw();
+}
+
+function clearAll() {
+  activeTickers = [];
+  renderChips();
+  redraw();
+}
+
+function loadPreset(tickers) {
+  clearAll();
+  let loaded = 0;
+  const total = tickers.length;
+  tickers.forEach(t => {
+    t = t.toUpperCase();
+    if (tickerData[t]) {
+      activeTickers.push(t);
+      loaded++;
+      if (loaded === total) { renderChips(); redraw(); }
+    } else {
+      fetch('./data/' + t + '.json')
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(data => {
+          tickerData[t] = data;
+          activeTickers.push(t);
+          loaded++;
+          if (loaded === total) { renderChips(); redraw(); }
+        })
+        .catch(() => { loaded++; if (loaded === total) { renderChips(); redraw(); } });
+    }
+  });
+}
+
+function renderChips() {
+  const el = document.getElementById('chips');
+  el.innerHTML = activeTickers.map((t, i) => {
+    const c = COLORS[i % COLORS.length];
+    return '<span class="chip" style="background:' + c + '">' +
+      t + '<span class="remove" onclick="removeTicker(\'' + t + '\')">&times;</span></span>';
+  }).join('');
+  // EW portfolio chip
+  if (activeTickers.length >= 2) {
+    el.innerHTML += '<span class="chip" style="background:' + EW_COLOR +
+      ';border:2px dashed #6b7280;">Equal-Weight Portfolio</span>';
+  }
+}
+
+// ============================================================
+// Timeframe buttons
+// ============================================================
+document.getElementById('tfRow').addEventListener('click', function(e) {
+  const btn = e.target.closest('.tf-btn');
+  if (!btn) return;
+  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedDays = parseInt(btn.dataset.days);
+  redraw();
+});
+
+// ============================================================
+// Chart rendering
+// ============================================================
+// ============================================================
+// Saved combos (localStorage)
+// ============================================================
+const COMBOS_KEY = 'ticker_compare_combos';
+
+function getSavedCombos() {
+  try { return JSON.parse(localStorage.getItem(COMBOS_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveCombos(combos) {
+  localStorage.setItem(COMBOS_KEY, JSON.stringify(combos));
+}
+
+function saveCurrentCombo() {
+  if (!activeTickers.length) { alert('Add tickers first.'); return; }
+  const name = prompt('Name this combo:', activeTickers.join(', '));
+  if (!name) return;
+  const combos = getSavedCombos();
+  combos.push({ name, tickers: [...activeTickers] });
+  saveCombos(combos);
+  renderSavedCombos();
+}
+
+function loadCombo(idx) {
+  const combos = getSavedCombos();
+  if (combos[idx]) loadPreset(combos[idx].tickers);
+}
+
+function deleteCombo(idx, e) {
+  e.stopPropagation();
+  const combos = getSavedCombos();
+  combos.splice(idx, 1);
+  saveCombos(combos);
+  renderSavedCombos();
+}
+
+function renderSavedCombos() {
+  const row = document.getElementById('savedRow');
+  const combos = getSavedCombos();
+  let html = '<span class="label">Saved:</span>';
+  combos.forEach((c, i) => {
+    html += '<button class="saved-btn" onclick="loadCombo(' + i + ')" title="' +
+      c.tickers.join(', ') + '">' + c.name +
+      '<span class="del" onclick="deleteCombo(' + i + ', event)">&times;</span></button>';
+  });
+  html += '<button class="save-current-btn" onclick="saveCurrentCombo()">+ Save current</button>';
+  row.innerHTML = html;
+}
+
+// Init saved combos on load
+renderSavedCombos();
+
+// ============================================================
+// Monthly return helpers
+// ============================================================
+
+// Compute monthly returns from dates + prices arrays
+function computeMonthlyReturns(dates, prices) {
+  if (dates.length < 2) return [];
+  const months = {};
+  for (let i = 0; i < dates.length; i++) {
+    const key = dates[i].slice(0, 7); // YYYY-MM
+    if (!months[key]) months[key] = { first: prices[i], last: prices[i] };
+    else months[key].last = prices[i];
+  }
+  const keys = Object.keys(months).sort();
+  // Skip first partial month if less than 15 days
+  const rets = [];
+  for (let i = 1; i < keys.length; i++) {
+    const prev = months[keys[i - 1]];
+    const cur = months[keys[i]];
+    rets.push((cur.last / prev.last - 1) * 100);
+  }
+  return rets;
+}
+
+// Compute monthly returns from daily return arrays (for EW portfolio)
+function computeMonthlyReturnsFromDaily(dates, dailyRets) {
+  if (!dates.length) return [];
+  const months = {};
+  for (let i = 0; i < dates.length; i++) {
+    const key = dates[i].slice(0, 7);
+    if (!months[key]) months[key] = [];
+    months[key].push(dailyRets[i]);
+  }
+  const keys = Object.keys(months).sort();
+  return keys.map(k => {
+    const cum = months[k].reduce((a, r) => a * (1 + r), 1);
+    return (cum - 1) * 100;
+  });
+}
+
+// ============================================================
+// Stats helpers (shared by ticker rows, EW, SPY benchmark, candidates)
+// ============================================================
+
+// Longest drawdown duration in trading days (peak-to-recovery, or peak-to-end if not recovered).
+function computeMaxDDDays(prices) {
+  if (!prices || prices.length < 2) return 0;
+  let peak = prices[0];
+  let peakIdx = 0;
+  let maxDuration = 0;
+  for (let i = 1; i < prices.length; i++) {
+    if (prices[i] >= peak) { peak = prices[i]; peakIdx = i; }
+    else {
+      const dur = i - peakIdx;
+      if (dur > maxDuration) maxDuration = dur;
+    }
+  }
+  return maxDuration;
+}
+
+// Drawdown series (% below peak) from a price array.
+function computeDrawdownSeries(prices) {
+  if (!prices || !prices.length) return [];
+  let peak = prices[0];
+  return prices.map(p => {
+    if (p > peak) peak = p;
+    return peak > 0 ? (p / peak - 1) * 100 : 0;
+  });
+}
+
+// Pearson correlation between two equal-length arrays.
+function correlation(a, b) {
+  const n = Math.min(a.length, b.length);
+  if (n < 2) return 0;
+  let sumA = 0, sumB = 0;
+  for (let i = 0; i < n; i++) { sumA += a[i]; sumB += b[i]; }
+  const meanA = sumA / n, meanB = sumB / n;
+  let num = 0, denomA = 0, denomB = 0;
+  for (let i = 0; i < n; i++) {
+    const da = a[i] - meanA, db = b[i] - meanB;
+    num += da * db;
+    denomA += da * da;
+    denomB += db * db;
+  }
+  const denom = Math.sqrt(denomA * denomB);
+  return denom === 0 ? 0 : num / denom;
+}
+
+// Compute the full stats object for a sliced price series.
+function computeStatsFromSlice(dates, prices) {
+  if (!dates || !prices || dates.length < 2) return null;
+  const dailyReturns = [];
+  for (let i = 1; i < prices.length; i++) {
+    dailyReturns.push(prices[i] / prices[i - 1] - 1);
+  }
+  if (!dailyReturns.length) return null;
+  const totalRet = (prices[prices.length - 1] / prices[0] - 1) * 100;
+  const annFactor = 252 / dailyReturns.length;
+  const annRet = (Math.pow(prices[prices.length - 1] / prices[0], annFactor) - 1) * 100;
+  const mean = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+  const variance = dailyReturns.reduce((a, b) => a + (b - mean) ** 2, 0) / dailyReturns.length;
+  const vol = Math.sqrt(variance) * Math.sqrt(252) * 100;
+  const downRets = dailyReturns.filter(r => r < 0);
+  const downVar = downRets.length ? downRets.reduce((a, b) => a + b * b, 0) / downRets.length : 0;
+  const downDev = Math.sqrt(downVar) * Math.sqrt(252) * 100;
+  const sortino = downDev > 0 ? annRet / downDev : 0;
+  let peak = prices[0], maxDD = 0;
+  for (let i = 1; i < prices.length; i++) {
+    if (prices[i] > peak) peak = prices[i];
+    const dd = (prices[i] / peak - 1) * 100;
+    if (dd < maxDD) maxDD = dd;
+  }
+  const calmar = maxDD < 0 ? annRet / Math.abs(maxDD) : 0;
+  const ddDays = computeMaxDDDays(prices);
+  const bestDay = Math.max(...dailyReturns) * 100;
+  const worstDay = Math.min(...dailyReturns) * 100;
+  const monthly = computeMonthlyReturns(dates, prices);
+  const bestMonth = monthly.length ? Math.max(...monthly) : 0;
+  const worstMonth = monthly.length ? Math.min(...monthly) : 0;
+  return {
+    totalRet, annRet, vol, sortino, calmar, maxDD, ddDays,
+    bestDay, worstDay, bestMonth, worstMonth, days: dates.length
+  };
+}
+
+// ============================================================
+// Addition Candidates
+// ============================================================
+let candidateTickers = [];
+
+const candidateInput = document.getElementById('candidateInput');
+const candidateAC = document.getElementById('candidateAC');
+let candAcIndex = -1;
+
+candidateInput.addEventListener('input', function() {
+  const val = this.value.toUpperCase().trim();
+  candidateAC.innerHTML = ''; candAcIndex = -1;
+  if (!val) { candidateAC.style.display = 'none'; return; }
+  const exclude = [...activeTickers, ...candidateTickers];
+  const matches = allTickers.filter(t => t.startsWith(val) && !exclude.includes(t)).slice(0, 10);
+  if (!matches.length) { candidateAC.style.display = 'none'; return; }
+  matches.forEach(t => {
+    const d = document.createElement('div');
+    d.textContent = t;
+    d.onclick = () => { addCandidate(t); candidateAC.style.display = 'none'; candidateInput.value = ''; };
+    candidateAC.appendChild(d);
+  });
+  candidateAC.style.display = 'block';
+});
+
+candidateInput.addEventListener('keydown', function(e) {
+  const items = candidateAC.querySelectorAll('div');
+  if (e.key === 'ArrowDown') { e.preventDefault(); candAcIndex = Math.min(candAcIndex + 1, items.length - 1); items.forEach((el, i) => el.classList.toggle('active', i === candAcIndex)); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); candAcIndex = Math.max(candAcIndex - 1, 0); items.forEach((el, i) => el.classList.toggle('active', i === candAcIndex)); }
+  else if (e.key === 'Enter') { e.preventDefault(); if (candAcIndex >= 0 && items[candAcIndex]) items[candAcIndex].click(); else addCandidateFromInput(); }
+  else if (e.key === 'Escape') candidateAC.style.display = 'none';
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#candidatesSection')) candidateAC.style.display = 'none';
+});
+
+function addCandidateFromInput() {
+  const val = candidateInput.value.toUpperCase().trim();
+  if (val) addCandidate(val);
+  candidateInput.value = '';
+  candidateAC.style.display = 'none';
+}
+
+function addCandidate(ticker) {
+  ticker = ticker.toUpperCase();
+  if (candidateTickers.includes(ticker) || activeTickers.includes(ticker)) return;
+  if (tickerData[ticker]) {
+    candidateTickers.push(ticker);
+    renderCandidateChips();
+    renderCandidateTable();
+    return;
+  }
+  fetch('./data/' + ticker + '.json')
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(data => {
+      tickerData[ticker] = data;
+      candidateTickers.push(ticker);
+      renderCandidateChips();
+      renderCandidateTable();
+    })
+    .catch(() => alert(ticker + ' not found.'));
+}
+
+function removeCandidate(ticker) {
+  candidateTickers = candidateTickers.filter(t => t !== ticker);
+  renderCandidateChips();
+  renderCandidateTable();
+}
+
+function clearCandidates() {
+  candidateTickers = [];
+  renderCandidateChips();
+  renderCandidateTable();
+}
+
+function promoteCandidateToActive(ticker) {
+  removeCandidate(ticker);
+  addTicker(ticker);
+}
+
+function renderCandidateChips() {
+  const el = document.getElementById('candidateChips');
+  el.innerHTML = candidateTickers.map(t =>
+    '<span class="chip" style="background:#0891b2">' + t +
+    '<span class="remove" onclick="removeCandidate(\'' + t + '\')">&times;</span></span>'
+  ).join('');
+}
+
+// Compute EW portfolio stats for a given set of tickers
+function computeEWStats(tickers) {
+  if (tickers.length < 2) return null;
+  const tickerReturnsByDate = {};
+  tickers.forEach(ticker => {
+    const raw = tickerData[ticker];
+    if (!raw) return;
+    const n = raw.dates.length;
+    const start = Math.max(0, n - selectedDays);
+    const dates = raw.dates.slice(start);
+    const prices = raw.adjClose.slice(start);
+    for (let i = 1; i < dates.length; i++) {
+      const dt = dates[i];
+      if (!tickerReturnsByDate[dt]) tickerReturnsByDate[dt] = [];
+      tickerReturnsByDate[dt].push(prices[i] / prices[i - 1] - 1);
+    }
+  });
+  const ewDates = Object.keys(tickerReturnsByDate).sort();
+  if (!ewDates.length) return null;
+  const ewDailyRets = ewDates.map(dt => {
+    const rets = tickerReturnsByDate[dt];
+    return rets.reduce((a, b) => a + b, 0) / rets.length;
+  });
+  let cumRet = 1;
+  ewDailyRets.forEach(r => cumRet *= (1 + r));
+  const annF = 252 / ewDailyRets.length;
+  const annRet = (Math.pow(cumRet, annF) - 1) * 100;
+  const mean = ewDailyRets.reduce((a, b) => a + b, 0) / ewDailyRets.length;
+  const variance = ewDailyRets.reduce((a, b) => a + (b - mean) ** 2, 0) / ewDailyRets.length;
+  const vol = Math.sqrt(variance) * Math.sqrt(252) * 100;
+  const downRets = ewDailyRets.filter(r => r < 0);
+  const downVar = downRets.length > 0 ? downRets.reduce((a, b) => a + b ** 2, 0) / downRets.length : 0;
+  const downDev = Math.sqrt(downVar) * Math.sqrt(252) * 100;
+  const sortino = downDev > 0 ? annRet / downDev : 0;
+  // Build synthetic EW price series for drawdown stats
+  const ewPrices = [1];
+  ewDailyRets.forEach(r => ewPrices.push(ewPrices[ewPrices.length - 1] * (1 + r)));
+  let peak = 1, maxDD = 0;
+  ewPrices.forEach(p => {
+    if (p > peak) peak = p;
+    const dd = (p / peak - 1) * 100;
+    if (dd < maxDD) maxDD = dd;
+  });
+  const ddDays = computeMaxDDDays(ewPrices);
+  const calmar = maxDD < 0 ? annRet / Math.abs(maxDD) : 0;
+  const bestDay = Math.max(...ewDailyRets) * 100;
+  const worstDay = Math.min(...ewDailyRets) * 100;
+  const monthly = computeMonthlyReturnsFromDaily(ewDates, ewDailyRets);
+  const bestMonth = monthly.length ? Math.max(...monthly) : 0;
+  const worstMonth = monthly.length ? Math.min(...monthly) : 0;
+  const totalRet = (cumRet - 1) * 100;
+  return {
+    totalRet, annRet, vol, sortino, calmar, maxDD, ddDays,
+    bestDay, worstDay, bestMonth, worstMonth, days: ewDailyRets.length,
+    _ewPrices: ewPrices, _ewDates: ewDates
+  };
+}
+
+function renderCandidateTable() {
+  const table = document.getElementById('candidateTable');
+  const tbody = document.getElementById('candidateBody');
+  if (!candidateTickers.length || activeTickers.length < 2) {
+    table.style.display = 'none';
+    return;
+  }
+  table.style.display = '';
+  const baseline = computeEWStats(activeTickers);
+  if (!baseline) { table.style.display = 'none'; return; }
+
+  // Semantic delta formatter. Green = better, red = worse, regardless of arithmetic sign.
+  // For metrics where lower is better (volatility, ddDays), pass higherIsBetter=false.
+  // For metrics where higher is better (annRet, sortino, calmar, maxDD [less negative],
+  // worstDay/worstMonth [less negative], best*), pass higherIsBetter=true.
+  // Magnitude is shown unsigned so a negative-baseline metric (maxDD: -10 -> -5) reads
+  // "better 5.00" in green, not "+5.00" which had been confusing.
+  function fmtDelta(val, baseVal, higherIsBetter, suffix) {
+    const eps = 0.005;
+    const diff = val - baseVal;
+    const better = higherIsBetter ? diff > eps : diff < -eps;
+    const worse  = higherIsBetter ? diff < -eps : diff > eps;
+    const cls = better ? 'better' : worse ? 'worse' : 'neutral';
+    const label = better ? 'better ' : worse ? 'worse ' : 'flat ';
+    return val.toFixed(2) + (suffix || '') +
+      '<span class="delta ' + cls + '">(' + label + Math.abs(diff).toFixed(2) + ')</span>';
+  }
+
+  function fmtDeltaInt(val, baseVal, higherIsBetter) {
+    const diff = val - baseVal;
+    const better = higherIsBetter ? diff > 0 : diff < 0;
+    const worse  = higherIsBetter ? diff < 0 : diff > 0;
+    const cls = better ? 'better' : worse ? 'worse' : 'neutral';
+    const label = better ? 'better ' : worse ? 'worse ' : 'flat ';
+    return Math.round(val) +
+      '<span class="delta ' + cls + '">(' + label + Math.abs(diff) + ')</span>';
+  }
+
+  tbody.innerHTML = candidateTickers.map(ticker => {
+    const hypo = computeEWStats([...activeTickers, ticker]);
+    if (!hypo) return '';
+
+    return '<tr class="candidate-row">' +
+      '<td style="font-weight:600;color:#0891b2">' + ticker +
+        '<span class="candidate-add" onclick="promoteCandidateToActive(\'' + ticker + '\')">add</span></td>' +
+      '<td>' + fmtDelta(hypo.annRet,    baseline.annRet,    true,  '%') + '</td>' +
+      '<td>' + fmtDelta(hypo.vol,       baseline.vol,       false, '%') + '</td>' +
+      '<td>' + fmtDelta(hypo.sortino,   baseline.sortino,   true,  '')  + '</td>' +
+      '<td>' + fmtDelta(hypo.calmar,    baseline.calmar,    true,  '')  + '</td>' +
+      '<td>' + fmtDelta(hypo.maxDD,     baseline.maxDD,     true,  '%') + '</td>' +
+      '<td>' + fmtDeltaInt(hypo.ddDays, baseline.ddDays,    false)      + '</td>' +
+      '<td>' + fmtDelta(hypo.bestDay,   baseline.bestDay,   true,  '%') + '</td>' +
+      '<td>' + fmtDelta(hypo.worstDay,  baseline.worstDay,  true,  '%') + '</td>' +
+      '<td>' + fmtDelta(hypo.bestMonth, baseline.bestMonth, true,  '%') + '</td>' +
+      '<td>' + fmtDelta(hypo.worstMonth,baseline.worstMonth,true,  '%') + '</td>' +
+      '<td>' + hypo.days + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+function redraw() {
+  const canvas = document.getElementById('mainChart');
+  const empty = document.getElementById('chartEmpty');
+  const statsSection = document.getElementById('statsSection');
+
+  if (!activeTickers.length) {
+    canvas.style.display = 'none';
+    empty.style.display = 'block';
+    statsSection.style.display = 'none';
+    document.getElementById('candidatesSection').style.display = 'none';
+    document.getElementById('corrSection').style.display = 'none';
+    document.getElementById('underwaterWrap').style.display = 'none';
+    if (chart) { chart.destroy(); chart = null; }
+    if (underwaterChart) { underwaterChart.destroy(); underwaterChart = null; }
+    return;
+  }
+
+  canvas.style.display = 'block';
+  empty.style.display = 'none';
+  statsSection.style.display = 'block';
+  document.getElementById('candidatesSection').style.display =
+    activeTickers.length >= 2 ? 'block' : 'none';
+  document.getElementById('corrSection').style.display =
+    activeTickers.length >= 2 ? 'block' : 'none';
+  document.getElementById('underwaterWrap').style.display = 'block';
+
+  const mode = document.getElementById('normMode').value;
+  const datasets = [];
+  const statsRows = [];
+
+  // Find the common end date (most recent date across all tickers)
+  let maxDate = '';
+  activeTickers.forEach(t => {
+    const d = tickerData[t];
+    if (d && d.dates.length) {
+      const last = d.dates[d.dates.length - 1];
+      if (last > maxDate) maxDate = last;
+    }
+  });
+
+  // Build datasets for each ticker
+  activeTickers.forEach((ticker, idx) => {
+    const raw = tickerData[ticker];
+    if (!raw) return;
+
+    // Trim to selectedDays from end
+    const n = raw.dates.length;
+    const start = Math.max(0, n - selectedDays);
+    const dates = raw.dates.slice(start);
+    const prices = raw.adjClose.slice(start);
+
+    if (dates.length < 2) return;
+
+    const basePrice = prices[0];
+    const points = [];
+    for (let i = 0; i < dates.length; i++) {
+      let y;
+      if (mode === 'cumret') {
+        y = ((prices[i] / basePrice) - 1) * 100;
+      } else if (mode === 'indexed') {
+        y = (prices[i] / basePrice) * 100;
+      } else {
+        y = prices[i];
+      }
+      points.push({ x: dates[i], y: Math.round(y * 100) / 100 });
+    }
+
+    datasets.push({
+      label: ticker,
+      data: points,
+      borderColor: COLORS[idx % COLORS.length],
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHitRadius: 6,
+      tension: 0.1,
+    });
+
+    // Stats (delegated to shared helper for consistency with EW + SPY rows)
+    const stats = computeStatsFromSlice(dates, prices);
+    if (stats) {
+      statsRows.push(Object.assign({ ticker, color: COLORS[idx % COLORS.length] }, stats));
+    }
+  });
+
+  // Equal-weight portfolio line (2+ tickers)
+  if (activeTickers.length >= 2) {
+    // Build a date->returns map for each ticker
+    const tickerReturnsByDate = {};
+    activeTickers.forEach(ticker => {
+      const raw = tickerData[ticker];
+      if (!raw) return;
+      const n = raw.dates.length;
+      const start = Math.max(0, n - selectedDays);
+      const dates = raw.dates.slice(start);
+      const prices = raw.adjClose.slice(start);
+      for (let i = 1; i < dates.length; i++) {
+        const dt = dates[i];
+        if (!tickerReturnsByDate[dt]) tickerReturnsByDate[dt] = [];
+        tickerReturnsByDate[dt].push(prices[i] / prices[i - 1] - 1);
+      }
+    });
+
+    // Sort dates and compute cumulative EW return
+    const ewDates = Object.keys(tickerReturnsByDate).sort();
+    let cumRet = 1;
+    const ewPoints = [];
+
+    // Add starting point
+    if (ewDates.length > 0) {
+      // Find the day before the first return date for the starting point
+      // Use the earliest ticker's start date
+      let earliest = '';
+      activeTickers.forEach(ticker => {
+        const raw = tickerData[ticker];
+        if (!raw) return;
+        const n = raw.dates.length;
+        const start = Math.max(0, n - selectedDays);
+        const d0 = raw.dates[start];
+        if (!earliest || d0 < earliest) earliest = d0;
+      });
+      if (mode === 'cumret') ewPoints.push({ x: earliest, y: 0 });
+      else if (mode === 'indexed') ewPoints.push({ x: earliest, y: 100 });
+      else ewPoints.push({ x: earliest, y: 100 });
+    }
+
+    ewDates.forEach(dt => {
+      const rets = tickerReturnsByDate[dt];
+      const avgRet = rets.reduce((a, b) => a + b, 0) / rets.length;
+      cumRet *= (1 + avgRet);
+      let y;
+      if (mode === 'cumret') y = (cumRet - 1) * 100;
+      else if (mode === 'indexed') y = cumRet * 100;
+      else y = cumRet * 100;
+      ewPoints.push({ x: dt, y: Math.round(y * 100) / 100 });
+    });
+
+    datasets.push({
+      label: 'Equal-Weight Portfolio',
+      data: ewPoints,
+      borderColor: EW_COLOR,
+      backgroundColor: 'transparent',
+      borderWidth: 3.5,
+      borderDash: [8, 4],
+      pointRadius: 0,
+      pointHitRadius: 6,
+      tension: 0.1,
+    });
+
+    // EW stats (synthetic price series so Calmar + DD-days share the same code path)
+    const ewDailyRets = ewDates.map(dt => {
+      const rets = tickerReturnsByDate[dt];
+      return rets.reduce((a, b) => a + b, 0) / rets.length;
+    });
+    if (ewDailyRets.length > 0) {
+      // Synthesize a price series indexed at 1.0 so we can reuse computeStatsFromSlice.
+      const synthDates = [ewDates[0]].concat(ewDates);
+      const synthPrices = [1];
+      ewDailyRets.forEach(r => synthPrices.push(synthPrices[synthPrices.length - 1] * (1 + r)));
+      const ewStats = computeStatsFromSlice(synthDates, synthPrices);
+      if (ewStats) {
+        statsRows.push(Object.assign({
+          ticker: 'Equal-Weight Portfolio',
+          color: EW_COLOR,
+          isEW: true
+        }, ewStats));
+      }
+    }
+  }
+
+  // SPY benchmark row (always shown when stats table is visible and SPY data is loaded)
+  if (tickerData['SPY'] && activeTickers.length) {
+    const spyRaw = tickerData['SPY'];
+    const sn = spyRaw.dates.length;
+    const sStart = Math.max(0, sn - selectedDays);
+    const sDates = spyRaw.dates.slice(sStart);
+    const sPrices = spyRaw.adjClose.slice(sStart);
+    if (sDates.length >= 2) {
+      const spyStats = computeStatsFromSlice(sDates, sPrices);
+      if (spyStats) {
+        statsRows.push(Object.assign({
+          ticker: 'SPY (benchmark)',
+          color: '#6b7280',
+          isBenchmark: true
+        }, spyStats));
+      }
+    }
+  }
+
+  // Render chart
+  if (chart) chart.destroy();
+  const ctx = canvas.getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { usePointStyle: true, pointStyle: 'line', padding: 16,
+                    font: { family: "'IBM Plex Sans'", size: 13 } }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const suffix = mode === 'cumret' ? '%' : mode === 'indexed' ? '' : '';
+              return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { unit: selectedDays <= 21 ? 'day' : selectedDays <= 252 ? 'week' : 'month',
+                  tooltipFormat: 'MMM d, yyyy' },
+          grid: { color: '#f0f0f0' },
+          ticks: { font: { family: "'IBM Plex Mono'", size: 12 }, maxTicksLimit: 15 }
+        },
+        y: {
+          title: {
+            display: true,
+            text: mode === 'cumret' ? 'Return (%)' : mode === 'indexed' ? 'Indexed (100)' : 'Price ($)',
+            font: { family: "'IBM Plex Sans'", size: 13 }
+          },
+          grid: { color: '#f0f0f0' },
+          ticks: {
+            font: { family: "'IBM Plex Mono'", size: 12 },
+            callback: function(v) {
+              return mode === 'cumret' ? v.toFixed(1) + '%' : v.toFixed(1);
+            }
+          }
+        }
+      }
+    }
+  });
+  // Force chart height
+  canvas.parentElement.style.height = '500px';
+
+  // Render stats table
+  const tbody = document.getElementById('statsBody');
+  tbody.innerHTML = statsRows.map(s => {
+    const rc = v => v >= 0 ? 'pos' : 'neg';
+    const rowCls = s.isBenchmark ? ' class="benchmark-row"' : '';
+    return '<tr' + rowCls + '>' +
+      '<td style="font-weight:600;color:' + s.color + '">' + s.ticker + '</td>' +
+      '<td class="' + rc(s.annRet) + '">' + s.annRet.toFixed(2) + '%</td>' +
+      '<td>' + s.vol.toFixed(1) + '%</td>' +
+      '<td class="' + rc(s.sortino) + '">' + s.sortino.toFixed(2) + '</td>' +
+      '<td class="' + rc(s.calmar) + '">' + s.calmar.toFixed(2) + '</td>' +
+      '<td class="neg">' + s.maxDD.toFixed(2) + '%</td>' +
+      '<td>' + s.ddDays + '</td>' +
+      '<td class="pos">+' + s.bestDay.toFixed(2) + '%</td>' +
+      '<td class="neg">' + s.worstDay.toFixed(2) + '%</td>' +
+      '<td class="pos">+' + s.bestMonth.toFixed(2) + '%</td>' +
+      '<td class="neg">' + s.worstMonth.toFixed(2) + '%</td>' +
+      '<td>' + s.days + '</td>' +
+      '</tr>';
+  }).join('');
+
+  // Render correlation matrix (2+ tickers)
+  renderCorrelationMatrix();
+
+  // Render underwater drawdown chart
+  renderUnderwaterChart();
+
+  // Re-render candidates when portfolio changes
+  if (candidateTickers.length) renderCandidateTable();
+}
+
+// ============================================================
+// Correlation matrix
+// ============================================================
+function renderCorrelationMatrix() {
+  const wrap = document.getElementById('corrTableWrap');
+  if (activeTickers.length < 2) { wrap.innerHTML = ''; return; }
+
+  // Build daily-return arrays per ticker over selectedDays, indexed by date.
+  const seriesByTicker = {};
+  const allDates = new Set();
+  activeTickers.forEach(t => {
+    const raw = tickerData[t];
+    if (!raw) return;
+    const n = raw.dates.length;
+    const start = Math.max(0, n - selectedDays);
+    const dates = raw.dates.slice(start);
+    const prices = raw.adjClose.slice(start);
+    const map = {};
+    for (let i = 1; i < dates.length; i++) {
+      map[dates[i]] = prices[i] / prices[i - 1] - 1;
+      allDates.add(dates[i]);
+    }
+    seriesByTicker[t] = map;
+  });
+
+  const sortedDates = Array.from(allDates).sort();
+  // Per-ticker aligned series: only dates present in that ticker's map
+  function alignedPair(a, b) {
+    const aMap = seriesByTicker[a], bMap = seriesByTicker[b];
+    const av = [], bv = [];
+    sortedDates.forEach(d => {
+      if (aMap[d] !== undefined && bMap[d] !== undefined) {
+        av.push(aMap[d]); bv.push(bMap[d]);
+      }
+    });
+    return [av, bv];
+  }
+
+  // EW return series for the "vs EW" column
+  const ewSeries = {};
+  sortedDates.forEach(d => {
+    const vals = activeTickers
+      .map(t => seriesByTicker[t] && seriesByTicker[t][d])
+      .filter(v => v !== undefined);
+    if (vals.length) ewSeries[d] = vals.reduce((a, b) => a + b, 0) / vals.length;
+  });
+
+  function corrColor(c) {
+    const a = Math.abs(c);
+    if (a < 0.3) return '#dcfce7';   // very green - great diversification
+    if (a < 0.5) return '#ecfdf5';   // light green
+    if (a < 0.7) return '#fef9c3';   // light yellow
+    if (a < 0.85) return '#fed7aa';  // orange
+    return '#fecaca';                // red - highly correlated
+  }
+
+  const allCols = activeTickers.concat(['EW']);
+  let html = '<table class="corr-table"><thead><tr><th></th>';
+  allCols.forEach(c => { html += '<th>' + c + '</th>'; });
+  html += '</tr></thead><tbody>';
+
+  activeTickers.forEach(rowT => {
+    html += '<tr><th class="row-label">' + rowT + '</th>';
+    activeTickers.forEach(colT => {
+      if (rowT === colT) {
+        html += '<td class="diag">1.00</td>';
+      } else {
+        const [a, b] = alignedPair(rowT, colT);
+        const c = correlation(a, b);
+        html += '<td style="background:' + corrColor(c) + ';">' + c.toFixed(2) + '</td>';
+      }
+    });
+    // vs EW column
+    const rowMap = seriesByTicker[rowT];
+    const av = [], bv = [];
+    sortedDates.forEach(d => {
+      if (rowMap[d] !== undefined && ewSeries[d] !== undefined) {
+        av.push(rowMap[d]); bv.push(ewSeries[d]);
+      }
+    });
+    const cEW = correlation(av, bv);
+    html += '<td style="background:' + corrColor(cEW) + ';font-weight:600;">' + cEW.toFixed(2) + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+// ============================================================
+// Underwater drawdown chart
+// ============================================================
+function renderUnderwaterChart() {
+  const canvas = document.getElementById('underwaterChart');
+  if (!canvas || !activeTickers.length) return;
+
+  const datasets = [];
+
+  activeTickers.forEach((ticker, idx) => {
+    const raw = tickerData[ticker];
+    if (!raw) return;
+    const n = raw.dates.length;
+    const start = Math.max(0, n - selectedDays);
+    const dates = raw.dates.slice(start);
+    const prices = raw.adjClose.slice(start);
+    if (dates.length < 2) return;
+    const dd = computeDrawdownSeries(prices);
+    const points = dates.map((d, i) => ({ x: d, y: Math.round(dd[i] * 100) / 100 }));
+    datasets.push({
+      label: ticker,
+      data: points,
+      borderColor: COLORS[idx % COLORS.length],
+      backgroundColor: COLORS[idx % COLORS.length] + '22',
+      borderWidth: 1.5,
+      pointRadius: 0,
+      pointHitRadius: 6,
+      tension: 0.1,
+      fill: 'origin',
+    });
+  });
+
+  // EW underwater line
+  if (activeTickers.length >= 2) {
+    const tickerReturnsByDate = {};
+    activeTickers.forEach(ticker => {
+      const raw = tickerData[ticker];
+      if (!raw) return;
+      const n = raw.dates.length;
+      const start = Math.max(0, n - selectedDays);
+      const dates = raw.dates.slice(start);
+      const prices = raw.adjClose.slice(start);
+      for (let i = 1; i < dates.length; i++) {
+        const dt = dates[i];
+        if (!tickerReturnsByDate[dt]) tickerReturnsByDate[dt] = [];
+        tickerReturnsByDate[dt].push(prices[i] / prices[i - 1] - 1);
+      }
+    });
+    const ewDates = Object.keys(tickerReturnsByDate).sort();
+    if (ewDates.length) {
+      const ewPrices = [1];
+      ewDates.forEach(dt => {
+        const rets = tickerReturnsByDate[dt];
+        const avg = rets.reduce((a, b) => a + b, 0) / rets.length;
+        ewPrices.push(ewPrices[ewPrices.length - 1] * (1 + avg));
+      });
+      const ewDD = computeDrawdownSeries(ewPrices);
+      const allDates = [ewDates[0]].concat(ewDates);
+      const points = allDates.map((d, i) => ({ x: d, y: Math.round(ewDD[i] * 100) / 100 }));
+      datasets.push({
+        label: 'Equal-Weight Portfolio',
+        data: points,
+        borderColor: EW_COLOR,
+        backgroundColor: 'transparent',
+        borderWidth: 2.5,
+        borderDash: [8, 4],
+        pointRadius: 0,
+        pointHitRadius: 6,
+        tension: 0.1,
+        fill: false,
+      });
+    }
+  }
+
+  // SPY benchmark underwater line
+  if (tickerData['SPY']) {
+    const spyRaw = tickerData['SPY'];
+    const sn = spyRaw.dates.length;
+    const sStart = Math.max(0, sn - selectedDays);
+    const sDates = spyRaw.dates.slice(sStart);
+    const sPrices = spyRaw.adjClose.slice(sStart);
+    if (sDates.length >= 2) {
+      const sDD = computeDrawdownSeries(sPrices);
+      const points = sDates.map((d, i) => ({ x: d, y: Math.round(sDD[i] * 100) / 100 }));
+      datasets.push({
+        label: 'SPY (benchmark)',
+        data: points,
+        borderColor: '#6b7280',
+        backgroundColor: 'transparent',
+        borderWidth: 1.5,
+        borderDash: [3, 3],
+        pointRadius: 0,
+        pointHitRadius: 6,
+        tension: 0.1,
+        fill: false,
+      });
+    }
+  }
+
+  if (underwaterChart) underwaterChart.destroy();
+  const ctx = canvas.getContext('2d');
+  underwaterChart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + '%'
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { unit: selectedDays <= 21 ? 'day' : selectedDays <= 252 ? 'week' : 'month',
+                  tooltipFormat: 'MMM d, yyyy' },
+          grid: { color: '#f0f0f0' },
+          ticks: { font: { family: "'IBM Plex Mono'", size: 11 }, maxTicksLimit: 12 }
+        },
+        y: {
+          max: 0,
+          title: { display: true, text: 'Drawdown (%)', font: { family: "'IBM Plex Sans'", size: 12 } },
+          grid: { color: '#f0f0f0' },
+          ticks: {
+            font: { family: "'IBM Plex Mono'", size: 11 },
+            callback: v => v.toFixed(1) + '%'
+          }
+        }
+      }
+    }
+  });
+}
+
+// ============================================================
+// Export / Import combos (cross-device portability)
+// ============================================================
+function exportCombos() {
+  const combos = getSavedCombos();
+  if (!combos.length) { alert('No saved combos to export.'); return; }
+  const payload = {
+    schema: 'ticker_compare_combos',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    combos: combos
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const stamp = new Date().toISOString().slice(0, 10);
+  a.download = 'ticker_compare_combos_' + stamp + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importCombosFromFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const incoming = Array.isArray(parsed) ? parsed
+        : (parsed.combos && Array.isArray(parsed.combos)) ? parsed.combos
+        : null;
+      if (!incoming) { alert('File does not contain a combos array.'); return; }
+      const existing = getSavedCombos();
+      const byName = {};
+      existing.forEach(c => { byName[c.name] = c; });
+      let added = 0, replaced = 0;
+      incoming.forEach(c => {
+        if (!c.name || !Array.isArray(c.tickers)) return;
+        if (byName[c.name]) replaced++; else added++;
+        byName[c.name] = {
+          name: c.name,
+          tickers: c.tickers,
+          candidates: Array.isArray(c.candidates) ? c.candidates : []
+        };
+      });
+      saveCombos(Object.values(byName));
+      renderSavedCombos();
+      alert('Imported: ' + added + ' new, ' + replaced + ' replaced.');
+    } catch (err) {
+      alert('Could not parse file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';  // allow re-importing same file
+}
+
+// ============================================================
+// URL state (share comparisons via URL hash)
+// ============================================================
+function saveToHash() {
+  const params = new URLSearchParams();
+  if (activeTickers.length) params.set('t', activeTickers.join(','));
+  params.set('d', selectedDays);
+  params.set('m', document.getElementById('normMode').value);
+  window.location.hash = params.toString();
+}
+
+function loadFromHash() {
+  if (!window.location.hash) return;
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const t = params.get('t');
+  const d = params.get('d');
+  const m = params.get('m');
+  if (d) {
+    selectedDays = parseInt(d);
+    document.querySelectorAll('.tf-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.days) === selectedDays);
+    });
+  }
+  if (m) document.getElementById('normMode').value = m;
+  if (t) {
+    const tickers = t.split(',');
+    loadPreset(tickers);
+  }
+}
+
+// Save state on changes
+const origRedraw = redraw;
+redraw = function() {
+  origRedraw();
+  saveToHash();
+};
+
+// Load state from URL on page load
+window.addEventListener('load', loadFromHash);
+</script>
+</body>
+</html>
