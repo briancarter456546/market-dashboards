@@ -279,12 +279,6 @@ body {
     </table>
   </div>
 
-  <div class="corr-section" id="corrSection" style="display:none;">
-    <h3>Correlation Matrix (daily returns)</h3>
-    <p class="corr-hint">Pairwise Pearson correlation over the selected window. Lower = better diversification. Last column shows correlation to the equal-weight basket.</p>
-    <div id="corrTableWrap"></div>
-  </div>
-
   <div class="stats-section" id="candidatesSection" style="display:none;">
     <h3>Addition Candidates</h3>
     <p style="font-size:13px;color:#6b7280;margin-bottom:12px;">
@@ -319,6 +313,12 @@ body {
       </thead>
       <tbody id="candidateBody"></tbody>
     </table>
+  </div>
+
+  <div class="corr-section" id="corrSection" style="display:none;">
+    <h3>Correlation Matrix (daily returns)</h3>
+    <p class="corr-hint">Pairwise Pearson correlation over the selected window. Lower = better diversification. Last column shows correlation to the equal-weight basket. Bottom row shows the average off-diagonal correlation per column — lower = the basket is genuinely diversified.</p>
+    <div id="corrTableWrap"></div>
   </div>
 </div>
 
@@ -1167,7 +1167,10 @@ function renderCorrelationMatrix() {
   const wrap = document.getElementById('corrTableWrap');
   if (activeTickers.length < 2) { wrap.innerHTML = ''; return; }
 
-  // Build daily-return arrays per ticker over selectedDays, indexed by date.
+  // SPY exclusion: this matrix iterates ONLY activeTickers — the user's chosen basket.
+  // SPY is auto-loaded into tickerData for the Period Stats benchmark row + underwater
+  // chart, but is intentionally NOT included here unless the user explicitly added it
+  // as a basket ticker. Do not loop over Object.keys(tickerData) here.
   const seriesByTicker = {};
   const allDates = new Set();
   activeTickers.forEach(t => {
@@ -1217,22 +1220,28 @@ function renderCorrelationMatrix() {
   }
 
   const allCols = activeTickers.concat(['EW']);
+  // colSums[i] / colCounts[i] = column average (off-diagonal only).
+  const colSums = new Array(allCols.length).fill(0);
+  const colCounts = new Array(allCols.length).fill(0);
+
   let html = '<table class="corr-table"><thead><tr><th></th>';
   allCols.forEach(c => { html += '<th>' + c + '</th>'; });
   html += '</tr></thead><tbody>';
 
   activeTickers.forEach(rowT => {
     html += '<tr><th class="row-label">' + rowT + '</th>';
-    activeTickers.forEach(colT => {
+    activeTickers.forEach((colT, colIdx) => {
       if (rowT === colT) {
         html += '<td class="diag">1.00</td>';
       } else {
         const [a, b] = alignedPair(rowT, colT);
         const c = correlation(a, b);
+        colSums[colIdx] += c;
+        colCounts[colIdx] += 1;
         html += '<td style="background:' + corrColor(c) + ';">' + c.toFixed(2) + '</td>';
       }
     });
-    // vs EW column
+    // vs EW column (always last col in allCols)
     const rowMap = seriesByTicker[rowT];
     const av = [], bv = [];
     sortedDates.forEach(d => {
@@ -1241,9 +1250,23 @@ function renderCorrelationMatrix() {
       }
     });
     const cEW = correlation(av, bv);
+    const ewIdx = allCols.length - 1;
+    colSums[ewIdx] += cEW;
+    colCounts[ewIdx] += 1;
     html += '<td style="background:' + corrColor(cEW) + ';font-weight:600;">' + cEW.toFixed(2) + '</td>';
     html += '</tr>';
   });
+
+  // Average row: per-column mean of off-diagonal correlations.
+  // Lower = the basket as a whole is genuinely diversified.
+  html += '<tr style="border-top:2px solid #cbd5e1;background:#f8fafc;">';
+  html += '<th class="row-label" style="font-style:italic;">AVG</th>';
+  colSums.forEach((s, i) => {
+    const avg = colCounts[i] > 0 ? s / colCounts[i] : 0;
+    const weight = i === allCols.length - 1 ? 'font-weight:700;' : 'font-weight:600;';
+    html += '<td style="background:' + corrColor(avg) + ';' + weight + '">' + avg.toFixed(2) + '</td>';
+  });
+  html += '</tr>';
 
   html += '</tbody></table>';
   wrap.innerHTML = html;
