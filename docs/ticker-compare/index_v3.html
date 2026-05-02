@@ -290,6 +290,17 @@ body {
     </div>
   </div>
 
+  <details id="comparisonDetails" ontoggle="onComparisonToggle()" style="margin-bottom:16px;">
+    <summary style="cursor:pointer;font-size:15px;font-weight:600;color:#1e1e2e;padding:10px 0;">Basket Comparison <span id="comparisonCount" style="font-weight:400;color:#94a3b8;">(empty)</span></summary>
+    <div id="comparisonHeader" style="margin-bottom:8px;font-size:12px;color:#475569;"></div>
+    <div id="comparisonChips" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+    <div id="comparisonStatus" style="font-size:12px;color:#64748b;margin-bottom:6px;min-height:14px;"></div>
+    <div style="height:360px;position:relative;margin-bottom:12px;">
+      <canvas id="comparisonChart"></canvas>
+    </div>
+    <div id="comparisonTable" style="font-size:12px;color:#475569;"></div>
+  </details>
+
   <details id="chartDetails" ontoggle="onChartToggle()" style="margin-bottom:16px;" open>
     <summary style="cursor:pointer;font-size:15px;font-weight:600;color:#1e1e2e;padding:10px 0;">Return chart (EW + per-ticker)</summary>
     <div class="chart-wrap">
@@ -602,13 +613,37 @@ function renderChips() {
 // ============================================================
 // Timeframe buttons
 // ============================================================
+// Map a trading-day TF count to the nearest server-side metric window key.
+// Keeps the KPI tables (Manage + Comparison) in sync with the chart's TF.
+function tfDaysToWindow(days) {
+  if (days <= 90) return '63d';
+  if (days <= 182) return '126d';
+  if (days <= 504) return '1y';     // 1Y, 2Y -> 1y bucket... no, 2Y closer to 3y? use 1y for <=2Y
+  if (days <= 1095) return '3y';
+  if (days <= 1826) return '5y';
+  if (days <= 2557) return '7y';
+  return '10y';
+}
+
 document.getElementById('tfRow').addEventListener('click', function(e) {
   const btn = e.target.closest('.tf-btn');
   if (!btn) return;
   document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   selectedDays = parseInt(btn.dataset.days);
+  // Sync the Window selector to the nearest matching server window so the
+  // KPI tables reflect the same time horizon as the chart.
+  const matchedWin = tfDaysToWindow(selectedDays);
+  if (matchedWin !== currentWindow) {
+    currentWindow = matchedWin;
+    const sel = document.getElementById('windowSel');
+    if (sel) sel.value = matchedWin;
+    // Re-render anything that depends on currentWindow.
+    renderSavedCombos();
+    renderManagePanel(lastManageBaskets);
+  }
   redraw();
+  renderComparison();
 });
 
 // ============================================================
@@ -746,16 +781,443 @@ function filterCombos() {
 // localStorage is intentionally light (name+tickers+candidates only).
 let serverMetricsByName = {};
 
+// SPY's per-window metrics, captured from data.spy_metrics on the server response.
+// Used for the "vs SPY" delta column + cell-level coloring in the comparison table.
+let serverSpyMetrics = {};
+
+// Basket-to-basket comparison state.
+const COMPARISON_KEY = 'ticker_compare_comparison';
+const COMPARISON_MAX_TABLE = 8;
+const COMPARISON_MAX_CHART = 5;
+let comparisonBaskets = [];   // ordered list of basket names selected for comparison
+let comparisonChart = null;   // Chart.js instance for the multi-basket EW chart
+
+function loadComparisonFromStorage() {
+  try {
+    const raw = localStorage.getItem(COMPARISON_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(arr)) { comparisonBaskets = []; return; }
+    // Filter out names that don't exist on server anymore.
+    comparisonBaskets = arr.filter(n => typeof n === 'string' && serverMetricsByName[n]);
+  } catch (e) {
+    comparisonBaskets = [];
+  }
+}
+
+function persistComparison() {
+  try { localStorage.setItem(COMPARISON_KEY, JSON.stringify(comparisonBaskets)); } catch (e) {}
+}
+
+function addToComparison(name) {
+  if (!name) return;
+  if (comparisonBaskets.includes(name)) return;
+  if (comparisonBaskets.length >= COMPARISON_MAX_TABLE) {
+    alert('Comparison limited to ' + COMPARISON_MAX_TABLE + ' baskets. Clear one first.');
+    return false;
+  }
+  comparisonBaskets.push(name);
+  persistComparison();
+  renderComparison();
+  renderManagePanel(lastManageBaskets);  // refresh checkboxes + toolbar count
+  return true;
+}
+
+function removeFromComparison(name) {
+  const i = comparisonBaskets.indexOf(name);
+  if (i < 0) return;
+  comparisonBaskets.splice(i, 1);
+  persistComparison();
+  renderComparison();
+  renderManagePanel(lastManageBaskets);
+}
+
+function clearComparison() {
+  comparisonBaskets = [];
+  persistComparison();
+  renderComparison();
+  renderManagePanel(lastManageBaskets);
+}
+
+function onComparisonToggle() {
+  const det = document.getElementById('comparisonDetails');
+  if (det && det.open) renderComparison();
+  else if (comparisonChart) { comparisonChart.destroy(); comparisonChart = null; }
+}
+
+// Lazy ticker fetch. Returns a Promise resolved when all tickers are in tickerData.
+function ensureTickersLoaded(tickers) {
+  const need = tickers.filter(t => t && !tickerData[t]);
+  if (!need.length) return Promise.resolve();
+  return Promise.all(need.map(t =>
+    fetch('./data/' + t + '.json')
+      .then(r => { if (!r.ok) throw new Error(t + ' HTTP ' + r.status); return r.json(); })
+      .then(data => { tickerData[t] = data; })
+      .catch(() => { /* skip missing tickers; basket still computes from the rest */ })
+  ));
+}
+
+// Manage-panel checkbox handlers.
+function onManageCompareToggle(cbx) {
+  const name = cbx.getAttribute('data-name');
+  if (cbx.checked) {
+    const ok = addToComparison(name);
+    if (!ok) cbx.checked = false;
+  } else {
+    removeFromComparison(name);
+  }
+}
+function toggleSelectAllManage(headerCbx) {
+  // "Select all" picks up to COMPARISON_MAX_TABLE from currently-visible rows.
+  if (headerCbx.checked) {
+    const cbxs = document.querySelectorAll('.manage-cmp-cbx');
+    cbxs.forEach(c => {
+      if (comparisonBaskets.length >= COMPARISON_MAX_TABLE) return;
+      if (!c.checked) {
+        c.checked = true;
+        const name = c.getAttribute('data-name');
+        if (!comparisonBaskets.includes(name)) comparisonBaskets.push(name);
+      }
+    });
+    persistComparison();
+    renderComparison();
+    renderManagePanel(lastManageBaskets);
+  } else {
+    clearComparison();
+  }
+}
+function openComparison() {
+  const det = document.getElementById('comparisonDetails');
+  if (det) det.open = true;
+  renderComparison();
+}
+
+// Look up a basket's tickers from server map (fall back to localStorage combos).
+function lookupBasketTickers(name) {
+  // Server-derived storage doesn't include tickers (only metrics). Use the
+  // localStorage combos store as the canonical ticker source -- pullFromServer
+  // keeps localStorage in sync with the server's basket list.
+  const c = getSavedCombos().find(x => x.name === name);
+  return c && Array.isArray(c.tickers) ? c.tickers : [];
+}
+
+// Format a vs-SPY delta cell: green if better, red if worse, "-" if missing.
+// `better` semantics: for max_dd, "less negative" is better; for everything
+// else (cagr/calmar/sortino/etc), higher is better.
+function fmtVsSpyDelta(basketVal, spyVal, type) {
+  if (typeof basketVal !== 'number' || typeof spyVal !== 'number') {
+    return '<span style="color:#cbd5e1">-</span>';
+  }
+  const delta = basketVal - spyVal;
+  const sign = delta >= 0 ? '+' : '';
+  const fmt = type === 'pct' ? (delta * 100).toFixed(1) + '%' : delta.toFixed(2);
+  const color = delta > 0 ? '#16a34a' : (delta < 0 ? '#b91c1c' : '#64748b');
+  return '<span style="color:' + color + ';font-weight:600;">' + sign + fmt + '</span>';
+}
+
+// Build the chart datasets for the first N baskets in compare.
+function buildComparisonChartDatasets(names) {
+  const datasets = [];
+  const slice = selectedDays;
+  names.slice(0, COMPARISON_MAX_CHART).forEach((name, idx) => {
+    const tickers = lookupBasketTickers(name);
+    if (!tickers.length) return;
+    const ews = buildEWGrowthSeries(tickers, slice);
+    if (!ews.values.length) return;
+    const color = COLORS[idx % COLORS.length];
+    const points = ews.dates.map((d, i) => ({ x: d, y: Math.round((ews.values[i] - 1) * 10000) / 100 }));
+    datasets.push({
+      label: name,
+      data: points,
+      borderColor: color,
+      backgroundColor: 'transparent',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHitRadius: 6,
+      tension: 0.1,
+    });
+  });
+  // SPY benchmark line for reference.
+  if (tickerData['SPY']) {
+    const spyEws = buildEWGrowthSeries(['SPY'], slice);
+    if (spyEws.values.length) {
+      const points = spyEws.dates.map((d, i) => ({ x: d, y: Math.round((spyEws.values[i] - 1) * 10000) / 100 }));
+      datasets.push({
+        label: 'SPY',
+        data: points,
+        borderColor: '#94a3b8',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderDash: [4, 4],
+        pointRadius: 0,
+        pointHitRadius: 6,
+        tension: 0.1,
+      });
+    }
+  }
+  return datasets;
+}
+
+// Comparison-table sort state.
+let comparisonSortKey = 'beats_spy_count';
+let comparisonSortDir = 'desc';
+
+function comparisonSortBy(key) {
+  if (comparisonSortKey === key) {
+    comparisonSortDir = (comparisonSortDir === 'desc') ? 'asc' : 'desc';
+  } else {
+    const col = COMPARISON_COLS().find(c => c.key === key);
+    comparisonSortKey = key;
+    comparisonSortDir = (col && col.dir) || 'desc';
+  }
+  renderComparisonTable(comparisonBaskets);
+}
+
+// Build the column list (MANAGE_COLS + the inserted vs-SPY delta col).
+function COMPARISON_COLS() {
+  const cols = [];
+  MANAGE_COLS.forEach(c => {
+    cols.push(c);
+    if (c.key === 'beats_spy_count') {
+      cols.push({ key: '_vs_spy_cagr', label: 'vs SPY (CAGR)', type: 'vsspy', dir: 'desc' });
+    }
+  });
+  return cols;
+}
+
+// Sort key extractor for the comparison table (handles the synthetic delta col).
+function getComparisonSortVal(name, key) {
+  const allMetrics = serverMetricsByName[name] || {};
+  if (key === 'name') return name || '';
+  if (key === 'beats_spy_count') {
+    return (typeof allMetrics._beats_spy_count === 'number') ? allMetrics._beats_spy_count : null;
+  }
+  if (key === '_vs_spy_cagr') {
+    const m = allMetrics[currentWindow] || {};
+    const spyM = (serverSpyMetrics || {})[currentWindow] || {};
+    if (typeof m.cagr !== 'number' || typeof spyM.cagr !== 'number') return null;
+    return m.cagr - spyM.cagr;
+  }
+  const m = allMetrics[currentWindow] || {};
+  return (typeof m[key] === 'number') ? m[key] : null;
+}
+
+// Render the comparison KPI table. Same column set as Manage panel but with
+// vs-SPY delta column inserted (CAGR delta for currentWindow), and per-cell
+// background tint where the basket beats SPY at that cell for currentWindow.
+function renderComparisonTable(names) {
+  const el = document.getElementById('comparisonTable');
+  if (!el) return;
+  if (!names.length) { el.innerHTML = ''; return; }
+  const cols = COMPARISON_COLS();
+  // Sort the basket name list by the active sort key/dir; nulls to bottom.
+  const dir = comparisonSortDir === 'desc' ? -1 : 1;
+  const sortedNames = names.slice().sort((a, b) => {
+    const av = getComparisonSortVal(a, comparisonSortKey);
+    const bv = getComparisonSortVal(b, comparisonSortKey);
+    if (av === null && bv === null) return 0;
+    if (av === null) return 1;
+    if (bv === null) return -1;
+    if (typeof av === 'string') return av.localeCompare(bv) * dir;
+    return (av - bv) * dir;
+  });
+  let html = '<div style="overflow-x:auto;"><table class="stats-table" style="font-size:12px;width:100%;">';
+  html += '<thead><tr>';
+  cols.forEach(c => {
+    const active = (c.key === comparisonSortKey);
+    const arrow = active ? (comparisonSortDir === 'desc' ? ' ▼' : ' ▲') : '';
+    html += '<th class="sortable' + (active ? ' active' : '') + '" data-key="' + c.key + '" onclick="comparisonSortBy(\'' + c.key + '\')">' + c.label + '<span class="sort-arrow">' + arrow + '</span></th>';
+  });
+  html += '<th></th></tr></thead><tbody>';
+  const spyM = (serverSpyMetrics || {})[currentWindow] || {};
+  // SPY benchmark row pinned at top -- direct head-to-head reference.
+  if (spyM && typeof spyM.cagr === 'number') {
+    html += '<tr class="benchmark-row">';
+    html += '<td style="padding:4px 8px;font-weight:600;font-style:italic;color:#475569;">SPY (benchmark)</td>';
+    html += '<td style="padding:4px 8px;text-align:right;color:#94a3b8;">—</td>';
+    html += '<td style="padding:4px 8px;text-align:right;color:#94a3b8;">—</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.cagr, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.volatility, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.sortino, 'num') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.calmar, 'num') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.rolling_calmar_median, 'num') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.max_dd, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.max_dd_event_days, 'num0') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.avg_dd_underwater, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.avg_dd_event_days, 'num0') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.best_day, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.worst_day, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.best_month, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.worst_month, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(spyM.n_days, 'num0') + '</td>';
+    html += '<td></td>';
+    html += '</tr>';
+  }
+  sortedNames.forEach(name => {
+    const allMetrics = serverMetricsByName[name] || {};
+    const m = allMetrics[currentWindow] || {};
+    const tickers = lookupBasketTickers(name).join(', ');
+    const safeName = String(name).replace(/'/g, "\\'");
+    // Per-cell coloring: light green if basket beats SPY at this (metric, currentWindow), light red if not.
+    const cellBg = (basketVal, spyVal) => {
+      if (typeof basketVal !== 'number' || typeof spyVal !== 'number') return '';
+      return basketVal > spyVal ? 'background:#f0fdf4;' : 'background:#fef2f2;';
+    };
+    html += '<tr>';
+    html += '<td style="padding:4px 8px;font-weight:600;cursor:help;" title="' + tickers + '">' + name + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;font-weight:600;color:#1e1e2e;">' + fmtMetric(allMetrics._beats_spy_count, 'beats') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtVsSpyDelta(m.cagr, spyM.cagr, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;' + cellBg(m.cagr, spyM.cagr) + '">' + fmtMetric(m.cagr, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.volatility, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.sortino, 'num') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;' + cellBg(m.calmar, spyM.calmar) + '">' + fmtMetric(m.calmar, 'num') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.rolling_calmar_median, 'num') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;' + cellBg(m.max_dd, spyM.max_dd) + '">' + fmtMetric(m.max_dd, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.max_dd_event_days, 'num0') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.avg_dd_underwater, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.avg_dd_event_days, 'num0') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.best_day, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.worst_day, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.best_month, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.worst_month, 'pct') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.n_days, 'num0') + '</td>';
+    html += '<td style="padding:4px 8px;text-align:center;"><span class="del" style="cursor:pointer;color:#b91c1c;font-size:14px;" onclick="removeFromComparison(\'' + safeName + '\')">&times;</span></td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function renderComparisonChips(names) {
+  const el = document.getElementById('comparisonChips');
+  if (!el) return;
+  if (!names.length) { el.innerHTML = '<em style="color:#94a3b8;">No baskets selected. Check rows in the Manage panel above to add.</em>'; return; }
+  el.innerHTML = names.map((name, idx) => {
+    const inChart = idx < COMPARISON_MAX_CHART;
+    const color = inChart ? COLORS[idx % COLORS.length] : '#94a3b8';
+    const safeName = String(name).replace(/'/g, "\\'");
+    return '<span class="chip" style="background:' + color + ';opacity:' + (inChart ? '1' : '0.6') + '">' +
+      name +
+      '<span class="remove" style="cursor:pointer;margin-left:6px;" onclick="removeFromComparison(\'' + safeName + '\')">&times;</span>' +
+      '</span>';
+  }).join('');
+}
+
+async function renderComparison() {
+  const det = document.getElementById('comparisonDetails');
+  // Update the count even when collapsed.
+  const countEl = document.getElementById('comparisonCount');
+  if (countEl) {
+    countEl.textContent = comparisonBaskets.length === 0
+      ? '(empty)'
+      : '(' + comparisonBaskets.length + ' basket' + (comparisonBaskets.length === 1 ? '' : 's') +
+        (comparisonBaskets.length > COMPARISON_MAX_CHART
+          ? ' · chart shows first ' + COMPARISON_MAX_CHART
+          : '') +
+        ')';
+  }
+  const headerEl = document.getElementById('comparisonHeader');
+  if (headerEl) {
+    if (comparisonBaskets.length > COMPARISON_MAX_CHART) {
+      headerEl.innerHTML = 'Chart shows the first ' + COMPARISON_MAX_CHART + ' selected (table shows all). Window: <strong>' + currentWindow + '</strong>. TF: ' + selectedDays + 'd.';
+    } else {
+      headerEl.innerHTML = comparisonBaskets.length
+        ? 'Window: <strong>' + currentWindow + '</strong>. TF: ' + selectedDays + 'd.'
+        : '';
+    }
+  }
+  // Always update chips + table (cheap; visible in collapsed summary too is fine).
+  renderComparisonChips(comparisonBaskets);
+  renderComparisonTable(comparisonBaskets);
+  // Heavy chart work only when the <details> is open.
+  if (!det || !det.open) {
+    if (comparisonChart) { comparisonChart.destroy(); comparisonChart = null; }
+    return;
+  }
+  if (!comparisonBaskets.length) {
+    if (comparisonChart) { comparisonChart.destroy(); comparisonChart = null; }
+    return;
+  }
+  // Collect all tickers we need to ensure are loaded for the chart.
+  const chartNames = comparisonBaskets.slice(0, COMPARISON_MAX_CHART);
+  const allTickers = new Set();
+  chartNames.forEach(name => {
+    lookupBasketTickers(name).forEach(t => allTickers.add(t));
+  });
+  allTickers.add('SPY');
+  const statusEl = document.getElementById('comparisonStatus');
+  const need = Array.from(allTickers).filter(t => !tickerData[t]);
+  if (need.length && statusEl) statusEl.textContent = 'Loading ' + need.length + ' ticker(s)...';
+  await ensureTickersLoaded(Array.from(allTickers));
+  if (statusEl) statusEl.textContent = '';
+  // Build datasets and render.
+  const datasets = buildComparisonChartDatasets(chartNames);
+  const canvas = document.getElementById('comparisonChart');
+  if (!canvas) return;
+  if (comparisonChart) comparisonChart.destroy();
+  const ctx = canvas.getContext('2d');
+  comparisonChart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'nearest', axis: 'x', intersect: false },
+      plugins: {
+        decimation: { enabled: true, algorithm: 'lttb', samples: 500, threshold: 1000 },
+        legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'line', padding: 12,
+                  font: { family: "'IBM Plex Sans'", size: 12 } } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + '%'; }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { unit: selectedDays <= 21 ? 'day' : selectedDays <= 252 ? 'week' : 'month',
+                  tooltipFormat: 'MMM d, yyyy' },
+          grid: { color: '#f0f0f0' },
+          ticks: { font: { family: "'IBM Plex Mono'", size: 11 }, maxTicksLimit: 12 }
+        },
+        y: {
+          title: { display: true, text: 'Cumulative Return (%)', font: { family: "'IBM Plex Sans'", size: 12 } },
+          grid: { color: '#f0f0f0' },
+          ticks: { font: { family: "'IBM Plex Mono'", size: 11 }, callback: v => v.toFixed(0) + '%' }
+        }
+      }
+    }
+  });
+}
+
 // Single unified lookback window for chip sort + Manage panel KPI columns.
 // Default 1y because every basket has 1y data (5y/10y data missing for
 // baskets containing recent-IPO tickers like SNDK/PLTR/FLNC/etc).
-let currentWindow = '1y';
+// Default window matches the default TF (5Y). Both inputs are kept in sync
+// via tfDaysToWindow / WINDOW_TO_TF_DAYS when either changes.
+let currentWindow = '5y';
+
+// Map a server-side window key to its matching TF in trading days.
+const WINDOW_TO_TF_DAYS = {
+  '63d': 63, '126d': 126, '1y': 252, '3y': 756, '5y': 1260, '7y': 1764, '10y': 2520
+};
 
 function currentWindowChanged() {
   const sel = document.getElementById('windowSel');
   if (sel) currentWindow = sel.value || '1y';
+  // Sync TF buttons to the matching trading-day count so the chart timeframe
+  // tracks the KPI window.
+  const targetDays = WINDOW_TO_TF_DAYS[currentWindow];
+  if (targetDays && targetDays !== selectedDays) {
+    selectedDays = targetDays;
+    document.querySelectorAll('.tf-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.days) === selectedDays);
+    });
+    redraw();
+  }
   renderSavedCombos();
   renderManagePanel(lastManageBaskets);
+  renderComparison();
 }
 
 const CHIP_SORT_OPTIONS = [
@@ -860,6 +1322,10 @@ async function pullFromServer() {
     const byName = {};
     local.forEach(c => { byName[c.name] = c; });
     let pulled = 0;
+    // Capture SPY metrics from server response (used for vs-SPY deltas).
+    if (data.spy_metrics && typeof data.spy_metrics === 'object') {
+      serverSpyMetrics = data.spy_metrics;
+    }
     // Replace the server map wholesale -- it reflects current canonical state.
     serverMetricsByName = {};
     serverBaskets.forEach(b => {
@@ -881,8 +1347,11 @@ async function pullFromServer() {
       pulled++;
     });
     saveCombos(Object.values(byName), 'pullFromServer');
+    // Restore comparison selection now that we know which server baskets exist.
+    loadComparisonFromStorage();
     renderSavedCombos();
     renderManagePanel(serverBaskets);
+    renderComparison();
     setSyncStatus('Pulled ' + pulled + ' from server.');
   } catch (err) {
     setSyncStatus('Pull failed: ' + err.message);
@@ -925,6 +1394,9 @@ async function syncToServer() {
       const byName = {};
       local.forEach(c => { byName[c.name] = c; });
       // Server response has canonical state (post-merge); refresh both maps.
+      if (result.spy_metrics && typeof result.spy_metrics === 'object') {
+        serverSpyMetrics = result.spy_metrics;
+      }
       serverMetricsByName = {};
       result.baskets.forEach(b => {
         if (!b || !b.name || !Array.isArray(b.tickers)) return;
@@ -943,6 +1415,7 @@ async function syncToServer() {
       saveCombos(Object.values(byName), 'syncToServer');
       renderSavedCombos();
       renderManagePanel(result.baskets);
+      renderComparison();
       }
   } catch (err) {
     setSyncStatus('Sync failed: ' + err.message);
@@ -1056,11 +1529,18 @@ function renderManagePanel(serverBaskets) {
     const m = b.metrics && b.metrics[currentWindow];
     return m && typeof m.cagr === 'number';
   }).length;
-  let html = '<div style="margin-bottom:6px;font-size:12px;color:#94a3b8;">';
-  html += 'Showing ' + currentWindow + ' window | ' + withData + '/' + serverBaskets.length + ' baskets have ' + currentWindow + ' data (use the Window selector at the top to switch).';
+  // Toolbar above table: comparison-selection count + Compare/Clear actions.
+  let html = '<div style="margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">';
+  html += '<span style="font-size:12px;color:#94a3b8;">Showing ' + currentWindow + ' window | ' + withData + '/' + serverBaskets.length + ' baskets have ' + currentWindow + ' data.</span>';
+  html += '<span style="flex:1"></span>';
+  html += '<span style="font-size:12px;color:#475569;">Selected: <strong>' + comparisonBaskets.length + '</strong></span>';
+  html += '<button class="save-current-btn" onclick="openComparison()" title="Open the Basket Comparison panel below" style="font-weight:600;">Compare</button>';
+  html += '<button class="save-current-btn" onclick="clearComparison()">Clear</button>';
   html += '</div>';
   html += '<div style="overflow-x:auto;"><table class="stats-table" style="font-size:12px;width:100%;">';
   html += '<thead><tr>';
+  // Checkbox column header (no sort).
+  html += '<th style="width:30px;text-align:center;"><input type="checkbox" id="manageSelectAll" onchange="toggleSelectAllManage(this)" title="Select first ' + COMPARISON_MAX_TABLE + ' visible"></th>';
   MANAGE_COLS.forEach(c => {
     const active = (c.key === manageSortKey);
     const arrow = active ? (manageSortDir === 'desc' ? ' ▼' : ' ▲') : '';
@@ -1071,7 +1551,9 @@ function renderManagePanel(serverBaskets) {
     const safeName = String(b.name).replace(/'/g, "\\'");
     const tickers = (b.tickers || []).join(', ');
     const m = (b.metrics && b.metrics[currentWindow]) || {};
+    const checked = comparisonBaskets.includes(b.name) ? ' checked' : '';
     html += '<tr>';
+    html += '<td style="padding:4px 8px;text-align:center;"><input type="checkbox" class="manage-cmp-cbx" data-name="' + b.name.replace(/"/g, '&quot;') + '"' + checked + ' onchange="onManageCompareToggle(this)"></td>';
     html += '<td style="padding:4px 8px;font-weight:600;cursor:help;" title="' + tickers + '">' + b.name + '</td>';
     html += '<td style="padding:4px 8px;text-align:right;font-weight:600;color:#1e1e2e;">' + fmtMetric(b.beats_spy_count, 'beats') + '</td>';
     html += '<td style="padding:4px 8px;text-align:right;">' + fmtMetric(m.cagr,                  'pct') + '</td>';
