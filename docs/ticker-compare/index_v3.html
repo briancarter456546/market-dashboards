@@ -291,9 +291,9 @@ body[data-active-tab="compare"] [data-tab="working"] { display: none !important;
   </div>
 
   <div class="stats-section" id="statsSection" data-tab="working" style="display:none;">
-    <h3>Period Statistics</h3>
+    <h3 id="statsTitle">Period Statistics</h3>
     <div style="overflow-x:auto;">
-    <table class="stats-table">
+    <table class="stats-table" id="statsTable">
       <thead id="statsHead">
         <tr>
           <th class="sortable" data-key="ticker"     onclick="sortStatsBy('ticker')">Ticker<span class="sort-arrow"></span></th>
@@ -320,7 +320,7 @@ body[data-active-tab="compare"] [data-tab="working"] { display: none !important;
   </div>
 
   <details id="quarterlyDetails" data-tab="working" ontoggle="onQuarterlyToggle()" style="margin-bottom:16px;" open>
-    <summary style="cursor:pointer;font-size:15px;font-weight:600;color:#1e1e2e;padding:10px 0;">Quarterly Pulse (last 20 years)</summary>
+    <summary style="cursor:pointer;font-size:15px;font-weight:600;color:#1e1e2e;padding:10px 0;">Quarterly Pulse (last 20 years) <span id="quarterlyBadge" style="font-weight:400;font-size:12px;color:#64748b;margin-left:8px;"></span></summary>
     <div id="quarterlyHeader" style="font-size:12px;color:#475569;margin-bottom:6px;"></div>
     <div id="quarterlyBarWrap" style="overflow-x:auto;"></div>
     <div id="quarterlyCoverage" style="font-size:11px;color:#94a3b8;margin-top:4px;"></div>
@@ -335,7 +335,7 @@ body[data-active-tab="compare"] [data-tab="working"] { display: none !important;
       <canvas id="comparisonChart"></canvas>
     </div>
     <div id="comparisonTable" style="font-size:12px;color:#475569;"></div>
-    <h4 style="margin-top:14px;margin-bottom:6px;font-size:13px;color:#475569;font-weight:600;">Quarterly Pulse — stacked</h4>
+    <h4 id="comparisonStackedPulseHeader" style="margin-top:14px;margin-bottom:6px;font-size:13px;color:#475569;font-weight:600;">Quarterly Pulse — stacked</h4>
     <div id="comparisonStackedPulse" style="overflow-x:auto;"></div>
   </details>
 
@@ -676,22 +676,11 @@ function tfDaysToWindow(days) {
 document.getElementById('tfRow').addEventListener('click', function(e) {
   const btn = e.target.closest('.tf-btn');
   if (!btn) return;
-  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedDays = parseInt(btn.dataset.days);
-  // Sync the Window selector to the nearest matching server window so the
-  // KPI tables reflect the same time horizon as the chart.
-  const matchedWin = tfDaysToWindow(selectedDays);
-  if (matchedWin !== currentWindow) {
-    currentWindow = matchedWin;
-    const sel = document.getElementById('windowSel');
-    if (sel) sel.value = matchedWin;
-    // Re-render anything that depends on currentWindow.
-    renderSavedCombos();
-    renderManagePanel(lastManageBaskets);
-  }
-  redraw();
-  renderComparison();
+  // Route through the single mutator so currentWindow + selectedDays + control
+  // states stay in lockstep.
+  const days = parseInt(btn.dataset.days);
+  const matchedWin = tfDaysToWindow(days);
+  setCurrentWindow(matchedWin, 'tfRow:click:' + days + 'd');
 });
 
 // ============================================================
@@ -1266,7 +1255,9 @@ function renderComparisonTable(names) {
     if (typeof av === 'string') return av.localeCompare(bv) * dir;
     return (av - bv) * dir;
   });
-  let html = '<div style="overflow-x:auto;"><table class="stats-table" style="font-size:12px;width:100%;">';
+  // C3x: stamp the comparison KPI table with the rendered window so a
+  // post-render mismatch is detectable.
+  let html = '<div style="overflow-x:auto;"><table class="stats-table" id="comparisonKpiTable" data-rendered-window="' + currentWindow + '" data-rendered-n-days="' + selectedDays + '" style="font-size:12px;width:100%;">';
   html += '<thead><tr>';
   cols.forEach(c => {
     const active = (c.key === comparisonSortKey);
@@ -1375,13 +1366,18 @@ async function renderComparison() {
   }
   const headerEl = document.getElementById('comparisonHeader');
   if (headerEl) {
+    // C3x: badge mirrors render_window_badge() in canonical lib (e.g. "5y · 1260d").
+    const badge = renderWindowBadge(currentWindow);
     if (comparisonBaskets.length > COMPARISON_MAX_CHART) {
-      headerEl.innerHTML = 'Chart shows the first ' + COMPARISON_MAX_CHART + ' selected (table shows all). Window: <strong>' + currentWindow + '</strong>. TF: ' + selectedDays + 'd.';
+      headerEl.innerHTML = 'Chart shows the first ' + COMPARISON_MAX_CHART + ' selected (table shows all). Window: <strong>' + badge + '</strong>.';
     } else {
       headerEl.innerHTML = comparisonBaskets.length
-        ? 'Window: <strong>' + currentWindow + '</strong>. TF: ' + selectedDays + 'd.'
+        ? 'Window: <strong>' + badge + '</strong>.'
         : '';
     }
+    // Stamp the header for cross-view consistency check.
+    headerEl.setAttribute('data-rendered-window', currentWindow);
+    headerEl.setAttribute('data-rendered-n-days', String(selectedDays));
   }
   // Always update chips + table + stacked pulse (cheap; visible in collapsed summary too is fine).
   renderComparisonChips(comparisonBaskets);
@@ -1390,10 +1386,12 @@ async function renderComparison() {
   // Heavy chart work only when the <details> is open.
   if (!det || !det.open) {
     if (comparisonChart) { comparisonChart.destroy(); comparisonChart = null; }
+    verifyCrossViewState();  // C3x: post-render check on the early-return path
     return;
   }
   if (!comparisonBaskets.length) {
     if (comparisonChart) { comparisonChart.destroy(); comparisonChart = null; }
+    verifyCrossViewState();  // C3x: post-render check on the early-return path
     return;
   }
   // Collect all tickers we need to ensure are loaded for the chart.
@@ -1447,36 +1445,124 @@ async function renderComparison() {
       }
     }
   });
+  // C3x: post-render cross-view consistency check. Slice 1: console.warn only.
+  verifyCrossViewState();
 }
 
 // Single unified lookback window for chip sort + Manage panel KPI columns.
 // Default 1y because every basket has 1y data (5y/10y data missing for
 // baskets containing recent-IPO tickers like SNDK/PLTR/FLNC/etc).
 // Default window matches the default TF (5Y). Both inputs are kept in sync
-// via tfDaysToWindow / WINDOW_TO_TF_DAYS when either changes.
+// via tfDaysToWindow / WINDOW_TO_TF_DAYS when either changes. The canonical
+// mapping is sourced from the API (data.canonical_windows) once pullFromServer
+// completes; until then this default keeps the UI usable.
 let currentWindow = '5y';
 
-// Map a server-side window key to its matching TF in trading days.
+// C3x: canonical window specs from the API. Populated by pullFromServer.
+// `canonicalWindows` is a list of {label, type, params, description, display_label}
+// matching ironframe.state_invariants.serialize_spec output.
+let canonicalWindows = [];
+
+// Build the WINDOW_TO_TF_DAYS map from canonical specs (replaces the old
+// hand-coded const). Returns a fresh object each call so callers see latest.
+function buildWindowToTfDays() {
+  const out = {};
+  canonicalWindows.forEach(s => {
+    if (s.type === 'fixed_trading' && s.params && typeof s.params.n_days === 'number') {
+      out[s.label] = s.params.n_days;
+    }
+  });
+  return out;
+}
+
+// Render a window badge string ("5y · 1260d" for fixed_trading) for UI stamps.
+// Mirrors render_window_badge() in ironframe.state_invariants.canonical_windows.
+function renderWindowBadge(label) {
+  const spec = canonicalWindows.find(s => s.label === label);
+  if (!spec) return label;
+  if (spec.display_label) return spec.display_label;
+  if (spec.type === 'fixed_trading' && spec.params && typeof spec.params.n_days === 'number') {
+    return spec.label + ' · ' + spec.params.n_days + 'd';
+  }
+  return spec.label;
+}
+
+// C3x: post-render cross-view consistency check. Walks every element with a
+// data-rendered-window attribute and warns if any disagrees with the global
+// currentWindow / selectedDays. Slice 1: console.warn only (no banner yet --
+// banner is task #990, deferred until we see how noisy this is in practice).
+function verifyCrossViewState() {
+  try {
+    const expected = currentWindow;
+    const expectedDays = selectedDays;
+    const stamped = document.querySelectorAll('[data-rendered-window]');
+    const mismatches = [];
+    stamped.forEach(el => {
+      const w = el.getAttribute('data-rendered-window');
+      const n = parseInt(el.getAttribute('data-rendered-n-days') || '', 10);
+      const labelOk = (w === expected);
+      const daysOk = isNaN(n) ? true : (n === expectedDays);
+      if (!labelOk || !daysOk) {
+        mismatches.push({ el: el.id || el.className || el.tagName, rendered_window: w, rendered_n_days: n, expected_window: expected, expected_n_days: expectedDays });
+      }
+    });
+    if (mismatches.length) {
+      console.warn('[C3x] cross-view state mismatch detected:', mismatches);
+    }
+    return mismatches;
+  } catch (e) {
+    console.warn('[C3x] verifyCrossViewState failed:', e);
+    return [];
+  }
+}
+
+// Fallback map used until pullFromServer() populates canonicalWindows.
+// After the first API response, buildWindowToTfDays() supersedes this. Kept
+// as a const for the initial render path; do not mutate.
 const WINDOW_TO_TF_DAYS = {
   '63d': 63, '126d': 126, '1y': 252, '3y': 756, '5y': 1260, '7y': 1764, '10y': 2520
 };
 
-function currentWindowChanged() {
-  const sel = document.getElementById('windowSel');
-  if (sel) currentWindow = sel.value || '1y';
-  // Sync TF buttons to the matching trading-day count so the chart timeframe
-  // tracks the KPI window.
-  const targetDays = WINDOW_TO_TF_DAYS[currentWindow];
-  if (targetDays && targetDays !== selectedDays) {
-    selectedDays = targetDays;
-    document.querySelectorAll('.tf-btn').forEach(b => {
-      b.classList.toggle('active', parseInt(b.dataset.days) === selectedDays);
-    });
-    redraw();
+// C3x: single mutator for currentWindow + selectedDays. Every code path that
+// changes the analysis window MUST go through here. Atomic: updates state,
+// syncs both controls (windowSel + tf-btn), then runs dependent renderers in
+// fixed order. The `source` arg is logged so we can trace which path mutated.
+function setCurrentWindow(label, source) {
+  if (!label) return;
+  // Resolve trading-days mapping from canonical specs first; fall back to the
+  // hardcoded const if the API hasn't responded yet.
+  const liveMap = buildWindowToTfDays();
+  const targetDays = (typeof liveMap[label] === 'number')
+    ? liveMap[label]
+    : WINDOW_TO_TF_DAYS[label];
+  if (typeof targetDays !== 'number') {
+    console.warn('[C3x] setCurrentWindow: unknown label', label, 'from', source);
+    return;
   }
+  const prevWindow = currentWindow;
+  const prevDays = selectedDays;
+  currentWindow = label;
+  selectedDays = targetDays;
+  // Sync the Window <select>.
+  const sel = document.getElementById('windowSel');
+  if (sel && sel.value !== label) sel.value = label;
+  // Sync the TF buttons.
+  document.querySelectorAll('.tf-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.days) === selectedDays);
+  });
+  console.debug('[C3x] setCurrentWindow', { label: label, n_days: targetDays, source: source || 'unknown', from_window: prevWindow, from_days: prevDays });
+  // Dependent renderers in fixed order. redraw() handles the chart + active
+  // basket period stats; renderComparison() handles the compare panel.
   renderSavedCombos();
   renderManagePanel(lastManageBaskets);
+  redraw();
   renderComparison();
+}
+
+function currentWindowChanged() {
+  const sel = document.getElementById('windowSel');
+  const next = sel ? (sel.value || '1y') : '1y';
+  setCurrentWindow(next, 'windowSel:change');
 }
 
 const CHIP_SORT_OPTIONS = [
@@ -1581,6 +1667,12 @@ async function pullFromServer() {
     const byName = {};
     local.forEach(c => { byName[c.name] = c; });
     let pulled = 0;
+    // C3x: capture canonical window specs (single source of truth from
+    // ironframe.state_invariants). After this, buildWindowToTfDays() returns
+    // the authoritative mapping; renderWindowBadge() can compose stamps.
+    if (Array.isArray(data.canonical_windows)) {
+      canonicalWindows = data.canonical_windows;
+    }
     // Capture SPY metrics from server response (used for vs-SPY deltas).
     if (data.spy_metrics && typeof data.spy_metrics === 'object') {
       serverSpyMetrics = data.spy_metrics;
@@ -2315,6 +2407,18 @@ function redraw() {
   canvas.style.display = 'block';
   empty.style.display = 'none';
   statsSection.style.display = 'block';
+  // C3x: stamp the active basket period stats with the rendered window so a
+  // post-render mismatch is detectable. Title shows "Period Statistics —
+  // Window 5y · 1260d"; table carries the data-rendered-* attrs.
+  const _statsTitle = document.getElementById('statsTitle');
+  if (_statsTitle) {
+    _statsTitle.textContent = 'Period Statistics — Window ' + renderWindowBadge(currentWindow);
+  }
+  const _statsTable = document.getElementById('statsTable');
+  if (_statsTable) {
+    _statsTable.setAttribute('data-rendered-window', currentWindow);
+    _statsTable.setAttribute('data-rendered-n-days', String(selectedDays));
+  }
   document.getElementById('candidatesSection').style.display =
     activeTickers.length >= 2 ? 'block' : 'none';
   document.getElementById('corrDetails').style.display =
@@ -2515,6 +2619,9 @@ function redraw() {
 
   // Re-render candidates when portfolio changes
   if (candidateTickers.length) renderCandidateTable();
+
+  // C3x: post-render cross-view consistency check. Slice 1: console.warn only.
+  verifyCrossViewState();
 }
 
 // ============================================================
@@ -2645,7 +2752,17 @@ function renderActiveQuarterlyPulse() {
   const wrap = document.getElementById('quarterlyBarWrap');
   const hdr = document.getElementById('quarterlyHeader');
   const cov = document.getElementById('quarterlyCoverage');
+  const badge = document.getElementById('quarterlyBadge');
   if (!wrap) return;
+  // C3x: visible badge always reflects the current window, even when collapsed.
+  if (badge) badge.textContent = '· Window ' + renderWindowBadge(currentWindow);
+  // C3x: stamp the section so verifyCrossViewState can track it. The Quarterly
+  // Pulse always shows 80 quarters regardless of window — the stamp captures the
+  // window context this section was rendered under, not its slicing window.
+  if (det) {
+    det.setAttribute('data-rendered-window', currentWindow);
+    det.setAttribute('data-rendered-n-days', String(selectedDays));
+  }
   if (det && !det.open) return;  // skip render when collapsed
   if (!activeTickers.length) {
     wrap.innerHTML = '<em style="color:#94a3b8;font-size:12px;">Add tickers to see quarterly pulse.</em>';
@@ -2668,7 +2785,14 @@ function renderActiveQuarterlyPulse() {
 
 function renderComparisonStackedPulse() {
   const wrap = document.getElementById('comparisonStackedPulse');
+  const stackedHeader = document.getElementById('comparisonStackedPulseHeader');
   if (!wrap) return;
+  // C3x: stamp the stacked pulse header with the current window, plus visible badge.
+  if (stackedHeader) {
+    stackedHeader.setAttribute('data-rendered-window', currentWindow);
+    stackedHeader.setAttribute('data-rendered-n-days', String(selectedDays));
+    stackedHeader.textContent = 'Quarterly Pulse — stacked · Window ' + renderWindowBadge(currentWindow);
+  }
   if (!comparisonBaskets.length) {
     wrap.innerHTML = '<em style="color:#94a3b8;">No baskets selected.</em>';
     return;
