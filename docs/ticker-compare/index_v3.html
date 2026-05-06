@@ -2265,8 +2265,10 @@ function renderCandidateChips() {
 // ticker membership changes mid-window. Mirrors the API semantics in
 // baskets_api_v1_0.py:_kpis_for_window.
 function buildEWGrowthSeries(tickers, sliceDays) {
-  const tickerGrowth = {};   // ticker -> {date: growth_multiple}
-  const dateSet = new Set();
+  // Step 1: per-ticker raw price map over the slice window. Date keyed for
+  // O(1) date lookup during intersection.
+  const tickerPrices = {};   // ticker -> {date: price}
+  const dateSets = [];       // per-ticker date set, for intersection
   tickers.forEach(t => {
     const raw = tickerData[t];
     if (!raw || !raw.dates || !raw.adjClose || raw.dates.length < 2) return;
@@ -2274,19 +2276,50 @@ function buildEWGrowthSeries(tickers, sliceDays) {
     const startIdx = Math.max(0, n - sliceDays);
     const dates = raw.dates.slice(startIdx);
     const prices = raw.adjClose.slice(startIdx);
-    let firstPrice = null;
-    for (let i = 0; i < prices.length; i++) {
-      if (Number.isFinite(prices[i]) && prices[i] > 0) { firstPrice = prices[i]; break; }
-    }
-    if (firstPrice === null) return;
-    tickerGrowth[t] = {};
+    const map = {};
+    const ds = new Set();
     for (let i = 0; i < dates.length; i++) {
       const p = prices[i];
-      if (Number.isFinite(p) && p > 0) tickerGrowth[t][dates[i]] = p / firstPrice;
-      dateSet.add(dates[i]);
+      if (Number.isFinite(p) && p > 0) {
+        map[dates[i]] = p;
+        ds.add(dates[i]);
+      }
     }
+    if (Object.keys(map).length < 2) return;
+    tickerPrices[t] = map;
+    dateSets.push(ds);
   });
-  const sortedDates = Array.from(dateSet).sort();
+  if (!dateSets.length) return { dates: [], values: [] };
+  // Step 2: INTERSECTION of dates across all tickers. This eliminates union-of-
+  // dates artifacts that surface as fake one-day basket moves when one ticker
+  // is stale (e.g. browser-cached JSON missing yesterday's close while other
+  // tickers updated). Without intersection, the absent ticker drops out of
+  // the per-day mean and the basket value step-discontinuously shifts -- the
+  // 'dip on May 4 because not all tickers are included' pattern.
+  let common = dateSets[0];
+  for (let i = 1; i < dateSets.length; i++) {
+    common = new Set([...common].filter(d => dateSets[i].has(d)));
+  }
+  const sortedDates = Array.from(common).sort();
+  if (sortedDates.length < 2) return { dates: [], values: [] };
+  // Step 3: renormalize each ticker to its price on the COMMON START (not its
+  // own slice-first). Pure Option B value-weighted EW: every ticker enters
+  // the average at growth=1.0 on the same day, so basket[0] = 1.0 cleanly.
+  const commonStart = sortedDates[0];
+  const tickerGrowth = {};
+  for (const t in tickerPrices) {
+    const fp = tickerPrices[t][commonStart];
+    if (!Number.isFinite(fp) || fp <= 0) continue;
+    tickerGrowth[t] = {};
+    for (const dt of sortedDates) {
+      const p = tickerPrices[t][dt];
+      if (Number.isFinite(p) && p > 0) tickerGrowth[t][dt] = p / fp;
+    }
+  }
+  // Step 4: per-day mean across tickers. Intersection guarantees every ticker
+  // contributes every day, so vs.length == nTickers always; defensive check
+  // kept anyway.
+  const nTickers = Object.keys(tickerGrowth).length;
   const dates = [];
   const values = [];
   sortedDates.forEach(dt => {
@@ -2295,17 +2328,11 @@ function buildEWGrowthSeries(tickers, sliceDays) {
       const v = tickerGrowth[t][dt];
       if (Number.isFinite(v)) vs.push(v);
     }
-    if (vs.length) {
+    if (vs.length === nTickers) {
       dates.push(dt);
       values.push(vs.reduce((a, b) => a + b, 0) / vs.length);
     }
   });
-  // Renormalize to start at 1.0 (in case first date had multiple tickers
-  // already past their first price).
-  if (values.length && values[0] > 0) {
-    const first = values[0];
-    for (let i = 0; i < values.length; i++) values[i] = values[i] / first;
-  }
   return { dates, values };
 }
 
