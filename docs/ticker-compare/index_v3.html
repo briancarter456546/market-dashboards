@@ -360,14 +360,19 @@ body[data-active-tab="compare"] [data-tab="working"] { display: none !important;
   <details id="dailyReturnsDetails" data-tab="working" ontoggle="onDailyReturnsToggle()" style="margin-bottom:16px;">
     <summary style="cursor:pointer;font-size:15px;font-weight:600;color:#1e1e2e;padding:10px 0;">Daily returns (21d MA, EW green/red zero-fill) — click to render</summary>
     <div class="chart-wrap">
+      <div style="margin:6px 0 10px 0;">
+        <label style="font-size:13px;cursor:pointer;user-select:none;">
+          <input type="checkbox" id="dailyReturnsShowConstituents" onchange="onDailyReturnsConstituentsToggle()" style="vertical-align:middle;margin-right:6px;">
+          Show individual constituent lines (off by default to keep the EW green/red fill readable)
+        </label>
+      </div>
       <div style="height: 400px; position: relative;">
         <canvas id="dailyReturnsChart"></canvas>
       </div>
       <p style="color:#666;font-size:13px;margin:8px 0;">
-        Per-constituent daily % returns (21-day rolling mean) over the selected window.
-        Equal-weight basket line shaded green when its smoothed daily return is positive,
-        red when negative. Visualizes DD-timing diversity — where lines diverge visually
-        the basket is decorrelating; where they cluster, constituents are moving together.
+        Equal-weight basket daily % return (21-day rolling mean), shaded green when positive,
+        red when negative. Toggle the checkbox to overlay each constituent's smoothed daily
+        return — useful for seeing where lines diverge (decorrelation) vs cluster (synchronized moves).
       </p>
     </div>
   </details>
@@ -3042,10 +3047,26 @@ function renderUnderwaterChart() {
 // Daily returns chart (Task D #1081) -- per-constituent + EW with green/red zero-fill
 // ============================================================
 let dailyReturnsChart = null;
+let dailyReturnsShowConstituents = false; // default: hide individual lines so EW fill is visible
 
 function onDailyReturnsToggle() {
   const det = document.getElementById('dailyReturnsDetails');
   if (det && det.open) renderDailyReturnsChart();
+}
+
+function onDailyReturnsConstituentsToggle() {
+  const cb = document.getElementById('dailyReturnsShowConstituents');
+  dailyReturnsShowConstituents = !!(cb && cb.checked);
+  // If chart exists, flip visibility per-dataset and update without rebuilding.
+  if (dailyReturnsChart) {
+    dailyReturnsChart.data.datasets.forEach((ds, i) => {
+      if (ds.label && ds.label.startsWith('Equal-Weight')) return; // keep EW always visible
+      dailyReturnsChart.setDatasetVisibility(i, dailyReturnsShowConstituents);
+    });
+    dailyReturnsChart.update();
+  } else {
+    renderDailyReturnsChart();
+  }
 }
 
 function renderDailyReturnsChart() {
@@ -3099,6 +3120,7 @@ function renderDailyReturnsChart() {
       tension: 0.05,
       fill: false,
       order: 10,
+      hidden: !dailyReturnsShowConstituents, // Task D toggle: hide constituents by default
     });
   });
 
