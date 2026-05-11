@@ -337,6 +337,16 @@ body[data-active-tab="compare"] [data-tab="working"] { display: none !important;
     <div id="comparisonTable" style="font-size:12px;color:#475569;"></div>
     <h4 id="comparisonStackedPulseHeader" style="margin-top:14px;margin-bottom:6px;font-size:13px;color:#475569;font-weight:600;">Quarterly Pulse — stacked</h4>
     <div id="comparisonStackedPulse" style="overflow-x:auto;"></div>
+
+    <!-- Task D extension: multi-basket EW daily returns (21d MA), no fill -->
+    <h4 style="margin-top:16px;margin-bottom:6px;font-size:13px;color:#475569;font-weight:600;">EW daily returns (21d MA) — one line per basket</h4>
+    <div style="height:340px;position:relative;margin-bottom:10px;">
+      <canvas id="comparisonDailyChart"></canvas>
+    </div>
+    <p style="color:#666;font-size:12px;margin:0 0 4px 0;">
+      Each basket's equal-weight daily % return smoothed with a 21-day rolling mean.
+      Useful for comparing baskets' tempo and timing — when one is rallying while another is flat.
+    </p>
   </details>
 
   <details id="chartDetails" data-tab="working" ontoggle="onChartToggle()" style="margin-bottom:16px;" open>
@@ -1466,8 +1476,133 @@ async function renderComparison() {
       }
     }
   });
+  // Task D extension: multi-basket EW daily-returns chart on the compare tab.
+  renderComparisonDailyReturnsChart(chartNames);
+
   // C3x: post-render cross-view consistency check. Slice 1: console.warn only.
   verifyCrossViewState();
+}
+
+// ============================================================
+// Comparison tab: multi-basket EW daily returns (21d MA, no fill)
+// One line per basket. SPY benchmark dashed.
+// ============================================================
+let comparisonDailyChart = null;
+
+function renderComparisonDailyReturnsChart(basketNames) {
+  const canvas = document.getElementById('comparisonDailyChart');
+  if (!canvas) return;
+  if (!basketNames || !basketNames.length) {
+    if (comparisonDailyChart) { comparisonDailyChart.destroy(); comparisonDailyChart = null; }
+    return;
+  }
+  const SMOOTH = 21;
+  const slice = selectedDays;
+  const datasets = [];
+
+  basketNames.slice(0, COMPARISON_MAX_CHART).forEach((name, idx) => {
+    const tickers = lookupBasketTickers(name);
+    if (!tickers.length) return;
+    const ews = buildEWGrowthSeries(tickers, slice);
+    if (!ews.values || ews.values.length < SMOOTH + 2) return;
+    // Daily pct returns from growth-multiple series
+    const dr = [];
+    for (let i = 1; i < ews.values.length; i++) {
+      if (!ews.values[i - 1]) continue;
+      dr.push({ x: ews.dates[i], y: (ews.values[i] / ews.values[i - 1] - 1) * 100 });
+    }
+    // 21-day rolling mean
+    const smoothed = [];
+    let s = 0;
+    for (let i = 0; i < dr.length; i++) {
+      s += dr[i].y;
+      if (i >= SMOOTH) s -= dr[i - SMOOTH].y;
+      if (i >= SMOOTH - 1) smoothed.push({ x: dr[i].x, y: s / SMOOTH });
+    }
+    if (!smoothed.length) return;
+    datasets.push({
+      label: name,
+      data: smoothed,
+      borderColor: COLORS[idx % COLORS.length],
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHitRadius: 5,
+      tension: 0.08,
+      fill: false,
+    });
+  });
+
+  // SPY benchmark (dashed grey) -- compute its smoothed daily-return series.
+  if (tickerData['SPY']) {
+    const spyEws = buildEWGrowthSeries(['SPY'], slice);
+    if (spyEws.values && spyEws.values.length >= SMOOTH + 2) {
+      const dr = [];
+      for (let i = 1; i < spyEws.values.length; i++) {
+        if (!spyEws.values[i - 1]) continue;
+        dr.push({ x: spyEws.dates[i], y: (spyEws.values[i] / spyEws.values[i - 1] - 1) * 100 });
+      }
+      const smoothed = [];
+      let s = 0;
+      for (let i = 0; i < dr.length; i++) {
+        s += dr[i].y;
+        if (i >= SMOOTH) s -= dr[i - SMOOTH].y;
+        if (i >= SMOOTH - 1) smoothed.push({ x: dr[i].x, y: s / SMOOTH });
+      }
+      if (smoothed.length) {
+        datasets.push({
+          label: 'SPY',
+          data: smoothed,
+          borderColor: '#94a3b8',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          borderDash: [4, 4],
+          pointRadius: 0,
+          pointHitRadius: 5,
+          tension: 0.08,
+          fill: false,
+        });
+      }
+    }
+  }
+
+  if (!datasets.length) {
+    if (comparisonDailyChart) { comparisonDailyChart.destroy(); comparisonDailyChart = null; }
+    return;
+  }
+  if (comparisonDailyChart) comparisonDailyChart.destroy();
+  const ctx = canvas.getContext('2d');
+  comparisonDailyChart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'nearest', axis: 'x', intersect: false },
+      plugins: {
+        decimation: { enabled: true, algorithm: 'lttb', samples: 500, threshold: 1000 },
+        legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'line', padding: 10,
+                  font: { family: "'IBM Plex Sans'", size: 12 } } },
+        tooltip: {
+          callbacks: { label: c => c.dataset.label + ': ' + c.parsed.y.toFixed(3) + '%' }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { unit: selectedDays <= 21 ? 'day' : selectedDays <= 252 ? 'week' : 'month',
+                  tooltipFormat: 'MMM d, yyyy' },
+          grid: { color: '#f0f0f0' },
+          ticks: { font: { family: "'IBM Plex Mono'", size: 11 }, maxTicksLimit: 12 }
+        },
+        y: {
+          title: { display: true, text: 'Daily return (%) [21d MA]', font: { family: "'IBM Plex Sans'", size: 12 } },
+          grid: { color: '#f0f0f0' },
+          ticks: { font: { family: "'IBM Plex Mono'", size: 11 } }
+        }
+      }
+    }
+  });
 }
 
 // Single unified lookback window for chip sort + Manage panel KPI columns.
