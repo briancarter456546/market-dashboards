@@ -1597,7 +1597,10 @@ function renderComparisonDailyReturnsChart(basketNames) {
         },
         y: {
           title: { display: true, text: 'Daily return (%) [21d MA]', font: { family: "'IBM Plex Sans'", size: 12 } },
-          grid: { color: '#f0f0f0' },
+          grid: {
+            color: function(ctx) { return ctx.tick && ctx.tick.value === 0 ? '#475569' : '#f0f0f0'; },
+            lineWidth: function(ctx) { return ctx.tick && ctx.tick.value === 0 ? 1.5 : 1; },
+          },
           ticks: { font: { family: "'IBM Plex Mono'", size: 11 } }
         }
       }
