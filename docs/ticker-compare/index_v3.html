@@ -356,6 +356,22 @@ body[data-active-tab="compare"] [data-tab="working"] { display: none !important;
     </div>
   </details>
 
+  <!-- Task D (#1081): daily-returns chart with EW green/red zero-line fill -->
+  <details id="dailyReturnsDetails" data-tab="working" ontoggle="onDailyReturnsToggle()" style="margin-bottom:16px;">
+    <summary style="cursor:pointer;font-size:15px;font-weight:600;color:#1e1e2e;padding:10px 0;">Daily returns (21d MA, EW green/red zero-fill) — click to render</summary>
+    <div class="chart-wrap">
+      <div style="height: 400px; position: relative;">
+        <canvas id="dailyReturnsChart"></canvas>
+      </div>
+      <p style="color:#666;font-size:13px;margin:8px 0;">
+        Per-constituent daily % returns (21-day rolling mean) over the selected window.
+        Equal-weight basket line shaded green when its smoothed daily return is positive,
+        red when negative. Visualizes DD-timing diversity — where lines diverge visually
+        the basket is decorrelating; where they cluster, constituents are moving together.
+      </p>
+    </div>
+  </details>
+
   <div class="stats-section" id="candidatesSection" data-tab="working" style="display:none;">
     <h3>Addition Candidates</h3>
     <p style="font-size:13px;color:#6b7280;margin-bottom:12px;">
@@ -2641,6 +2657,9 @@ function redraw() {
   // Render underwater drawdown chart
   renderUnderwaterChart();
 
+  // Task D (#1081): daily-returns chart with EW green/red zero-fill
+  renderDailyReturnsChart();
+
   // Render Quarterly Pulse for the active basket (frontend-computed).
   renderActiveQuarterlyPulse();
 
@@ -3017,6 +3036,151 @@ function renderUnderwaterChart() {
       }
     }
   });
+}
+
+// ============================================================
+// Daily returns chart (Task D #1081) -- per-constituent + EW with green/red zero-fill
+// ============================================================
+let dailyReturnsChart = null;
+
+function onDailyReturnsToggle() {
+  const det = document.getElementById('dailyReturnsDetails');
+  if (det && det.open) renderDailyReturnsChart();
+}
+
+function renderDailyReturnsChart() {
+  const det = document.getElementById('dailyReturnsDetails');
+  if (!det || !det.open) {
+    if (dailyReturnsChart) { dailyReturnsChart.destroy(); dailyReturnsChart = null; }
+    return;
+  }
+  const canvas = document.getElementById('dailyReturnsChart');
+  if (!canvas) return;
+  if (!activeTickers.length) {
+    if (dailyReturnsChart) { dailyReturnsChart.destroy(); dailyReturnsChart = null; }
+    return;
+  }
+
+  const SMOOTH = 21;
+  const datasets = [];
+  const seriesByTicker = {};
+
+  activeTickers.forEach((t, idx) => {
+    const raw = tickerData[t];
+    if (!raw) return;
+    const n = raw.dates.length;
+    const start = Math.max(0, n - selectedDays);
+    const dates = raw.dates.slice(start);
+    const prices = raw.adjClose.slice(start);
+    if (dates.length < SMOOTH + 2) return;
+
+    const dr = [];
+    for (let i = 1; i < dates.length; i++) {
+      if (!prices[i-1]) continue;
+      dr.push({ x: dates[i], y: (prices[i] / prices[i-1] - 1) * 100 });
+    }
+    const smoothed = [];
+    let runSum = 0;
+    for (let i = 0; i < dr.length; i++) {
+      runSum += dr[i].y;
+      if (i >= SMOOTH) runSum -= dr[i - SMOOTH].y;
+      if (i >= SMOOTH - 1) smoothed.push({ x: dr[i].x, y: runSum / SMOOTH });
+    }
+    if (!smoothed.length) return;
+    seriesByTicker[t] = smoothed;
+    datasets.push({
+      label: t,
+      data: smoothed,
+      borderColor: COLORS[idx % COLORS.length],
+      backgroundColor: 'transparent',
+      borderWidth: 1.1,
+      pointRadius: 0,
+      pointHitRadius: 5,
+      tension: 0.05,
+      fill: false,
+      order: 10,
+    });
+  });
+
+  if (activeTickers.length >= 2) {
+    // EW daily return as mean across constituents per date (uses smoothed series).
+    const dateMap = {};
+    activeTickers.forEach(t => {
+      const ser = seriesByTicker[t];
+      if (!ser) return;
+      ser.forEach(p => {
+        if (!dateMap[p.x]) dateMap[p.x] = { sum: 0, n: 0 };
+        dateMap[p.x].sum += p.y;
+        dateMap[p.x].n += 1;
+      });
+    });
+    const ewSeries = Object.keys(dateMap)
+      .sort()
+      .map(d => ({ x: d, y: dateMap[d].sum / dateMap[d].n }));
+
+    if (ewSeries.length) {
+      datasets.push({
+        label: 'Equal-Weight (21d MA)',
+        data: ewSeries,
+        borderColor: EW_COLOR,
+        backgroundColor: 'rgba(34,197,94,0.20)',
+        borderWidth: 2.5,
+        pointRadius: 0,
+        pointHitRadius: 6,
+        tension: 0.1,
+        fill: {
+          target: { value: 0 },
+          above: 'rgba(34,197,94,0.20)',  // green when EW > 0
+          below: 'rgba(239,68,68,0.20)',  // red when EW < 0
+        },
+        order: 1,  // draw EW underneath per-ticker so fill shows but lines stay on top
+      });
+    }
+  }
+
+  if (dailyReturnsChart) dailyReturnsChart.destroy();
+  const ctx = canvas.getContext('2d');
+  dailyReturnsChart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'nearest', axis: 'x', intersect: false },
+      plugins: {
+        decimation: { enabled: true, algorithm: 'lttb', samples: 500, threshold: 1000 },
+        legend: { position: 'top',
+                  labels: { usePointStyle: true, pointStyle: 'line', padding: 12,
+                            font: { family: "'IBM Plex Sans'", size: 12 } } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(3) + '%';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { unit: selectedDays <= 21 ? 'day' : selectedDays <= 252 ? 'week' : 'month',
+                  tooltipFormat: 'MMM d, yyyy' },
+          grid: { color: '#f0f0f0' },
+          ticks: { font: { family: "'IBM Plex Mono'", size: 12 }, maxTicksLimit: 12 }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Daily return (%) [21d rolling mean]',
+            font: { family: "'IBM Plex Sans'", size: 13 }
+          },
+          grid: { color: '#f0f0f0' },
+          ticks: { font: { family: "'IBM Plex Mono'", size: 12 } }
+        }
+      }
+    }
+  });
+  canvas.parentElement.style.height = '400px';
 }
 
 // ============================================================
