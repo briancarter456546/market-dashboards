@@ -214,6 +214,24 @@ body[data-active-tab="compare"] [data-tab="working"] { display: none !important;
 .stats-table th.sortable:hover { background: #f1f5f9; }
 .stats-table th.sortable .sort-arrow { color: #94a3b8; margin-left: 3px; font-size: 10px; }
 .stats-table th.sortable.active .sort-arrow { color: #2563eb; }
+.stats-table .stats-remove-x {
+  display: inline-block;
+  cursor: pointer;
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  margin-right: 8px;
+  padding: 0 4px;
+  border-radius: 3px;
+  user-select: none;
+  vertical-align: middle;
+  transition: color 0.12s, background 0.12s;
+}
+.stats-table .stats-remove-x:hover {
+  color: #b91c1c;
+  background: #fef2f2;
+}
 </style>
 </head>
 <body>
@@ -311,7 +329,6 @@ body[data-active-tab="compare"] [data-tab="working"] { display: none !important;
           <th class="sortable" data-key="bestMonth"  onclick="sortStatsBy('bestMonth')">Best Month<span class="sort-arrow"></span></th>
           <th class="sortable" data-key="worstMonth" onclick="sortStatsBy('worstMonth')">Worst Month<span class="sort-arrow"></span></th>
           <th class="sortable" data-key="days"       onclick="sortStatsBy('days')">Days<span class="sort-arrow"></span></th>
-          <th></th>
         </tr>
       </thead>
       <tbody id="statsBody"></tbody>
@@ -486,11 +503,12 @@ function renderStatsTableBody() {
     const rowCls = s.isBenchmark ? ' class="benchmark-row"' : '';
     const rcNum = (v, decimals) => (v == null) ? '<span style="color:#cbd5e1">-</span>' : v.toFixed(decimals);
     const rollLabel = (s.rollCalmar == null) ? '<span style="color:#cbd5e1">-</span>' : s.rollCalmar.toFixed(2);
-    const removeBtn = (s.isEW || s.isBenchmark)
+    // Inline "x" button to the LEFT of the ticker (skip for EW + benchmark rows).
+    const removeX = (s.isEW || s.isBenchmark)
       ? ''
-      : '<button class="del" style="cursor:pointer;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;border-radius:4px;padding:2px 8px;font-weight:700;font-size:13px;" title="Remove ' + s.ticker + ' from active basket" onclick="removeTicker(\'' + s.ticker + '\')">&times; remove</button>';
+      : '<span class="stats-remove-x" title="Remove ' + s.ticker + ' from active basket" onclick="removeTicker(\'' + s.ticker + '\')">&times;</span>';
     return '<tr' + rowCls + '>' +
-      '<td style="font-weight:600;color:' + s.color + '">' + s.ticker + '</td>' +
+      '<td style="font-weight:600;color:' + s.color + ';white-space:nowrap;">' + removeX + s.ticker + '</td>' +
       '<td class="' + rc(s.annRet) + '">' + s.annRet.toFixed(2) + '%</td>' +
       '<td>' + s.vol.toFixed(1) + '%</td>' +
       '<td class="' + rc(s.sortino) + '">' + s.sortino.toFixed(2) + '</td>' +
@@ -505,7 +523,6 @@ function renderStatsTableBody() {
       '<td class="pos">+' + s.bestMonth.toFixed(2) + '%</td>' +
       '<td class="neg">' + s.worstMonth.toFixed(2) + '%</td>' +
       '<td>' + s.days + '</td>' +
-      '<td style="text-align:center;">' + removeBtn + '</td>' +
       '</tr>';
   }).join('');
   // Update header arrow indicators
