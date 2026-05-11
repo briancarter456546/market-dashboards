@@ -2714,7 +2714,7 @@ function redraw() {
       const ewStats = computeStatsFromSlice(ews.dates, ews.values);
       if (ewStats) {
         statsRows.push(Object.assign({
-          ticker: 'Equal-Weight Portfolio',
+          ticker: 'EWP',
           color: EW_COLOR,
           isEW: true
         }, ewStats));
@@ -2733,7 +2733,7 @@ function redraw() {
       const spyStats = computeStatsFromSlice(sDates, sPrices);
       if (spyStats) {
         statsRows.push(Object.assign({
-          ticker: 'SPY (benchmark)',
+          ticker: 'SPY',
           color: '#6b7280',
           isBenchmark: true
         }, spyStats));
