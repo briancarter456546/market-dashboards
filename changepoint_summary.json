@@ -1,24 +1,24 @@
 {
-  "generated_at": "2026-05-08T21:39:27.655034",
+  "generated_at": "2026-05-11T21:37:05.347474",
   "drift_tier": "NORMAL",
-  "norm_drift": 1.3615871921089666,
+  "norm_drift": 1.2343204963214751,
   "top_regime": "gfc",
-  "top_sim": 25.6,
+  "top_sim": 25.7,
   "regime_similarity": [
     {
       "name": "gfc",
       "desc": "Credit crisis / deleveraging",
-      "sim": 25.6
+      "sim": 25.7
     },
     {
       "name": "rate_hike",
       "desc": "Inflation / Fed hiking / bear",
-      "sim": 22.2
+      "sim": 21.7
     },
     {
       "name": "taper_vol",
       "desc": "Taper tantrum / China / oil crash",
-      "sim": 19.2
+      "sim": 19.0
     },
     {
       "name": "late_cycle",
@@ -28,7 +28,7 @@
     {
       "name": "dot_com_bust",
       "desc": "Tech collapse / value rotation",
-      "sim": 12.1
+      "sim": 12.7
     }
   ]
 }
