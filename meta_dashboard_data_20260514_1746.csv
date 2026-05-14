@@ -1,0 +1,152 @@
+ticker,pole,ranker_rank,ranker_score,ranker_long_rank,ranker_long_score,advanced_signal,advanced_confidence,qualifier_safe,qualifier_regime,secrot_pred5d,secrot_score,stock_sr_score,slope_stage,slope_tq_score,health_score,health_verdict,spread_support,source_count,sources,sector
+HAL,XLE,17.0,87.7,26.0,85.1,,,,,,,6.0,,,85.4,HEALTHY,none,4,"['ranker', 'ranker_long', 'stock_secrot', 'pullback_health']",Energy
+VDE,XLE,54.0,82.2,57.0,81.9,,,,,,3.7,,,,82.0,HEALTHY,none,4,"['ranker', 'ranker_long', 'secrot', 'pullback_health']",
+MTSI,XLK,3.0,94.0,103.0,79.3,,,,,,,6.0,,,57.9,CAUTION,bullish,3,"['ranker', 'ranker_long', 'stock_secrot']",Technology
+SEI,VXUS,5.0,93.0,82.0,80.3,,,,,,,,,,87.3,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",
+BNO,XLE,8.0,92.0,36.0,84.4,,,,,,10.0,,,,57.5,CAUTION,none,3,"['ranker', 'ranker_long', 'secrot']",
+SU,XLE,15.0,87.8,6.0,89.7,,,,,,,5.0,,,,,none,3,"['ranker', 'ranker_long', 'stock_secrot']",Energy
+WDC,XLK,15.0,87.8,71.0,80.9,,,,,,,5.0,,,67.1,CAUTION,bullish,3,"['ranker', 'ranker_long', 'stock_secrot']",Technology
+CNQ,XLE,20.0,87.0,29.0,84.8,,,,,,,4.0,,,88.7,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",Energy
+USO,XLE,22.0,86.6,43.0,84.0,,,,,,8.5,,,,58.7,CAUTION,none,3,"['ranker', 'ranker_long', 'secrot']",
+PWR,XLI,24.0,86.2,34.0,84.6,,,,,,,3.0,,,93.0,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",Industrials
+GPRE,DBA,30.0,85.3,31.0,84.7,,,,,,,,,,82.7,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",
+LBRT,XLE,36.0,84.7,111.0,78.8,,,,,,,,,,93.2,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",
+REX,XLE,37.0,84.3,10.0,89.1,,,,,,,,,,91.5,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",
+TTE,XLE,48.0,83.1,139.0,77.6,,,,,,,3.0,,,85.3,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",Energy
+TERN,--,57.0,82.0,53.0,82.2,,,,,,,,,,84.8,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",
+STX,XLK,66.0,80.9,143.0,77.4,,,,,,,6.0,,,59.8,CAUTION,bullish,3,"['ranker', 'ranker_long', 'stock_secrot']",Technology
+FIX,XLI,70.0,80.2,91.0,79.9,,,,,,,4.0,,,87.6,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",Industrials
+VLUE,QQQ,74.0,79.4,87.0,80.1,,,,,,7.6,,,,58.1,CAUTION,bullish,3,"['ranker', 'ranker_long', 'secrot']",
+MPC,XLE,78.0,79.2,5.0,89.9,,,,,,,1.0,,,91.8,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",Energy
+MTZ,XLI,83.0,78.6,49.0,82.8,,,,,,,3.0,,,84.8,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",Industrials
+EZPW,XLI,85.0,78.2,6.0,89.7,,,,,,,,,,85.3,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",
+VAL,XLE,89.0,77.6,95.0,79.5,,,,,,,,,,83.8,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",
+CASY,XLB,91.0,77.5,11.0,88.5,,,,,,,5.0,,,,,bearish,3,"['ranker', 'ranker_long', 'stock_secrot']",Consumer Cyclical
+MU,XLK,92.0,77.4,,,,,,,,,6.0,,,83.6,HEALTHY,bullish,3,"['ranker', 'stock_secrot', 'pullback_health']",Technology
+SMH,XLK,92.0,77.4,93.0,79.7,,,,,,9.9,3.0,,,75.7,CAUTION,bullish,3,"['ranker', 'ranker_long', 'secrot']",Financial Services
+XLE,XLE,99.0,76.5,,,,,,,,2.6,,,,81.9,HEALTHY,none,3,"['ranker', 'secrot', 'pullback_health']",
+VRT,XLI,102.0,76.2,,,,,,,,,5.0,,,92.2,HEALTHY,none,3,"['ranker', 'stock_secrot', 'pullback_health']",Industrials
+RBC,XLI,112.0,75.6,43.0,84.0,,,,,,,5.0,,,72.3,CAUTION,none,3,"['ranker', 'ranker_long', 'stock_secrot']",Industrials
+BK,XLF,125.0,74.8,53.0,82.2,,,,,,2.6,2.0,,,45.9,WARNING,none,3,"['ranker', 'ranker_long', 'secrot']",Financial Services
+NORW,XLE,128.0,74.7,146.0,77.3,,,,,,2.0,,,,76.4,CAUTION,none,3,"['ranker', 'ranker_long', 'secrot']",
+RAAX,IAU,128.0,74.7,,,,,,,,0.8,,,,88.4,HEALTHY,none,3,"['ranker', 'secrot', 'pullback_health']",
+PSX,XLE,138.0,73.4,55.0,82.1,,,,,,,3.0,,,92.6,HEALTHY,none,3,"['ranker', 'ranker_long', 'pullback_health']",Energy
+DBC,--,,,105.0,79.1,,,,,,5.8,,,,85.2,HEALTHY,none,3,"['ranker_long', 'secrot', 'pullback_health']",
+CW,--,,,134.0,77.7,,,,,,,5.0,,,83.7,HEALTHY,none,3,"['ranker_long', 'stock_secrot', 'pullback_health']",Industrials
+IYZ,--,,,134.0,77.7,,,,,,2.0,,,,80.6,HEALTHY,none,3,"['ranker_long', 'secrot', 'pullback_health']",
+NBR,XLE,1.0,96.4,15.0,88.2,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+PUMP,XLE,2.0,94.1,114.0,78.7,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+CVE,XLE,4.0,93.9,3.0,92.6,,,,,,,3.0,,,,,none,2,"['ranker', 'ranker_long']",Energy
+ELA,--,9.0,90.4,18.0,87.1,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+WTTR,XLE,12.0,89.8,127.0,78.1,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+NWPX,XLI,14.0,88.4,34.0,84.6,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+CECO,VGK,18.0,87.3,105.0,79.1,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+NUE,XLB,21.0,86.8,36.0,84.4,,,,,,,4.0,,,45.0,WARNING,bearish,2,"['ranker', 'ranker_long']",Basic Materials
+TYRA,--,23.0,86.5,,,,,,,,,,,,91.3,HEALTHY,none,2,"['ranker', 'pullback_health']",
+TXN,XLI,24.0,86.2,69.0,81.2,,,,,,,4.0,,,39.3,WARNING,bullish,2,"['ranker', 'ranker_long']",Technology
+DAR,XLE,26.0,86.1,146.0,77.3,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+VLO,XLE,27.0,85.9,9.0,89.3,,,,,,,4.0,,,,,none,2,"['ranker', 'ranker_long']",Energy
+FTNT,--,29.0,85.7,109.0,78.9,,,,,,,2.0,,,63.3,CAUTION,bullish,2,"['ranker', 'ranker_long']",Technology
+IMO,XLE,31.0,85.1,15.0,88.2,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+ARWR,XLI,33.0,84.9,68.0,81.3,,,,,,,,,,27.7,WARNING,none,2,"['ranker', 'ranker_long']",
+TSAT,HYG,33.0,84.9,,,,,,,,,,,,86.1,HEALTHY,none,2,"['ranker', 'pullback_health']",
+TRGP,XLE,38.0,84.2,74.0,80.8,,,,,,,4.0,,,,,none,2,"['ranker', 'ranker_long']",Energy
+IRDM,XLRE,38.0,84.2,48.0,83.5,,,,,,,,,,,,bearish,2,"['ranker', 'ranker_long']",
+MEOH,XLE,41.0,84.1,20.0,86.2,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+BEN,XLF,42.0,84.0,,,,,,,,10.0,3.0,,,42.9,WARNING,none,2,"['ranker', 'secrot']",Financial Services
+ORA,--,42.0,84.0,82.0,80.3,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+CELC,--,45.0,83.5,114.0,78.7,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+ARW,XLI,45.0,83.5,143.0,77.4,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+LQDA,--,49.0,82.9,45.0,83.9,,,,,,,,,,60.0,CAUTION,none,2,"['ranker', 'ranker_long']",
+PSI,XLK,50.0,82.7,,,,,,,,10.0,,,,63.8,CAUTION,bullish,2,"['ranker', 'secrot']",
+EFXT,--,51.0,82.6,14.0,88.4,,,,,,,,,,60.0,CAUTION,none,2,"['ranker', 'ranker_long']",
+FUWAY,XLV,52.0,82.3,31.0,84.7,,,,,,,,,,77.2,CAUTION,none,2,"['ranker', 'ranker_long']",
+CGON,XLV,52.0,82.3,,,,,,,,,,,,85.3,HEALTHY,none,2,"['ranker', 'pullback_health']",
+MYRG,XLI,57.0,82.0,99.0,79.4,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+KGS,XLI,60.0,81.9,,,,,,,,,,,,86.9,HEALTHY,none,2,"['ranker', 'pullback_health']",
+DOCN,XLK,61.0,81.4,,,,,,,,,,,,85.3,HEALTHY,bullish,2,"['ranker', 'pullback_health']",
+STRO,--,62.0,81.3,119.0,78.5,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+KEYS,XLI,68.0,80.7,130.0,77.9,,,,,,,2.0,,,71.9,CAUTION,bullish,2,"['ranker', 'ranker_long']",Technology
+TH,--,69.0,80.4,94.0,79.6,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+REPX,XLE,70.0,80.2,146.0,77.3,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+OIH,XLE,76.0,79.3,,,,,,,,4.7,,,,76.6,CAUTION,none,2,"['ranker', 'secrot']",
+MKSI,SPY,80.0,79.1,,,,,,,,,6.0,,,47.5,WARNING,bullish,2,"['ranker', 'stock_secrot']",Technology
+INSW,LQD,81.0,79.0,26.0,85.1,,,,,,,,,,60.0,CAUTION,none,2,"['ranker', 'ranker_long']",
+TEN,XLI,81.0,79.0,40.0,84.3,,,,,,,,,,79.3,CAUTION,none,2,"['ranker', 'ranker_long']",
+AXSM,XLV,86.0,78.1,65.0,81.6,,,,,,,,,,34.5,WARNING,none,2,"['ranker', 'ranker_long']",
+FPLSF,XLI,87.0,77.9,61.0,81.7,,,,,,,,,,79.3,CAUTION,none,2,"['ranker', 'ranker_long']",
+RSPT,XLK,88.0,77.8,,,,,,,,7.2,,,,68.8,CAUTION,bullish,2,"['ranker', 'secrot']",
+MSGS,XLB,95.0,77.1,77.0,80.6,,,,,,,,,,,,bearish,2,"['ranker', 'ranker_long']",
+ATEX,XLK,96.0,77.0,71.0,80.9,,,,,,,,,,,,bullish,2,"['ranker', 'ranker_long']",
+ASC,XLK,100.0,76.4,65.0,81.6,,,,,,,,,,60.0,CAUTION,bullish,2,"['ranker', 'ranker_long']",
+E,XLE,102.0,76.2,36.0,84.4,,,,,,,3.0,,,,,none,2,"['ranker', 'ranker_long']",Energy
+ANAB,QQQ,105.0,76.1,,,,,,,,,,,,82.9,HEALTHY,bullish,2,"['ranker', 'pullback_health']",
+SOXX,XLK,106.0,76.0,,,,,,,,10.0,3.0,,,74.2,CAUTION,bullish,2,"['ranker', 'secrot']",Financial Services
+ESP,XLI,108.0,75.8,29.0,84.8,,,,,,,,,,69.1,CAUTION,none,2,"['ranker', 'ranker_long']",
+DK,XLE,110.0,75.7,36.0,84.4,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+SOXQ,XLK,110.0,75.7,,,,,,,,10.0,,,,73.3,CAUTION,bullish,2,"['ranker', 'secrot']",
+ROIV,HYG,114.0,75.5,,,,,,,,,1.0,,,93.2,HEALTHY,none,2,"['ranker', 'pullback_health']",Healthcare
+STLD,XLB,116.0,75.4,69.0,81.2,,,,,,,2.0,,,50.0,CAUTION,bearish,2,"['ranker', 'ranker_long']",Basic Materials
+SMHX,XLK,117.0,75.3,,,,,,,,10.0,,,,48.7,WARNING,bullish,2,"['ranker', 'secrot']",
+NXT,QQQ,121.0,75.1,,,,,,,,,3.0,,,83.3,HEALTHY,bullish,2,"['ranker', 'pullback_health']",Technology
+SCHD,XLP,121.0,75.1,,,,,,,,3.2,,,,66.7,CAUTION,bearish,2,"['ranker', 'secrot']",
+TD,SPY,123.0,75.0,85.0,80.2,,,,,,,3.0,,,71.8,CAUTION,none,2,"['ranker', 'ranker_long']",Financial Services
+CLNFF,--,124.0,74.9,19.0,87.0,,,,,,,,,,79.1,CAUTION,none,2,"['ranker', 'ranker_long']",
+CMI,XLI,125.0,74.8,,,,,,,,,5.0,,,46.8,WARNING,none,2,"['ranker', 'stock_secrot']",Industrials
+FRO,XLI,130.0,74.4,71.0,80.9,,,,,,,,,,56.7,CAUTION,none,2,"['ranker', 'ranker_long']",
+MPWR,XLI,131.0,74.3,85.0,80.2,,,,,,,2.0,,,52.6,CAUTION,bullish,2,"['ranker', 'ranker_long']",Technology
+CAT,XLI,134.0,73.8,111.0,78.8,,,,,,,3.0,,,58.3,CAUTION,none,2,"['ranker', 'ranker_long']",Industrials
+FLTW,VXUS,136.0,73.7,,,,,,,,9.3,,,,66.2,CAUTION,none,2,"['ranker', 'secrot']",
+TSN,--,137.0,73.5,,,,,,,,,6.0,,,46.2,WARNING,bearish,2,"['ranker', 'stock_secrot']",Consumer Defensive
+SEIV,SPY,138.0,73.4,,,,,,,,4.5,,,,55.4,CAUTION,none,2,"['ranker', 'secrot']",
+QTUM,QQQ,138.0,73.4,,,,,,,,8.1,,,,52.5,CAUTION,bullish,2,"['ranker', 'secrot']",
+EACO,--,142.0,73.3,17.0,87.7,,,,,,,,,,,,none,2,"['ranker', 'ranker_long']",
+RBKB,--,143.0,73.2,,,,,,,,,,,,81.8,HEALTHY,none,2,"['ranker', 'pullback_health']",
+EMEQ,VXUS,143.0,73.2,,,,,,,,8.7,,,,49.8,WARNING,none,2,"['ranker', 'secrot']",
+KO,XLP,143.0,73.2,134.0,77.7,,,,,,,2.0,,,58.3,CAUTION,bearish,2,"['ranker', 'ranker_long']",Consumer Defensive
+IOO,SPY,149.0,72.7,,,,,,,,5.2,,,,45.5,WARNING,none,2,"['ranker', 'secrot']",
+IESC,XLI,149.0,72.7,81.0,80.4,,,,,,,,,,61.3,CAUTION,none,2,"['ranker', 'ranker_long']",
+LINC,--,,,2.0,94.7,,,,,,,,,,82.3,HEALTHY,none,2,"['ranker_long', 'pullback_health']",
+EBAY,--,,,45.0,83.9,,,,,,,4.0,,,82.7,HEALTHY,bearish,2,"['ranker_long', 'pullback_health']",Consumer Cyclical
+EQIX,--,,,49.0,82.8,,,,,,,2.0,,,95.8,HEALTHY,bearish,2,"['ranker_long', 'pullback_health']",Real Estate
+GLNCY,--,,,61.0,81.7,,,,,,,,,,83.4,HEALTHY,none,2,"['ranker_long', 'pullback_health']",
+AROC,--,,,61.0,81.7,,,,,,,,,,83.2,HEALTHY,none,2,"['ranker_long', 'pullback_health']",
+OKE,--,,,67.0,81.4,,,,,,,2.0,,,81.6,HEALTHY,none,2,"['ranker_long', 'pullback_health']",Energy
+GSG,--,,,74.0,80.8,,,,,,6.4,,,,71.2,CAUTION,none,2,"['ranker_long', 'secrot']",
+BKR,--,,,77.0,80.6,,,,,,,6.0,,,53.8,CAUTION,none,2,"['ranker_long', 'stock_secrot']",Energy
+CIEN,--,,,82.0,80.3,,,,,,,2.0,,,85.2,HEALTHY,bullish,2,"['ranker_long', 'pullback_health']",Technology
+COST,--,,,95.0,79.5,,,,,,,4.0,,,84.4,HEALTHY,bearish,2,"['ranker_long', 'pullback_health']",Consumer Defensive
+DBB,--,,,95.0,79.5,,,,,,0.3,,,,72.1,CAUTION,none,2,"['ranker_long', 'secrot']",
+GUNR,--,,,99.0,79.4,,,,,,3.0,,,,77.1,CAUTION,none,2,"['ranker_long', 'secrot']",
+FAN,--,,,99.0,79.4,,,,,,3.9,,,,74.9,CAUTION,none,2,"['ranker_long', 'secrot']",
+DVA,--,,,108.0,79.0,,,,,,,,,,84.8,HEALTHY,none,2,"['ranker_long', 'pullback_health']",
+GNR,--,,,111.0,78.8,,,,,,3.0,,,,74.3,CAUTION,none,2,"['ranker_long', 'secrot']",
+NEE,--,,,114.0,78.7,,,,,,,5.0,,,72.5,CAUTION,bearish,2,"['ranker_long', 'stock_secrot']",Utilities
+SPLG,--,,,119.0,78.5,,,,,,5.1,,,,47.3,WARNING,none,2,"['ranker_long', 'secrot']",
+AXTI,--,,,125.0,78.2,,,,,,,,,,84.7,HEALTHY,none,2,"['ranker_long', 'pullback_health']",
+SPMO,--,,,125.0,78.2,,,,,,6.5,,,,53.7,CAUTION,none,2,"['ranker_long', 'secrot']",
+DXJ,--,,,127.0,78.1,,,,,,2.0,,,,57.2,CAUTION,none,2,"['ranker_long', 'secrot']",
+CTRE,--,,,132.0,77.8,,,,,,,,,,80.8,HEALTHY,none,2,"['ranker_long', 'pullback_health']",
+VTV,--,,,134.0,77.7,,,,,,2.7,,,,56.1,CAUTION,none,2,"['ranker_long', 'secrot']",
+CIBR,--,,,142.0,77.5,,,,,,6.2,1.0,,,24.2,WARNING,none,2,"['ranker_long', 'secrot']",Financial Services
+KLAC,--,,,149.0,77.2,,,,,,,5.0,,,65.2,CAUTION,bullish,2,"['ranker_long', 'stock_secrot']",Technology
+BBCA,--,,,,,,,,,,0.4,,,,81.8,HEALTHY,none,2,"['secrot', 'pullback_health']",
+CHAT,--,,,,,,,,,,7.7,,,,81.7,HEALTHY,none,2,"['secrot', 'pullback_health']",
+DBA,--,,,,,,,,,,3.6,,,,81.4,HEALTHY,none,2,"['secrot', 'pullback_health']",
+DTCR,--,,,,,,,,,,6.3,,,,81.5,HEALTHY,none,2,"['secrot', 'pullback_health']",
+HDGE,--,,,,,,,,,,3.0,,,,81.4,HEALTHY,none,2,"['secrot', 'pullback_health']",
+PDBC,--,,,,,,,,,,4.8,,,,85.0,HEALTHY,none,2,"['secrot', 'pullback_health']",
+PSLV,--,,,,,,,,,,3.0,7.0,,,51.9,CAUTION,none,2,"['secrot', 'stock_secrot']",Financial Services
+PWRD,--,,,,,,,,,,4.6,,,,80.1,HEALTHY,none,2,"['secrot', 'pullback_health']",
+SHLD,--,,,,,,,,,,3.0,,,,88.6,HEALTHY,none,2,"['secrot', 'pullback_health']",
+SOYB,--,,,,,,,,,,3.5,,,,80.2,HEALTHY,none,2,"['secrot', 'pullback_health']",
+XAR,--,,,,,,,,,,2.0,,,,80.5,HEALTHY,none,2,"['secrot', 'pullback_health']",
+XLC,--,,,,,,,,,,3.1,,,,80.6,HEALTHY,none,2,"['secrot', 'pullback_health']",
+XOP,--,,,,,,,,,,4.2,,,,84.2,HEALTHY,none,2,"['secrot', 'pullback_health']",
+PBR,--,,,,,,,,,,,7.0,,,82.3,HEALTHY,none,2,"['stock_secrot', 'pullback_health']",Energy
+MRNA,--,,,,,,,,,,,6.0,,,80.1,HEALTHY,none,2,"['stock_secrot', 'pullback_health']",Healthcare
+SNDK,--,,,,,,,,,,,6.0,,,83.8,HEALTHY,bullish,2,"['stock_secrot', 'pullback_health']",Technology
+SBUX,--,,,,,,,,,,,5.0,,,84.3,HEALTHY,bearish,2,"['stock_secrot', 'pullback_health']",Consumer Cyclical
+AA,--,,,,,,,,,,,5.0,,,87.6,HEALTHY,bearish,2,"['stock_secrot', 'pullback_health']",Basic Materials
+X,--,,,,,,,,,,,5.0,,,88.2,HEALTHY,bearish,2,"['stock_secrot', 'pullback_health']",Basic Materials
+DFS,--,,,,,,,,,,,5.0,,,80.5,HEALTHY,none,2,"['stock_secrot', 'pullback_health']",Financial Services
