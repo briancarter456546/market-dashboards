@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-27T17:39:00.774909",
+  "generated_at": "2026-05-27T21:41:43.385668",
   "drift_tier": "NORMAL",
-  "norm_drift": 1.7873317137558205,
+  "norm_drift": 1.7873321132581388,
   "top_regime": "gfc",
   "top_sim": 34.6,
   "regime_similarity": [
@@ -13,7 +13,7 @@
     {
       "name": "rate_hike",
       "desc": "Inflation / Fed hiking / bear",
-      "sim": 27.7
+      "sim": 27.6
     },
     {
       "name": "taper_vol",
@@ -28,7 +28,7 @@
     {
       "name": "dot_com_bust",
       "desc": "Tech collapse / value rotation",
-      "sim": 8.6
+      "sim": 8.7
     }
   ]
 }
