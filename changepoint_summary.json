@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-03T17:37:24.752637",
+  "generated_at": "2026-06-03T21:39:51.024937",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.1608523294167656,
+  "norm_drift": 2.1608273032205467,
   "top_regime": "gfc",
   "top_sim": 29.6,
   "regime_similarity": [
