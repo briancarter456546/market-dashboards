@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-05T17:37:16.229676",
+  "generated_at": "2026-06-05T21:39:58.277951",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.3902342662250184,
+  "norm_drift": 2.390639683466927,
   "top_regime": "gfc",
   "top_sim": 27.9,
   "regime_similarity": [
@@ -13,7 +13,7 @@
     {
       "name": "rate_hike",
       "desc": "Inflation / Fed hiking / bear",
-      "sim": 19.4
+      "sim": 19.5
     },
     {
       "name": "taper_vol",
