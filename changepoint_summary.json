@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-06-09T17:38:21.036703",
+  "generated_at": "2026-06-09T21:40:04.225895",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.5303657036510705,
+  "norm_drift": 2.5303513856371325,
   "top_regime": "gfc",
-  "top_sim": 26.2,
+  "top_sim": 26.1,
   "regime_similarity": [
     {
       "name": "gfc",
       "desc": "Credit crisis / deleveraging",
-      "sim": 26.2
+      "sim": 26.1
     },
     {
       "name": "rate_hike",
