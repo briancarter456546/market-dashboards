@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-11T17:38:30.235173",
+  "generated_at": "2026-06-11T21:39:56.822371",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.65425264792165,
+  "norm_drift": 2.6540374576463712,
   "top_regime": "gfc",
   "top_sim": 25.0,
   "regime_similarity": [
@@ -18,7 +18,7 @@
     {
       "name": "taper_vol",
       "desc": "Taper tantrum / China / oil crash",
-      "sim": 5.9
+      "sim": 5.8
     },
     {
       "name": "post_gfc_zirp",
