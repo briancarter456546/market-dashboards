@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-06-17T17:37:12.155944",
+  "generated_at": "2026-06-17T21:40:06.563829",
   "drift_tier": "ELEVATED",
-  "norm_drift": 2.74837214559153,
+  "norm_drift": 2.7484820993906367,
   "top_regime": "post_gfc_zirp",
-  "top_sim": 13.4,
+  "top_sim": 13.3,
   "regime_similarity": [
     {
       "name": "post_gfc_zirp",
       "desc": "QE recovery / low-vol grind",
-      "sim": 13.4
+      "sim": 13.3
     },
     {
       "name": "gfc",
