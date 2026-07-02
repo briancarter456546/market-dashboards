@@ -234,13 +234,14 @@ BACKENDS = [
         'slow': False,
         'required': False,
     },
-    {
-        'script': 'portfolio_allocator_dashboard_v2_1.py',
-        'name': 'Portfolio Allocator Dashboard (Private)',
-        'location': 'root',
-        'slow': False,
-        'required': False,
-    },
+    # REMOVED: v2.1 replaced by v3.0 with dedicated cron (17:30 ET)
+    # {
+    #     'script': 'portfolio_allocator_dashboard_v2_1.py',
+    #     'name': 'Portfolio Allocator Dashboard (Private)',
+    #     'location': 'root',
+    #     'slow': False,
+    #     'required': False,
+    # },
     {
         'script': 'bear_hunter_backend.py',
         'name': 'Bear Hunter Dashboard (Private)',
