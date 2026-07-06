@@ -1,34 +1,34 @@
 {
-  "generated_at": "2026-07-03T21:36:50.753334",
+  "generated_at": "2026-07-06T17:38:18.304450",
   "drift_tier": "ELEVATED",
-  "norm_drift": 3.047437783034698,
+  "norm_drift": 2.8684458330107634,
   "top_regime": "post_gfc_zirp",
-  "top_sim": 18.3,
+  "top_sim": 18.4,
   "regime_similarity": [
     {
       "name": "post_gfc_zirp",
       "desc": "QE recovery / low-vol grind",
-      "sim": 18.3
+      "sim": 18.4
     },
     {
       "name": "tariff_shock",
       "desc": "Liberation Day / stagflation fears",
-      "sim": 4.1
+      "sim": 3.3
     },
     {
       "name": "ai_bull",
       "desc": "AI-led growth / rate cut cycle",
-      "sim": 2.4
+      "sim": 2.6
     },
     {
       "name": "dot_com_bust",
       "desc": "Tech collapse / value rotation",
-      "sim": 0.9
+      "sim": 0.4
     },
     {
       "name": "covid",
       "desc": "Crash + V-shaped recovery",
-      "sim": -2.6
+      "sim": -2.9
     }
   ]
 }

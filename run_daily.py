@@ -220,20 +220,22 @@ BACKENDS = [
         'slow': True,
         'required': False,
     },
-    {
-        'script': 'validated_signal_generator_v1_0.py',
-        'name': 'Validated System Signal Generator',
-        'location': 'root',
-        'slow': False,
-        'required': False,
-    },
-    {
-        'script': 'portfolio_allocator_v1_0.py',
-        'name': 'Portfolio Allocator (Regime-Aware)',
-        'location': 'root',
-        'slow': False,
-        'required': False,
-    },
+    # MIGRATED to dedicated minerva cron (#1904)
+    # {
+    # 'script': 'validated_signal_generator_v1_0.py',
+    # 'name': 'Validated System Signal Generator',
+    # 'location': 'root',
+    # 'slow': False,
+    # 'required': False,
+    # },
+    # MIGRATED to dedicated minerva cron (#1904)
+    # {
+    # 'script': 'portfolio_allocator_v1_0.py',
+    # 'name': 'Portfolio Allocator (Regime-Aware)',
+    # 'location': 'root',
+    # 'slow': False,
+    # 'required': False,
+    # },
     # REMOVED: v2.1 replaced by v3.0 with dedicated cron (17:30 ET)
     # {
     #     'script': 'portfolio_allocator_dashboard_v2_1.py',
@@ -242,13 +244,14 @@ BACKENDS = [
     #     'slow': False,
     #     'required': False,
     # },
-    {
-        'script': 'bear_hunter_backend.py',
-        'name': 'Bear Hunter Dashboard (Private)',
-        'location': 'root',
-        'slow': False,
-        'required': False,
-    },
+    # MIGRATED to dedicated minerva cron (#1904)
+    # {
+    # 'script': 'bear_hunter_backend.py',
+    # 'name': 'Bear Hunter Dashboard (Private)',
+    # 'location': 'root',
+    # 'slow': False,
+    # 'required': False,
+    # },
     {
         'script': 'system_auditor_v1_0.py',
         'name': 'Code Auditor (Fan-Out Consistency)',
